@@ -156,7 +156,7 @@ function DashboardNav({ tab, setTab, tier }) {
             <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 100, background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', color: '#7aaff8' }}>Pro</span>
           ) : (
             <button onClick={() => navigate('/settings')} className="glass-pill" style={{ color: '#fbbf24', background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.25)' }}>
-              Free · Upgrade
+              Upgrade
             </button>
           )}
 
