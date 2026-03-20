@@ -677,9 +677,9 @@ const MarketCard = memo(function MarketCard({ market: m }) {
 
   return (
     <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all cursor-default"
-      style={{background: '#0f1729', border: '1px solid #1e2a4a'}}
-      onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(37,99,235,0.4)'; e.currentTarget.style.boxShadow='0 0 20px rgba(37,99,235,0.08)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor='#1e2a4a'; e.currentTarget.style.boxShadow='none'; }}>
+      style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease'}}
+      onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(79,142,247,0.3)'; e.currentTarget.style.boxShadow='0 0 20px rgba(79,142,247,0.1)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow='none'; }}>
 
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
@@ -807,7 +807,7 @@ function DayTradingTab() {
         />
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[['Total trades', stats.total, ''], ['Win rate', stats.wr+'%', ''], ['Total P&L', (stats.pnl>=0?'+':'')+'$'+stats.pnl.toFixed(2), stats.pnl], ['Avg winner', stats.avgW?'$'+stats.avgW.toFixed(0):'—', null]].map(([l,v,pnl],i) => (
-            <div key={l} className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
+            <div key={l} className="rounded-2xl p-5" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease'}}>
               <div className="text-xs font-medium uppercase tracking-wide mb-1.5" style={{color: '#64748b'}}>{l}</div>
               <div className={`text-2xl font-bold ${i===2 ? (pnl>=0 ? 'text-green-500' : 'text-red-500') : ''}`} style={i!==2 ? {color: '#F5F5FA'} : {}}>{v}</div>
             </div>
@@ -1018,7 +1018,7 @@ function SportsBettingTab({ tier }) {
       {/* All-time stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[['Total bets', bets.length, null],['Win rate', wr+'%', null],['Total P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(2), totalPnl],['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi)]].map(([l,v,pnl],i) => (
-          <div key={l} className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
+          <div key={l} className="rounded-2xl p-5" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease'}}>
             <div className="text-xs font-medium uppercase tracking-wide mb-1.5" style={{color: '#64748b'}}>{l}</div>
             <div className={`text-2xl font-bold ${i>=2 ? (pnl>=0 ? 'text-green-500' : 'text-red-500') : ''}`} style={i<2 ? {color: '#F5F5FA'} : {}}>{v}</div>
           </div>
@@ -1148,36 +1148,51 @@ function EVCalcTab() {
   const ev     = (tp/100) * payout - (1-tp/100) * ba;
   const kelly  = Math.max(0, (tp/100 - (1-mp/100)) / (1/(mp/100) - 1));
   const roi    = (ev / ba * 100).toFixed(1);
+  const edge   = (tp - mp).toFixed(1);
+
+  const gc = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease' };
+
+  const SLIDERS = [
+    ['Market / book price', mp, setMp, 1, 99, 1, '%'],
+    ['Your true probability', tp, setTp, 1, 99, 1, '%'],
+    ['Bankroll', br, setBr, 100, 50000, 100, '$'],
+    ['Bet size', ba, setBa, 10, 5000, 10, '$'],
+  ];
+
+  const RESULTS = [
+    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#22c55e' : '#ef4444'],
+    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#22c55e' : '#ef4444'],
+    ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#7aaff8' : '#4a5a7a'],
+    ['Max Payout', '$' + (ba + payout).toFixed(0), '#F5F5FA'],
+    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#22c55e' : parseFloat(edge) < 0 ? '#ef4444' : '#4a5a7a'],
+  ];
 
   return (
-    <div className="flex flex-col gap-5 max-w-2xl">
-      <div className="rounded-2xl p-6 flex flex-col gap-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-        {[
-          ['Market / book price (%)', mp, setMp, 1, 99, 1],
-          ['Your true probability (%)', tp, setTp, 1, 99, 1],
-          ['Bankroll ($)', br, setBr, 100, 50000, 100],
-          ['Bet size ($)', ba, setBa, 10, 5000, 10],
-        ].map(([label, val, set, min, max, step]) => (
-          <div key={label}>
-            <div className="flex justify-between items-baseline mb-2.5">
-              <span className="text-sm font-medium" style={{color: '#94A3B8'}}>{label}</span>
-              <span className="text-base font-bold" style={{color: '#F5F5FA'}}>{String(label).includes('$') ? '$'+val.toLocaleString() : val+'%'}</span>
+    <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* Inputs */}
+      <div style={{ ...gc, padding: 24 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 20 }}>Calculator</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+          {SLIDERS.map(([label, val, set, min, max, step, unit]) => (
+            <div key={label}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: '#6a7a9a' }}>{label}</span>
+                <span style={{ fontSize: 20, fontWeight: 700, color: '#F5F5FA' }}>{unit === '$' ? '$' + val.toLocaleString() : val + '%'}</span>
+              </div>
+              <input type="range" min={min} max={max} step={step} value={val}
+                onChange={e => set(Number(e.target.value))}
+                style={{ width: '100%', accentColor: '#4f8ef7', cursor: 'pointer' }} />
             </div>
-            <input type="range" min={min} max={max} step={step} value={val} onChange={e => set(Number(e.target.value))}
-              className="w-full" style={{accentColor: '#2563EB'}} />
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          ['Expected value', (ev>=0?'+':'')+'$'+ev.toFixed(2), ev>=0?'text-green-500':'text-red-500'],
-          ['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi)>=0?'text-green-500':'text-red-500'],
-          ['Kelly bet', kelly>0?'$'+(kelly*br).toFixed(0):'Skip', ''],
-          ['Max payout', '$'+(ba+payout).toFixed(0), ''],
-        ].map(([l,v,cls]) => (
-          <div key={l} className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-            <div className="text-xs font-medium uppercase tracking-wide mb-1.5" style={{color: '#64748b'}}>{l}</div>
-            <div className={`text-2xl font-bold ${cls}`} style={!cls ? {color: '#F5F5FA'} : {}}>{v}</div>
+
+      {/* Results 2×2 + 1 full-width */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        {RESULTS.map(([label, value, color], idx) => (
+          <div key={label} style={{ ...gc, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16, minHeight: 110, ...(idx === 4 ? { gridColumn: '1 / -1' } : {}) }}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a' }}>{label}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
           </div>
         ))}
       </div>
@@ -2321,8 +2336,8 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
     ? (pct < 50 ? '#22c55e' : pct < 80 ? '#f59e0b' : '#ef4444')
     : (pct >= 100 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#475569');
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a' };
-  const track = { background: '#1e2a4a' };
+  const card = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
+  const track = { background: 'rgba(255,255,255,0.08)' };
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
