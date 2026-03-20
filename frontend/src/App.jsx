@@ -6,7 +6,6 @@ import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Landing from './pages/Landing';
 import Home from './pages/Home';
-import UpgradeModal from './components/UpgradeModal';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -24,7 +23,6 @@ function SmartHome() {
 export default function App() {
   return (
     <BrowserRouter>
-      <UpgradeModal />
       <Routes>
         <Route path="/" element={<SmartHome />} />
         <Route path="/login" element={<Login />} />

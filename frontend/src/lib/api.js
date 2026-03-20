@@ -24,6 +24,7 @@ api.interceptors.response.use(
       window.dispatchEvent(new CustomEvent('upgrade-required', {
         detail: { message: err.response.data.message }
       }));
+      window.dispatchEvent(new CustomEvent('open-upgrade'));
     }
     return Promise.reject(err);
   }
