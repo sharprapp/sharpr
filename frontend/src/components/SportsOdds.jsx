@@ -4,6 +4,13 @@ import api from '../lib/api';
 const SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'NCAAB', 'NCAAF', 'WNBA', 'soccer_epl', 'soccer_mls', 'soccer_champions', 'UFC', 'boxing', 'tennis_atp', 'golf_pga', 'F1'];
 const SPORT_LABELS = { soccer_epl: 'EPL', soccer_mls: 'MLS', soccer_champions: 'UCL', tennis_atp: 'ATP', golf_pga: 'PGA' };
 
+// Map sport keys to ESPN route params (ESPN only supports these)
+const ESPN_SPORT_MAP = {
+  NBA: 'NBA', NFL: 'NFL', MLB: 'MLB', NHL: 'NHL', NCAAB: 'NCAAB', NCAAF: 'NCAAF',
+  WNBA: null, soccer_epl: 'Soccer', soccer_mls: 'MLS', soccer_champions: null,
+  UFC: 'UFC', boxing: null, tennis_atp: 'Tennis', golf_pga: 'Golf', F1: null,
+};
+
 function fmtML(ml) {
   if (ml == null) return 'N/A';
   return ml > 0 ? `+${ml}` : `${ml}`;
@@ -26,18 +33,44 @@ function StatusBadge({ status }) {
 }
 
 export default function SportsOdds({ initialSport }) {
-  const [sport, setSport] = useState(initialSport || 'NBA');
+  // Normalize: nav passes lowercase keys like 'nba', SPORTS array uses 'NBA'
+  const normalizeSport = (s) => {
+    if (!s) return 'NBA';
+    // Check if it already matches a SPORTS entry
+    if (SPORTS.includes(s)) return s;
+    // Try uppercase
+    const upper = s.toUpperCase();
+    if (SPORTS.includes(upper)) return upper;
+    // Try as-is (for compound keys like soccer_epl)
+    return s;
+  };
+  const [sport, setSport] = useState(normalizeSport(initialSport));
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState(null);
 
+  useEffect(() => {
+    if (initialSport) {
+      const n = normalizeSport(initialSport);
+      if (n !== sport) setSport(n);
+    }
+  }, [initialSport]);
+
   useEffect(() => { fetchGames(); }, [sport]);
 
   async function fetchGames() {
     setLoading(true); setError(''); setExpandedId(null);
+    const espnKey = ESPN_SPORT_MAP[sport];
+    if (!espnKey) {
+      // Sport not available on ESPN — show message, no crash
+      setGames([]);
+      setError(`${SPORT_LABELS[sport] || sport} scores coming soon — odds data available when API key is configured`);
+      setLoading(false);
+      return;
+    }
     try {
-      const { data } = await api.get(`/api/espn/${sport}`);
+      const { data } = await api.get(`/api/espn/${espnKey}`);
       setGames(data);
     } catch (e) {
       setError(e.response?.data?.error || 'Could not load games.');
