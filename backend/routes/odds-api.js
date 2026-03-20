@@ -7,8 +7,16 @@ const API_KEY = process.env.ODDS_API_KEY;
 
 const SPORT_KEYS = {
   nba: 'basketball_nba', nfl: 'americanfootball_nfl', mlb: 'baseball_mlb',
-  nhl: 'icehockey_nhl', soccer: 'soccer_epl', mls: 'soccer_usa_mls',
-  ncaab: 'basketball_ncaab', ncaaf: 'americanfootball_ncaaf', ufc: 'mma_mixed_martial_arts',
+  nhl: 'icehockey_nhl', ncaab: 'basketball_ncaab', ncaaf: 'americanfootball_ncaaf',
+  cfl: 'americanfootball_cfl', wnba: 'basketball_wnba',
+  soccer_epl: 'soccer_epl', soccer_mls: 'soccer_usa_mls',
+  soccer_laliga: 'soccer_spain_la_liga', soccer_bundesliga: 'soccer_germany_bundesliga',
+  soccer_seriea: 'soccer_italy_serie_a', soccer_ligue1: 'soccer_france_ligue_one',
+  soccer_champions: 'soccer_uefa_champs_league', soccer_europa: 'soccer_uefa_europa_league',
+  ufc: 'mma_mixed_martial_arts', boxing: 'boxing_boxing',
+  tennis_atp: 'tennis_atp_french_open', tennis_wta: 'tennis_wta_french_open',
+  golf_pga: 'golf_pga_championship', f1: 'motorsport_formula_1_constructor',
+  rugby: 'rugbyleague_nrl', cricket: 'cricket_icc_world_cup', afl: 'aussierules_afl',
 };
 
 const BOOKS = 'draftkings,fanduel,betmgm,caesars,pointsbet';

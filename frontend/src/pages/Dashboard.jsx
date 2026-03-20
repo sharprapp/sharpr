@@ -121,7 +121,25 @@ export default function Dashboard() {
   );
 }
 
-const ODDS_SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'Soccer', 'UFC'];
+const SPORT_GROUPS = [
+  { label: 'American', sports: [
+    { key: 'nba', label: 'NBA', emoji: '🏀' }, { key: 'nfl', label: 'NFL', emoji: '🏈' },
+    { key: 'mlb', label: 'MLB', emoji: '⚾' }, { key: 'nhl', label: 'NHL', emoji: '🏒' },
+    { key: 'ncaab', label: 'NCAAB', emoji: '🏀' }, { key: 'ncaaf', label: 'NCAAF', emoji: '🏈' },
+    { key: 'wnba', label: 'WNBA', emoji: '🏀' },
+  ]},
+  { label: 'Soccer', sports: [
+    { key: 'soccer_epl', label: 'EPL', emoji: '⚽' }, { key: 'soccer_mls', label: 'MLS', emoji: '⚽' },
+    { key: 'soccer_laliga', label: 'La Liga', emoji: '⚽' }, { key: 'soccer_champions', label: 'UCL', emoji: '⚽' },
+  ]},
+  { label: 'Combat', sports: [
+    { key: 'ufc', label: 'UFC', emoji: '🥊' }, { key: 'boxing', label: 'Boxing', emoji: '🥊' },
+  ]},
+  { label: 'Other', sports: [
+    { key: 'tennis_atp', label: 'ATP', emoji: '🎾' }, { key: 'golf_pga', label: 'PGA', emoji: '⛳' },
+    { key: 'f1', label: 'F1', emoji: '🏎️' }, { key: 'rugby', label: 'Rugby', emoji: '🏉' },
+  ]},
+];
 
 function NavGroups({ tab, setTab, onOddsSport }) {
   const [openGroup, setOpenGroup] = useState(null);
@@ -169,8 +187,8 @@ function NavGroups({ tab, setTab, onOddsSport }) {
             borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
             cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
           }}
-          onMouseEnter={e => { if (tab !== 'Events' && openGroup !== 'Odds') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
-          onMouseLeave={e => { if (tab !== 'Events' && openGroup !== 'Odds') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
+          onMouseEnter={e => { if (tab !== 'Events' && openGroup !== 'Events') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+          onMouseLeave={e => { if (tab !== 'Events' && openGroup !== 'Events') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
         >
           Events <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.5 }}>{openGroup === 'Events' ? '\u25B2' : '\u25BC'}</span>
         </button>
@@ -178,21 +196,28 @@ function NavGroups({ tab, setTab, onOddsSport }) {
           <div style={{
             position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
             marginTop: 8, background: '#070712', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 12, padding: 8, display: 'flex', gap: 4, zIndex: 100,
-            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+            borderRadius: 12, padding: 12, zIndex: 100, maxHeight: 400, overflowY: 'auto',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6)', minWidth: 280,
           }}>
-            {ODDS_SPORTS.map(s => (
-              <button key={s} onClick={() => { onOddsSport(s); setTab('Events'); setOpenGroup(null); }}
-                style={{
-                  background: tab === 'Events' ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  color: '#6a7a9a', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600,
-                  cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,142,247,0.15)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}>
-                {s}
-              </button>
+            {SPORT_GROUPS.map(g => (
+              <div key={g.label} style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2a3a5a', padding: '4px 8px' }}>{g.label}</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                  {g.sports.map(s => (
+                    <button key={s.key} onClick={() => { onOddsSport(s.key); setTab('Events'); setOpenGroup(null); }}
+                      style={{
+                        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
+                        color: '#6a7a9a', borderRadius: 8, padding: '5px 10px', fontSize: 11, fontWeight: 600,
+                        cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+                        display: 'flex', alignItems: 'center', gap: 4,
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.15)'; e.currentTarget.style.color = '#7aaff8'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#6a7a9a'; }}>
+                      <span style={{ fontSize: 12 }}>{s.emoji}</span> {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}

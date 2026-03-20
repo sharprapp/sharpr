@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
 
-const SPORTS = ['NFL', 'NBA', 'MLB', 'NHL', 'Soccer', 'MLS', 'UFC', 'Tennis', 'Golf', 'NASCAR', 'NCAAF', 'NCAAB'];
+const SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'NCAAB', 'NCAAF', 'WNBA', 'soccer_epl', 'soccer_mls', 'soccer_champions', 'UFC', 'boxing', 'tennis_atp', 'golf_pga', 'F1'];
+const SPORT_LABELS = { soccer_epl: 'EPL', soccer_mls: 'MLS', soccer_champions: 'UCL', tennis_atp: 'ATP', golf_pga: 'PGA' };
 
 function fmtML(ml) {
   if (ml == null) return 'N/A';
@@ -75,7 +76,7 @@ export default function SportsOdds({ initialSport }) {
               }}
               onMouseEnter={e => { if (sport !== s) e.currentTarget.style.color = '#F5F5FA'; }}
               onMouseLeave={e => { if (sport !== s) e.currentTarget.style.color = '#94A3B8'; }}>
-              {s}
+              {SPORT_LABELS[s] || s}
             </button>
           ))}
         </div>

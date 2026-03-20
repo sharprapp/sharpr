@@ -71,7 +71,7 @@ export default function SportsTicker() {
             background: '#070712', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10,
             padding: 6, zIndex: 100, minWidth: 100,
           }}>
-            {['All', 'NBA', 'NFL', 'MLB', 'NHL'].map(s => (
+            {['All', 'NBA', 'NFL', 'MLB', 'NHL', 'Soccer', 'UFC'].map(s => (
               <div key={s} onClick={() => { setSportFilter(s); setDropdownOpen(false); }}
                 style={{
                   padding: '6px 10px', fontSize: 11, color: sportFilter === s ? '#7aaff8' : '#6a7a9a',
