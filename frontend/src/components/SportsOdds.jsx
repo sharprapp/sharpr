@@ -24,8 +24,8 @@ function StatusBadge({ status }) {
   return <span style={{ fontSize: 11, color: '#64748b' }}>{status?.detail || ''}</span>;
 }
 
-export default function SportsOdds() {
-  const [sport, setSport] = useState('NBA');
+export default function SportsOdds({ initialSport }) {
+  const [sport, setSport] = useState(initialSport || 'NBA');
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

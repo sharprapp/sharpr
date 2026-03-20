@@ -12,6 +12,7 @@ import MarketDetailModal from '../components/MarketDetailModal';
 import HomeTab from '../components/HomeTab';
 import UpgradeModal from '../components/UpgradeModal';
 import SportsTicker from '../components/SportsTicker';
+import OddsBoard from '../components/OddsBoard';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
   PointElement, ArcElement, Title, Tooltip, Legend,
@@ -62,6 +63,7 @@ export default function Dashboard() {
     return [saved || 'Home'];
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [oddsSport, setOddsSport] = useState('NBA');
   const { tier } = useAuth();
 
   // Warm up Railway backend immediately
@@ -88,13 +90,17 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <DashboardNav tab={tab} setTab={switchTab} tier={tier} />
+      <DashboardNav tab={tab} setTab={switchTab} tier={tier} onOddsSport={setOddsSport} />
       <TradingViewTicker />
       <SportsTicker />
 
       {tab === 'Home' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <HomeTab onSwitchTab={switchTab} />
+        </div>
+      ) : tab === 'Odds' ? (
+        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+          <OddsBoard initialSport={oddsSport} />
         </div>
       ) : tab === 'Day Trading' ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
@@ -115,7 +121,9 @@ export default function Dashboard() {
   );
 }
 
-function NavGroups({ tab, setTab }) {
+const ODDS_SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'Soccer', 'UFC'];
+
+function NavGroups({ tab, setTab, onOddsSport }) {
   const [openGroup, setOpenGroup] = useState(null);
   const navRef = useRef(null);
 
@@ -148,6 +156,48 @@ function NavGroups({ tab, setTab }) {
   return (
     <div ref={navRef} style={{ display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
       {STANDALONE_TABS_LEFT.map(t => <StandaloneBtn key={t} t={t} />)}
+
+      {/* Odds with sport dropdown */}
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => openGroup === 'Odds' ? setOpenGroup(null) : setOpenGroup('Odds')}
+          style={{
+            background: tab === 'Odds' ? 'rgba(79,142,247,0.15)' : openGroup === 'Odds' ? 'rgba(255,255,255,0.05)' : 'transparent',
+            border: tab === 'Odds' ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+            borderBottom: tab === 'Odds' ? '2px solid #4f8ef7' : '2px solid transparent',
+            color: tab === 'Odds' ? '#7aaff8' : openGroup === 'Odds' ? '#94A3B8' : '#2a3a5a',
+            borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { if (tab !== 'Odds' && openGroup !== 'Odds') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+          onMouseLeave={e => { if (tab !== 'Odds' && openGroup !== 'Odds') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
+        >
+          Odds <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.5 }}>{openGroup === 'Odds' ? '\u25B2' : '\u25BC'}</span>
+        </button>
+        {openGroup === 'Odds' && (
+          <div style={{
+            position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+            marginTop: 8, background: '#070712', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 12, padding: 8, display: 'flex', gap: 4, zIndex: 100,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+          }}>
+            {ODDS_SPORTS.map(s => (
+              <button key={s} onClick={() => { onOddsSport(s); setTab('Odds'); setOpenGroup(null); }}
+                style={{
+                  background: tab === 'Odds' ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  color: '#6a7a9a', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600,
+                  cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,142,247,0.15)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}>
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {NAV_GROUPS.map(g => {
         const isActive = g.items.includes(tab);
         const isOpen = openGroup === g.label;
@@ -208,7 +258,7 @@ function NavGroups({ tab, setTab }) {
 /* ─────────────────────────────────────────
    UNIFIED DASHBOARD NAVBAR
 ───────────────────────────────────────── */
-function DashboardNav({ tab, setTab, tier }) {
+function DashboardNav({ tab, setTab, tier, onOddsSport }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [alerts, setAlerts]     = useState([]);
@@ -253,7 +303,7 @@ function DashboardNav({ tab, setTab, tier }) {
         </div>
 
         {/* Center: Grouped Nav */}
-        <NavGroups tab={tab} setTab={setTab} />
+        <NavGroups tab={tab} setTab={setTab} onOddsSport={onOddsSport} />
 
         {/* Right: User controls */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
