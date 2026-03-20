@@ -1,5 +1,18 @@
 import { useEffect, useState, useRef } from 'react';
 
+const SPORT_COLORS = {
+  NBA:   { bg: 'rgba(243,147,29,0.15)',  color: '#f3931d', border: 'rgba(243,147,29,0.3)' },
+  NFL:   { bg: 'rgba(1,91,43,0.2)',      color: '#00a550', border: 'rgba(0,165,80,0.3)' },
+  MLB:   { bg: 'rgba(215,41,41,0.15)',   color: '#e63535', border: 'rgba(230,53,53,0.3)' },
+  NHL:   { bg: 'rgba(0,102,204,0.15)',   color: '#0099ff', border: 'rgba(0,153,255,0.3)' },
+  EPL:   { bg: 'rgba(108,0,163,0.15)',   color: '#9b30e8', border: 'rgba(155,48,232,0.3)' },
+  MLS:   { bg: 'rgba(18,135,69,0.15)',   color: '#12a855', border: 'rgba(18,168,85,0.3)' },
+  UFC:   { bg: 'rgba(220,38,38,0.15)',   color: '#ef4444', border: 'rgba(239,68,68,0.3)' },
+  NCAAB: { bg: 'rgba(243,147,29,0.15)',  color: '#f3931d', border: 'rgba(243,147,29,0.3)' },
+  NCAAF: { bg: 'rgba(1,91,43,0.2)',      color: '#00a550', border: 'rgba(0,165,80,0.3)' },
+};
+const DEFAULT_SPORT_COLOR = { bg: 'rgba(79,142,247,0.1)', color: '#4f8ef7', border: 'rgba(79,142,247,0.3)' };
+
 export default function SportsTicker() {
   const [scores, setScores] = useState([]);
   const [show, setShow] = useState(false);
@@ -90,7 +103,7 @@ export default function SportsTicker() {
       <div ref={scrollRef} style={{ display: 'flex', alignItems: 'center', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
         {doubled.map((game, i) => (
           <div key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0 20px', borderRight: '1px solid rgba(255,255,255,0.04)', height: 36, flexShrink: 0 }}>
-            <span style={{ fontSize: 9, fontWeight: 700, color: '#4f8ef7', letterSpacing: '1px', background: 'rgba(79,142,247,0.1)', padding: '1px 5px', borderRadius: 3 }}>{game.sport}</span>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', padding: '1px 5px', borderRadius: 3, color: (SPORT_COLORS[game.sport] || DEFAULT_SPORT_COLOR).color, background: (SPORT_COLORS[game.sport] || DEFAULT_SPORT_COLOR).bg, border: `1px solid ${(SPORT_COLORS[game.sport] || DEFAULT_SPORT_COLOR).border}` }}>{game.sport}</span>
             <span style={{ fontSize: 11, color: '#8899bb', fontWeight: 600 }}>{game.awayTeam}</span>
             {(game.isLive || game.isFinal) && <span style={{ fontSize: 12, fontWeight: 800, color: '#f0f4ff' }}>{game.awayScore}</span>}
             <span style={{ fontSize: 10, color: '#2a3a5a' }}>@</span>
