@@ -32,7 +32,8 @@ const globalLimiter = rateLimit({
       req.path.startsWith('/api/markets') ||
       req.path.startsWith('/api/ai') ||
       req.path.startsWith('/api/auth') ||
-      req.path.startsWith('/api/espn')
+      req.path.startsWith('/api/espn') ||
+      req.path.startsWith('/api/kalshi')
     );
   },
 });
@@ -66,6 +67,7 @@ app.use('/api/polymarket',require('./routes/polymarket'));
 app.use('/api/markets',   require('./routes/markets'));   // no rate limit — cached public data
 app.use('/api/espn',      require('./routes/espn'));      // no rate limit — cached public data
 app.use('/api/community', require('./routes/community'));
+app.use('/api/kalshi',    require('./routes/kalshi'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 

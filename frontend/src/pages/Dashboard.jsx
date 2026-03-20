@@ -8,6 +8,7 @@ import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
 import SportsOdds from '../components/SportsOdds';
 import CommunityTab from '../components/CommunityTab';
+import KalshiTab from '../components/KalshiTab';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
   PointElement, ArcElement, Title, Tooltip, Legend,
@@ -18,11 +19,12 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointEleme
 const NAV_GROUPS = [
   { label: 'Trade', items: ['Day Trading'] },
   { label: 'Bet', items: ['Sports Betting', 'EV Calc'] },
-  { label: 'Predict', items: ['Polymarket', 'AI Research'] },
+  { label: 'Predict', items: ['Polymarket', 'Kalshi'] },
   { label: 'Social', items: ['Community'] },
   { label: 'Info', items: ['News'] },
 ];
-const ALL_TABS = NAV_GROUPS.flatMap(g => g.items);
+const STANDALONE_TABS = ['AI Research'];
+const ALL_TABS = [...NAV_GROUPS.flatMap(g => g.items), ...STANDALONE_TABS];
 
 /* ── Polymarket localStorage cache (5 min) ── */
 const PM_LS_KEY = 'pm_markets_v2';
@@ -85,6 +87,7 @@ export default function Dashboard() {
       ) : (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab /></div>}
+          {visitedTabs.includes('Kalshi')          && <div style={{display: tab==='Kalshi'          ? 'block' : 'none'}}><KalshiTab /></div>}
           {visitedTabs.includes('Sports Betting') && <div style={{display: tab==='Sports Betting' ? 'block' : 'none'}}><SportsBettingTab tier={tier} /></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
           {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></div>}
@@ -162,6 +165,23 @@ function NavGroups({ tab, setTab }) {
           </div>
         );
       })}
+      {/* Standalone tabs */}
+      {STANDALONE_TABS.map(t => (
+        <button key={t} onClick={() => { setTab(t); setOpenGroup(null); }}
+          style={{
+            background: tab === t ? 'rgba(79,142,247,0.15)' : 'transparent',
+            border: tab === t ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+            borderBottom: tab === t ? '2px solid #4f8ef7' : '2px solid transparent',
+            color: tab === t ? '#7aaff8' : '#2a3a5a',
+            borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => { if (tab !== t) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+          onMouseLeave={e => { if (tab !== t) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
+        >
+          {t}
+        </button>
+      ))}
     </div>
   );
 }
