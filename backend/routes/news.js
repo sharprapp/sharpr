@@ -217,7 +217,7 @@ router.get('/trading', async (req, res) => {
 router.get('/economic', async (req, res) => {
   const cacheKey = 'economic_calendar';
   const cached   = getCached(cacheKey, 60 * 60 * 1000); // 60 min
-  if (cached) return res.json(cached);
+  if (cached) { res.set('Cache-Control', 'public, max-age=3600'); return res.json(cached); }
 
   const FF_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
 
@@ -254,6 +254,7 @@ router.get('/economic', async (req, res) => {
 
     const payload = { events };
     setCached(cacheKey, payload);
+    res.set('Cache-Control', 'public, max-age=3600');
     return res.json(payload);
 
   } catch (err) {

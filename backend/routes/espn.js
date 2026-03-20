@@ -70,7 +70,7 @@ router.get('/:sport', requireAuth, async (req, res) => {
   const cfg = SPORTS[sport];
   if (!cfg) return res.status(400).json({ error: `Invalid sport. Use: ${Object.keys(SPORTS).join(', ')}` });
 
-  if (cache[sport] && Date.now() - cache[sport].ts < TTL) return res.json(cache[sport].value);
+  if (cache[sport] && Date.now() - cache[sport].ts < TTL) { res.set('Cache-Control', 'public, max-age=60'); return res.json(cache[sport].value); }
 
   try {
     const url = `https://site.api.espn.com/apis/site/v2/sports/${cfg.sport}/${cfg.league}/scoreboard`;
@@ -84,6 +84,7 @@ router.get('/:sport', requireAuth, async (req, res) => {
       .filter(Boolean);
 
     cache[sport] = { value: games, ts: Date.now() };
+    res.set('Cache-Control', 'public, max-age=60');
     res.json(games);
   } catch (err) {
     console.error(`ESPN ${sport} error:`, err.message);

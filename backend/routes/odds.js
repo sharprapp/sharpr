@@ -46,6 +46,7 @@ router.get('/:category', requireAuth, requirePro, async (req, res) => {
         };
       });
 
+    res.set('Cache-Control', 'public, max-age=30');
     res.json(markets);
   } catch (err) {
     console.error('Polymarket API error:', err.message);

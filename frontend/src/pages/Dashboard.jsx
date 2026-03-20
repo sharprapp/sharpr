@@ -44,34 +44,57 @@ export default function Dashboard() {
     if (saved) { sessionStorage.removeItem('openTab'); return saved; }
     return 'Polymarket';
   });
-  const [aiFill, setAiFill] = useState(null);
+  const [aiFill, setAiFill]       = useState(null);
+  const [visitedTabs, setVisitedTabs] = useState(() => {
+    const saved = sessionStorage.getItem('openTab');
+    return [saved || 'Polymarket'];
+  });
+  const [showTicker, setShowTicker] = useState(false);
   const { tier } = useAuth();
 
+  // Warm up Railway backend immediately
   useEffect(() => {
-    function handler(e) { setAiFill(e.detail); setTab('AI Research'); }
+    fetch(`${import.meta.env.VITE_API_URL}/api/health`).catch(() => {});
+  }, []);
+
+  // Delay ticker so main content loads first
+  useEffect(() => {
+    const t = setTimeout(() => setShowTicker(true), 2000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    function handler(e) { setAiFill(e.detail); setTab('AI Research'); setVisitedTabs(prev => [...new Set([...prev, 'AI Research'])]); }
     window.addEventListener('ai-prefill', handler);
     return () => window.removeEventListener('ai-prefill', handler);
   }, []);
 
+  function switchTab(t) {
+    setTab(t);
+    setVisitedTabs(prev => [...new Set([...prev, t])]);
+  }
+
   return (
     <div className="min-h-screen">
-      <DashboardNav tab={tab} setTab={setTab} tier={tier} />
-      <div style={{borderBottom: '1px solid rgba(255,255,255,0.04)'}}>
-        <TradingViewTicker />
-      </div>
+      <DashboardNav tab={tab} setTab={switchTab} tier={tier} />
+      {showTicker && (
+        <div style={{borderBottom: '1px solid rgba(255,255,255,0.04)'}}>
+          <TradingViewTicker />
+        </div>
+      )}
 
       {tab === 'Day Trading' ? (
         <div className="tab-content" style={{padding: '24px 24px'}}>
-          <DayTradingTab />
+          {visitedTabs.includes('Day Trading') && <DayTradingTab />}
         </div>
       ) : (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '24px 24px'}}>
-          {tab === 'Polymarket'     && <PolymarketTab />}
-          {tab === 'Sports Betting' && <SportsBettingTab tier={tier} />}
-          {tab === 'EV Calc'        && <EVCalcTab />}
-          {tab === 'AI Research'    && <AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} />}
-          {tab === 'News'           && <NewsTab />}
-          {tab === 'Community'      && <CommunityTab />}
+          {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab /></div>}
+          {visitedTabs.includes('Sports Betting') && <div style={{display: tab==='Sports Betting' ? 'block' : 'none'}}><SportsBettingTab tier={tier} /></div>}
+          {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
+          {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></div>}
+          {visitedTabs.includes('News')           && <div style={{display: tab==='News'           ? 'block' : 'none'}}><NewsTab /></div>}
+          {visitedTabs.includes('Community')      && <div style={{display: tab==='Community'      ? 'block' : 'none'}}><CommunityTab /></div>}
         </div>
       )}
     </div>
@@ -800,7 +823,7 @@ function DayTradingTab() {
       {subTab === 'premarket' && <PreMarketPanel />}
       {subTab === 'riskcalc'  && <RiskCalcPanel />}
       {subTab === 'reports'   && <ReportsPanel trades={trades} />}
-      {subTab === 'charts'    && <ChartsPanel />}
+      {subTab === 'charts'    && <ChartsPanel onExit={() => setSubTab('journal')} />}
 
       {subTab === 'journal' && (<>
         <MonthlyTracker
@@ -1638,31 +1661,40 @@ function NewsTab() {
 }
 
 /* ─────────────────────────────────────────
-   CHARTS PANEL (Day Trading sub-tab)
+   CHARTS PANEL (Day Trading sub-tab) — FULL SCREEN
 ───────────────────────────────────────── */
-function ChartsPanel() {
+function ChartsPanel({ onExit }) {
   const [selectedSymbol, setSelectedSymbol] = useState(null);
   const [searchInput, setSearchInput]       = useState('');
-  const PRESETS = ['MNQ1!', 'NQ1!', 'ES1!', 'SPY', 'QQQ', 'BTC', 'ETH', 'AAPL', 'NVDA', 'TSLA'];
+  const PRESETS = ['MNQ1!', 'NQ1!', 'ES1!', 'SPY', 'QQQ', 'BTC', 'ETH'];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
-      {/* Compact controls row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+    <div style={{
+      position: 'fixed', top: 110, left: 0, right: 0, bottom: 0,
+      zIndex: 100, background: '#03030a',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      {/* Compact controls bar */}
+      <div style={{
+        height: 52, flexShrink: 0,
+        background: 'rgba(3,3,10,0.95)', backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px',
+      }}>
         <input
           type="text"
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && searchInput.trim()) setSelectedSymbol(searchInput.trim().toUpperCase()); }}
-          placeholder="Symbol... e.g. AAPL, NQ1!"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: 'white', padding: '6px 12px', fontSize: 13, outline: 'none', width: 200, flexShrink: 0 }}
-          onFocus={e => e.target.style.borderColor = 'rgba(79,142,247,0.4)'}
+          onKeyDown={e => { if (e.key === 'Enter' && searchInput.trim()) { setSelectedSymbol(searchInput.trim().toUpperCase()); } }}
+          placeholder="Symbol… e.g. AAPL, NQ1!"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: 'white', padding: '5px 11px', fontSize: 13, outline: 'none', width: 190, flexShrink: 0 }}
+          onFocus={e => e.target.style.borderColor = 'rgba(79,142,247,0.5)'}
           onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
         />
         {PRESETS.map(p => (
           <button key={p} onClick={() => { setSelectedSymbol(p); setSearchInput(p); }}
             style={{
-              fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
+              fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap',
               background: selectedSymbol === p ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.05)',
               border: selectedSymbol === p ? '1px solid rgba(79,142,247,0.4)' : '1px solid rgba(255,255,255,0.08)',
               color: selectedSymbol === p ? '#7aaff8' : '#6a7a9a',
@@ -1670,9 +1702,18 @@ function ChartsPanel() {
             {p}
           </button>
         ))}
+        {/* Minimize / exit */}
+        <button onClick={onExit}
+          title="Exit fullscreen"
+          style={{ marginLeft: 'auto', flexShrink: 0, width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#6a7a9a', cursor: 'pointer', fontSize: 16 }}>
+          ✕
+        </button>
       </div>
-      {/* Full-width chart */}
-      <TradingViewChart symbol={selectedSymbol} cssHeight="calc(100vh - 280px)" />
+
+      {/* Chart fills all remaining space */}
+      <div style={{ flex: 1, overflow: 'hidden' }}>
+        <TradingViewChart symbol={selectedSymbol} />
+      </div>
     </div>
   );
 }
