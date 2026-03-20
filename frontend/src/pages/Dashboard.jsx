@@ -1346,7 +1346,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
 
   const SUGGESTIONS = [
     'Will the Fed cut rates before July 2026?',
-    'Lakers vs Celtics \u2014 who has the edge?',
+    'Lakers vs Celtics — who has the edge?',
     'BTC price analysis for next 30 days',
     'NQ futures key levels for this week',
     'Sharp money on NFL playoffs?',
@@ -1419,7 +1419,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
       }}>
         <input value={query} onChange={e => setQuery(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          placeholder="Ask anything \u2014 markets, trades, bets..."
+          placeholder="Ask anything — markets, trades, bets..."
           style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#f0f4ff', fontSize: '15px', padding: '12px 0' }} />
         <button onClick={handleSubmit} disabled={loading || !query.trim()}
           style={{

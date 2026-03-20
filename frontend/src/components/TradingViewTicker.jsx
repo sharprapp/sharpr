@@ -19,8 +19,8 @@ export default function TradingViewTicker() {
       symbols: [
         {"proName":"FOREXCOM:SPXUSD","title":"S&P 500"},
         {"proName":"FOREXCOM:NSXUSD","title":"Nasdaq"},
-        {"proName":"CME_MINI:NQ1!","title":"NQ Futures"},
-        {"proName":"CME_MINI:MNQ1!","title":"MNQ Futures"},
+        {"proName":"NASDAQ:QQQ","title":"QQQ"},
+        {"proName":"AMEX:SPY","title":"SPY"},
         {"proName":"BITSTAMP:BTCUSD","title":"Bitcoin"},
         {"proName":"BITSTAMP:ETHUSD","title":"Ethereum"},
         {"proName":"NASDAQ:AAPL","title":"Apple"},

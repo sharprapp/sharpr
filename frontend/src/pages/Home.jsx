@@ -198,7 +198,7 @@ export default function Home() {
             { label: 'AI queries',  value: tier === 'pro' ? 'Unlimited' : '0 / 5', color: tier === 'pro' ? '#22c55e' : '#94A3B8', loading: false },
             { label: "Month P&L",   value: fmtPnl(monthPnl), color: pnlColor(monthPnl), loading: tradesLoading },
           ].map(({ label, value, color, loading }) => (
-            <div key={label} style={card}>
+            <div key={label} style={{ ...card, background: 'linear-gradient(180deg, rgba(79,142,247,0.05) 0%, transparent 100%)' }}>
               <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 8 }}>{label}</div>
               {loading
                 ? <div style={{ height: 28, borderRadius: 6, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
