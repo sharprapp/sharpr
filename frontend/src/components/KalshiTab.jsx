@@ -5,6 +5,7 @@ const KALSHI_CATS = ['All', 'Politics', 'Economics', 'Sports', 'Entertainment', 
 
 export default function KalshiTab() {
   const [markets, setMarkets] = useState([]);
+  const [source, setSource] = useState(null);
   const [q, setQ] = useState('');
   const [filt, setFilt] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,7 @@ export default function KalshiTab() {
     try {
       const { data } = await api.get('/api/kalshi/markets');
       setMarkets(data.markets || []);
+      setSource(data.source || null);
     } catch (e) {
       setError('Kalshi markets temporarily unavailable');
       setMarkets([]);
@@ -108,6 +110,19 @@ export default function KalshiTab() {
             </div>
           </div>
 
+          {/* Source badge */}
+          {source && !loading && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: source === 'live' ? '#00C2A0' : '#6a7a9a',
+              padding: '6px 12px', borderRadius: 8,
+              background: source === 'live' ? 'rgba(0,194,160,0.08)' : 'rgba(255,255,255,0.03)',
+              border: source === 'live' ? '1px solid rgba(0,194,160,0.15)' : '1px solid rgba(255,255,255,0.06)',
+              width: 'fit-content',
+            }}>
+              {source === 'live' ? 'Live Kalshi data' : 'Curated markets — live API coming soon'}
+            </div>
+          )}
+
           {error && (
             <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, color: '#ef4444' }}>{error}</span>
@@ -165,7 +180,10 @@ export default function KalshiTab() {
                         onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,194,160,0.1)'}>
                         Analyze ↗
                       </button>
-                      <span style={{ fontSize: 11, color: '#4a5a7a' }}>Vol {vol}</span>
+                      <span style={{ fontSize: 11, color: '#4a5a7a' }}>
+                        Vol ${vol}
+                        {m.endDate && <span style={{ marginLeft: 6 }}>· Closes {new Date(m.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
+                      </span>
                     </div>
                   </div>
                 );
