@@ -8,6 +8,7 @@ import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
 import SportsOdds from '../components/SportsOdds';
 import CommunityTab from '../components/CommunityTab';
+import MarketDetailModal from '../components/MarketDetailModal';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
   PointElement, ArcElement, Title, Tooltip, Legend,
@@ -85,7 +86,7 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab /></div>}
+          {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab tier={tier} /></div>}
           {visitedTabs.includes('Sports Betting') && <div style={{display: tab==='Sports Betting' ? 'block' : 'none'}}><SportsBettingTab tier={tier} /></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
           {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></div>}
@@ -224,7 +225,7 @@ function DashboardNav({ tab, setTab, tier }) {
 
   return (
     <div className="sticky top-0 z-40 glass-nav">
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', height: 56 }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: 52 }}>
 
         {/* Left: Logo */}
         <div style={{ flex: 1 }}>
@@ -236,10 +237,12 @@ function DashboardNav({ tab, setTab, tier }) {
 
         {/* Right: User controls */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          {tier === 'pro' ? (
-            <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 100, background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', color: '#7aaff8' }}>Pro</span>
+          {tier === 'elite' ? (
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24' }}>⚡ Elite</span>
+          ) : tier === 'pro' ? (
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', color: '#7aaff8' }}>✓ Pro</span>
           ) : (
-            <button onClick={() => navigate('/settings')} className="glass-pill" style={{ color: '#fbbf24', background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.25)' }}>
+            <button onClick={() => navigate('/settings')} style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24', cursor: 'pointer' }}>
               Upgrade
             </button>
           )}
@@ -527,7 +530,7 @@ function AlertsPanel() {
 ───────────────────────────────────────── */
 const PM_SIDEBAR_CATS = ['All', 'Politics', 'Crypto', 'Finance', 'Sports', 'Economics', 'Entertainment', 'Science', 'Other'];
 
-function PolymarketTab() {
+function PolymarketTab({ tier }) {
   const [pmTab, setPmTab]       = useState('markets');
   const [markets, setMarkets]   = useState(() => getPMCache() || []);
   const [q, setQ]               = useState('');
@@ -538,6 +541,7 @@ function PolymarketTab() {
   const [totalLoaded, setTotalLoaded] = useState(() => getPMCache()?.length || 0);
   const [visibleCount, setVisibleCount] = useState(50); // show 50 at a time
   const sentinelRef = useRef(null);
+  const [selectedMarket, setSelectedMarket] = useState(null);
 
   // IntersectionObserver — load 50 more when user nears the bottom
   useEffect(() => {
@@ -723,7 +727,7 @@ function PolymarketTab() {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {visible.map((m) => <MarketCard key={m.id} market={m} />)}
+              {visible.map((m) => <MarketCard key={m.id} market={m} onClick={() => setSelectedMarket(m)} />)}
             </div>
 
             {/* Sentinel div — IntersectionObserver triggers loading more */}
@@ -737,6 +741,7 @@ function PolymarketTab() {
           </div>
         </div>
       )}
+      {selectedMarket && <MarketDetailModal market={selectedMarket} onClose={() => setSelectedMarket(null)} userPlan={tier} />}
     </div>
   );
 }
@@ -753,7 +758,7 @@ const CAT_COLORS = {
 };
 function catColor(cat) { return CAT_COLORS[cat] || CAT_COLORS.Other; }
 
-const MarketCard = memo(function MarketCard({ market: m }) {
+const MarketCard = memo(function MarketCard({ market: m, onClick }) {
   const [expanded, setExpanded] = useState(false);
   const pct      = m.yes ?? 50;
   const vol      = m.volume >= 1e6 ? '$'+(m.volume/1e6).toFixed(1)+'M' : m.volume >= 1000 ? '$'+(m.volume/1000).toFixed(0)+'k' : '$'+Math.round(m.volume||0);
@@ -788,8 +793,9 @@ const MarketCard = memo(function MarketCard({ market: m }) {
   };
 
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all cursor-default"
-      style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease'}}
+    <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
+      style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease', cursor: 'pointer'}}
+      onClick={onClick}
       onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(79,142,247,0.3)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; e.currentTarget.style.transform='translateY(-2px)'; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='translateY(0)'; }}>
 

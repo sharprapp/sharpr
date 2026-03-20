@@ -276,73 +276,59 @@ export default function Landing() {
 
       {/* PRICING */}
       <section id="pricing" className="py-20 px-4 sm:px-6" style={{ borderTop: '1px solid #1e2a4a' }}>
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-14">
-            <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: '#2563EB' }}>SIMPLE PRICING</div>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ letterSpacing: '-0.02em' }}>
-              Start free. Go Pro when ready.
-            </h2>
-            <p className="text-base" style={{ color: '#94A3B8' }}>No hidden fees. Cancel anytime.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
+          <div className="text-xs font-semibold tracking-widest mb-4" style={{ color: '#2563EB' }}>PRICING</div>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-3">Find Your Edge</h2>
+          <p className="text-sm mb-12" style={{ color: '#64748b' }}>Choose the plan that fits your game</p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             {/* Free */}
-            <div className="rounded-2xl p-7 flex flex-col"
-              style={{ background: '#0f1729', border: '1px solid #1e2a4a' }}>
-              <div className="mb-6">
-                <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#64748b' }}>Free</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold" style={{ color: '#F5F5FA' }}>$0</span>
-                  <span className="text-sm" style={{ color: '#64748b' }}>/month</span>
-                </div>
-                <p className="text-sm mt-2" style={{ color: '#94A3B8' }}>Get started with the basics.</p>
+            <div style={{ background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'left' }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#F5F5FA', marginBottom: 4 }}>Free</div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#F5F5FA' }}>$0<span style={{ fontSize: 14, fontWeight: 400, color: '#4a5a7a' }}>/mo</span></div>
               </div>
-              <ul className="flex flex-col gap-3 mb-8 flex-1">
-                {FREE_FEATURES.map(feat => (
-                  <li key={feat} className="flex items-start gap-2.5 text-sm" style={{ color: '#94A3B8' }}>
-                    <span className="mt-0.5 shrink-0" style={{ color: '#475569' }}>○</span>
-                    {feat}
-                  </li>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: '#94A3B8', flex: 1 }}>
+                {['50 prediction markets', '5 AI queries/day', 'Basic trade journal', 'EV calculator', 'Community access'].map(f => (
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#22c55e', fontSize: 14 }}>✓</span> {f}
+                  </div>
                 ))}
-              </ul>
-              <Link to="/register"
-                className="block text-center py-3 rounded-xl text-sm font-semibold transition-colors"
-                style={{ border: '1px solid #1e2a4a', color: '#94A3B8' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = '#2563EB'; e.currentTarget.style.color = '#F5F5FA'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2a4a'; e.currentTarget.style.color = '#94A3B8'; }}>
-                Get started free
-              </Link>
+              </div>
+              <div style={{ padding: '10px 20px', borderRadius: 10, border: '1px solid #1e2a4a', color: '#4a5a7a', textAlign: 'center', fontSize: 13, fontWeight: 600 }}>Current plan</div>
             </div>
 
             {/* Pro */}
-            <div className="rounded-2xl p-7 flex flex-col relative"
-              style={{ background: '#0f1729', border: '2px solid #2563EB', boxShadow: '0 0 40px rgba(37,99,235,0.15)' }}>
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
-                <span className="text-xs font-bold px-3 py-1 rounded-full"
-                  style={{ background: '#2563EB', color: '#fff' }}>Most popular</span>
+            <div style={{ background: '#0f1729', border: '2px solid rgba(79,142,247,0.5)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'left', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, padding: '3px 12px', borderRadius: 20, background: '#4f8ef7', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Most popular</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#7aaff8', marginBottom: 4 }}>Pro</div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#F5F5FA' }}>$19<span style={{ fontSize: 14, fontWeight: 400, color: '#4a5a7a' }}>/mo</span></div>
               </div>
-              <div className="mb-6">
-                <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: '#60a5fa' }}>Pro</div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold" style={{ color: '#F5F5FA' }}>$19</span>
-                  <span className="text-sm" style={{ color: '#64748b' }}>/month</span>
-                </div>
-                <p className="text-sm mt-2" style={{ color: '#94A3B8' }}>Everything, unlimited.</p>
-              </div>
-              <ul className="flex flex-col gap-3 mb-8 flex-1">
-                {PRO_FEATURES.map(feat => (
-                  <li key={feat} className="flex items-start gap-2.5 text-sm" style={{ color: '#cbd5e1' }}>
-                    <span className="mt-0.5 shrink-0" style={{ color: '#60a5fa' }}>✓</span>
-                    {feat}
-                  </li>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: '#94A3B8', flex: 1 }}>
+                {['All 8,300+ markets', '50 AI queries/day', 'Market AI analysis', 'Sports props', 'Sharpr Score', 'Unlimited journal', 'CSV export'].map(f => (
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#4f8ef7', fontSize: 14 }}>✓</span> {f}
+                  </div>
                 ))}
-              </ul>
-              <Link to="/register"
-                className="block text-center py-3 rounded-xl text-sm font-semibold transition-colors"
-                style={{ background: '#2563EB', color: '#fff' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#1d4ed8'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#2563EB'; }}>
-                Start Pro — $19/mo
-              </Link>
+              </div>
+              <a href="/settings" style={{ display: 'block', padding: '10px 20px', borderRadius: 10, background: '#4f8ef7', color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>Upgrade to Pro — $19/mo</a>
+            </div>
+
+            {/* Elite */}
+            <div style={{ background: '#0f1729', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 16, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, textAlign: 'left' }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fbbf24', marginBottom: 4 }}>Elite</div>
+                <div style={{ fontSize: 32, fontWeight: 900, color: '#F5F5FA' }}>$49<span style={{ fontSize: 14, fontWeight: 400, color: '#4a5a7a' }}>/mo</span></div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, color: '#94A3B8', flex: 1 }}>
+                {['Everything in Pro', 'Unlimited AI queries', 'Options flow (coming soon)', 'Sharp money alerts (soon)', 'Priority AI', 'Early access features'].map(f => (
+                  <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: '#fbbf24', fontSize: 14 }}>✓</span> {f}
+                  </div>
+                ))}
+              </div>
+              <a href="/settings" style={{ display: 'block', padding: '10px 20px', borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24', textAlign: 'center', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>Go Elite — $49/mo</a>
             </div>
           </div>
         </div>

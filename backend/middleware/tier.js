@@ -3,7 +3,7 @@ const supabase = require('../lib/supabase');
 
 // Usage: router.post('/query', requireAuth, requirePro, handler)
 function requirePro(req, res, next) {
-  if (req.tier !== 'pro') {
+  if (req.tier !== 'pro' && req.tier !== 'elite') {
     return res.status(403).json({
       error: 'Pro plan required',
       upgrade: true,
@@ -15,7 +15,20 @@ function requirePro(req, res, next) {
 
 // Check daily AI query limit for free users
 async function checkAILimit(req, res, next) {
-  if (req.tier === 'pro') return next();
+  if (req.tier === 'elite') return next();
+  if (req.tier === 'pro') {
+    // Pro gets 50/day
+    const today = new Date().toISOString().split('T')[0];
+    const { count } = await supabase
+      .from('ai_usage')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', req.user.id)
+      .gte('created_at', today);
+    if (count >= 50) {
+      return res.status(429).json({ error: 'Daily AI limit reached (50/day). Upgrade to Elite for unlimited.', upgrade: true, limit: 50 });
+    }
+    return next();
+  }
 
   const today = new Date().toISOString().split('T')[0];
   const { count } = await supabase
