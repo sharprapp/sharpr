@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import api from '../lib/api';
 import Logo from '../components/Logo';
+import TradingViewMarketOverview from '../components/TradingViewMarketOverview';
 
 /* ── helpers ── */
 function greeting() {
@@ -254,6 +255,14 @@ export default function Home() {
               })}
             </div>
           )}
+        </section>
+
+        {/* ── MARKET OVERVIEW ── */}
+        <section>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Market Overview</h2>
+          </div>
+          <TradingViewMarketOverview />
         </section>
 
         {/* ── TODAY'S GAMES ── */}

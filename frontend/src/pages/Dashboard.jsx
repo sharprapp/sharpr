@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo, useRef, memo, useCallback } from 'react';
-import Navbar from '../components/Navbar';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import Logo from '../components/Logo';
+import TradingViewChart from '../components/TradingViewChart';
+import TradingViewTicker from '../components/TradingViewTicker';
 import api from '../lib/api';
 import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
@@ -51,31 +54,13 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen" style={{background: '#0F1120'}}>
-      <Navbar />
-      {/* Tab bar */}
-      <div className="sticky top-0 z-10" style={{background: '#080810', borderBottom: '1px solid #1e2a4a'}}>
-        <div className="max-w-7xl mx-auto flex overflow-x-auto">
-          {TABS.map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className="px-5 py-3.5 text-sm whitespace-nowrap border-b-2 font-medium transition-colors"
-              style={tab === t
-                ? {borderColor: '#2563EB', color: '#F5F5FA'}
-                : {borderColor: 'transparent', color: '#64748b'}}
-              onMouseEnter={e => { if (tab !== t) e.currentTarget.style.color='#94A3B8'; }}
-              onMouseLeave={e => { if (tab !== t) e.currentTarget.style.color='#64748b'; }}>
-              {t}
-            </button>
-          ))}
-          {tier === 'free' && (
-            <div className="ml-auto flex items-center px-5">
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{color: '#fbbf24', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', backdropFilter: 'blur(8px)'}}>Free plan</span>
-            </div>
-          )}
-        </div>
+    <div className="min-h-screen">
+      <DashboardNav tab={tab} setTab={setTab} tier={tier} />
+      <div style={{borderBottom: '1px solid rgba(255,255,255,0.04)'}}>
+        <TradingViewTicker />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+      <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '24px 24px'}}>
         {tab === 'Polymarket'     && <PolymarketTab />}
         {tab === 'Day Trading'    && <DayTradingTab />}
         {tab === 'Sports Betting' && <SportsBettingTab tier={tier} />}
@@ -83,6 +68,125 @@ export default function Dashboard() {
         {tab === 'AI Research'    && <AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} />}
         {tab === 'News'           && <NewsTab />}
         {tab === 'Community'      && <CommunityTab />}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   UNIFIED DASHBOARD NAVBAR
+───────────────────────────────────────── */
+function DashboardNav({ tab, setTab, tier }) {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [alerts, setAlerts]     = useState([]);
+  const [bellOpen, setBellOpen] = useState(false);
+  const [unread, setUnread]     = useState(0);
+  const bellRef                 = useRef(null);
+
+  function firstName(email = '') {
+    const raw = (email.split('@')[0].split('.')[0]).replace(/\d+$/, '');
+    return raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  useEffect(() => {
+    function addAlert(e) {
+      const a = { id: Date.now(), text: e.detail?.text || 'New alert', ts: new Date().toISOString(), read: false };
+      setAlerts(prev => [a, ...prev].slice(0, 20));
+      setUnread(n => n + 1);
+    }
+    window.addEventListener('push-alert', addAlert);
+    return () => window.removeEventListener('push-alert', addAlert);
+  }, []);
+
+  useEffect(() => {
+    function handler(e) { if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false); }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  function openBell() {
+    setBellOpen(o => !o);
+    setUnread(0);
+    setAlerts(prev => prev.map(a => ({ ...a, read: true })));
+  }
+
+  return (
+    <div className="sticky top-0 z-40 glass-nav">
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', height: 56 }}>
+
+        {/* Left: Logo */}
+        <div style={{ flex: 1 }}>
+          <Logo size="md" />
+        </div>
+
+        {/* Center: Tabs */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {TABS.map(t => (
+            <button key={t} onClick={() => setTab(t)}
+              style={tab === t
+                ? { background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', borderBottom: '2px solid #4f8ef7', color: '#7aaff8', borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
+                : { background: 'transparent', border: '1px solid transparent', borderBottom: '2px solid transparent', color: '#2a3a5a', borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+              onMouseEnter={e => { if (tab !== t) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+              onMouseLeave={e => { if (tab !== t) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {/* Right: User controls */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+          {tier === 'pro' ? (
+            <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 100, background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', color: '#7aaff8' }}>Pro</span>
+          ) : (
+            <button onClick={() => navigate('/settings')} className="glass-pill" style={{ color: '#fbbf24', background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.25)' }}>
+              Free · Upgrade
+            </button>
+          )}
+
+          {/* Bell */}
+          <div className="relative" ref={bellRef}>
+            <button onClick={openBell}
+              style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: bellOpen ? 'rgba(79,142,247,0.15)' : 'transparent', color: '#4a5a7a', border: '1px solid transparent', cursor: 'pointer', position: 'relative' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+              onMouseLeave={e => { if (!bellOpen) e.currentTarget.style.background = 'transparent'; }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              </svg>
+              {unread > 0 && <span style={{ position: 'absolute', top: -2, right: -2, width: 16, height: 16, borderRadius: '50%', background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unread > 9 ? '9+' : unread}</span>}
+            </button>
+
+            {bellOpen && (
+              <div style={{ position: 'absolute', right: 0, top: 40, width: 280, borderRadius: 16, background: '#070712', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', zIndex: 50, overflow: 'hidden' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA' }}>Alerts</span>
+                  {alerts.length > 0 && <button onClick={() => setAlerts([])} style={{ fontSize: 12, color: '#4a5a7a', cursor: 'pointer', background: 'none', border: 'none' }}>Clear all</button>}
+                </div>
+                {alerts.length === 0 ? (
+                  <div style={{ padding: '32px 16px', textAlign: 'center', fontSize: 13, color: '#2a3a5a' }}>No alerts yet</div>
+                ) : (
+                  <div style={{ maxHeight: 280, overflowY: 'auto' }}>
+                    {alerts.map(a => (
+                      <div key={a.id} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', opacity: a.read ? 0.6 : 1, display: 'flex', gap: 12 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.read ? '#1a2535' : '#4f8ef7', marginTop: 4, flexShrink: 0 }} />
+                        <div>
+                          <p style={{ fontSize: 12, color: '#cbd5e1', margin: 0 }}>{a.text}</p>
+                          <p style={{ fontSize: 11, color: '#2a3a5a', marginTop: 2 }}>{new Date(a.ts).toLocaleTimeString()}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <span className="hidden sm:block" style={{ fontSize: 13, color: '#2a3a5a', fontWeight: 500 }}>{firstName(user?.email)}</span>
+
+          <button onClick={async () => { await signOut(); navigate('/login'); }} className="glass-btn" style={{ fontSize: 12, padding: '5px 12px', borderRadius: 8 }}>
+            Sign out
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -672,6 +776,7 @@ function DayTradingTab() {
     { id: 'premarket', label: '🌅 Pre-Market' },
     { id: 'riskcalc',  label: '⚖️ Risk Calc' },
     { id: 'reports',   label: '📊 Reports' },
+    { id: 'charts',    label: '📈 Charts' },
   ];
 
   return (
@@ -690,6 +795,7 @@ function DayTradingTab() {
       {subTab === 'premarket' && <PreMarketPanel />}
       {subTab === 'riskcalc'  && <RiskCalcPanel />}
       {subTab === 'reports'   && <ReportsPanel trades={trades} />}
+      {subTab === 'charts'    && <ChartsPanel />}
 
       {subTab === 'journal' && (<>
         <MonthlyTracker
@@ -1512,6 +1618,43 @@ function NewsTab() {
 }
 
 /* ─────────────────────────────────────────
+   CHARTS PANEL (Day Trading sub-tab)
+───────────────────────────────────────── */
+function ChartsPanel() {
+  const [selectedSymbol, setSelectedSymbol] = useState(null);
+  const [searchInput, setSearchInput]       = useState('');
+  const PRESETS = ['MNQ1!', 'NQ1!', 'ES1!', 'SPY', 'QQQ', 'BTC', 'ETH', 'AAPL', 'NVDA', 'TSLA'];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <input
+          type="text"
+          value={searchInput}
+          onChange={e => setSearchInput(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && searchInput.trim()) setSelectedSymbol(searchInput.trim().toUpperCase()); }}
+          placeholder="Search symbol... e.g. AAPL, BTC, NQ1!"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, color: 'white', padding: '10px 14px', fontSize: 14, outline: 'none', width: '100%' }}
+          onFocus={e => e.target.style.borderColor = 'rgba(79,142,247,0.4)'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
+        />
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {PRESETS.map(p => (
+            <button key={p} onClick={() => { setSelectedSymbol(p); setSearchInput(p); }}
+              className="glass-pill"
+              style={selectedSymbol === p ? { background: 'rgba(79,142,247,0.2)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : {}}>
+              {p}
+            </button>
+          ))}
+        </div>
+        {selectedSymbol && <p style={{ fontSize: 12, color: '#2a3a5a', margin: 0 }}>Use the chart toolbar to change timeframes</p>}
+      </div>
+      <TradingViewChart symbol={selectedSymbol} height={520} />
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
    PRE-MARKET PANEL (Day Trading sub-tab)
 ───────────────────────────────────────── */
 function PreMarketPanel() {
@@ -1806,9 +1949,15 @@ function ReportsPanel({ trades }) {
 
   if (closed.length === 0) {
     return (
-      <div style={{ ...card, textAlign: 'center', padding: 40 }}>
-        <div style={{ fontSize: 32, marginBottom: 10 }}>📊</div>
-        <div style={{ fontSize: 14, color: '#64748b' }}>Log trades to see your performance reports.</div>
+      <div className="glass-card" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+        <svg width="64" height="44" viewBox="0 0 64 44" fill="none">
+          <rect x="0"  y="30" width="13" height="14" rx="2" fill="rgba(79,142,247,0.3)"/>
+          <rect x="17" y="20" width="13" height="24" rx="2" fill="rgba(79,142,247,0.3)"/>
+          <rect x="34" y="11" width="13" height="33" rx="2" fill="rgba(79,142,247,0.3)"/>
+          <rect x="51" y="4"  width="13" height="40" rx="2" fill="rgba(79,142,247,0.3)"/>
+        </svg>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: '#4a5a7a', margin: 0 }}>Your performance reports will appear here</h3>
+        <p style={{ fontSize: 13, color: '#2a3a5a', margin: 0 }}>Log and close trades to unlock weekly charts, win rate analysis, and profit factor</p>
       </div>
     );
   }
@@ -2071,9 +2220,15 @@ function BettingAnalyticsPanel({ bets }) {
 
   if (settled.length === 0) {
     return (
-      <div style={{ ...card, textAlign: 'center', padding: 40 }}>
-        <div style={{ fontSize: 32, marginBottom: 10 }}>📊</div>
-        <div style={{ fontSize: 14, color: '#64748b' }}>Log and settle bets to see analytics.</div>
+      <div className="glass-card" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+        <svg width="64" height="44" viewBox="0 0 64 44" fill="none">
+          <rect x="0"  y="30" width="13" height="14" rx="2" fill="rgba(79,142,247,0.3)"/>
+          <rect x="17" y="20" width="13" height="24" rx="2" fill="rgba(79,142,247,0.3)"/>
+          <rect x="34" y="11" width="13" height="33" rx="2" fill="rgba(79,142,247,0.3)"/>
+          <rect x="51" y="4"  width="13" height="40" rx="2" fill="rgba(79,142,247,0.3)"/>
+        </svg>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: '#4a5a7a', margin: 0 }}>Betting analytics will appear here</h3>
+        <p style={{ fontSize: 13, color: '#2a3a5a', margin: 0 }}>Log and settle bets to unlock sport breakdown, win rate analysis, and P&L charts</p>
       </div>
     );
   }

@@ -32,7 +32,7 @@ export default function UpgradeModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)'}}
       onClick={() => setOpen(false)}>
       <div className="glass-card max-w-sm w-full mx-4 p-6" onClick={e => e.stopPropagation()}
-        style={{background: '#0f1729', border: '1px solid rgba(37,99,235,0.3)', boxShadow: '0 0 60px rgba(37,99,235,0.15)'}}>
+        style={{background: '#070712', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, boxShadow: '0 0 60px rgba(79,142,247,0.12)'}}>
 
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: 'rgba(37,99,235,0.2)'}}>

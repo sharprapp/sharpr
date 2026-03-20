@@ -3,9 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Logo from './Logo';
 
+function firstName(email = '') {
+  const raw = (email.split('@')[0].split('.')[0]).replace(/\d+$/, '');
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
+}
+
 function BellIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
       <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
     </svg>
@@ -15,12 +20,11 @@ function BellIcon() {
 export default function Navbar() {
   const { user, tier, signOut } = useAuth();
   const navigate = useNavigate();
-  const [alerts, setAlerts]         = useState([]);
-  const [bellOpen, setBellOpen]     = useState(false);
-  const [unread, setUnread]         = useState(0);
-  const bellRef                     = useRef(null);
+  const [alerts, setAlerts]     = useState([]);
+  const [bellOpen, setBellOpen] = useState(false);
+  const [unread, setUnread]     = useState(0);
+  const bellRef                 = useRef(null);
 
-  // Listen for alert events dispatched from other components
   useEffect(() => {
     function addAlert(e) {
       const a = { id: Date.now(), text: e.detail?.text || 'New alert', ts: new Date().toISOString(), read: false };
@@ -31,14 +35,11 @@ export default function Navbar() {
     return () => window.removeEventListener('push-alert', addAlert);
   }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handler(e) { if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false); }
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
-  async function handleSignOut() { await signOut(); navigate('/login'); }
 
   function openBell() {
     setBellOpen(o => !o);
@@ -47,57 +48,44 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="glass-nav px-4 py-3 flex items-center justify-between">
-      <Logo />
+    <nav className="glass-nav px-6 py-3 flex items-center justify-between">
+      <Logo size="md" />
       <div className="flex items-center gap-3">
-        {/* Tier badge */}
         {tier === 'pro' ? (
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{background: 'rgba(37,99,235,0.3)', border: '1px solid rgba(37,99,235,0.5)', color: '#93c5fd'}}>Pro</span>
+          <span style={{fontSize:12, fontWeight:600, padding:'4px 12px', borderRadius:100, background:'rgba(79,142,247,0.15)', border:'1px solid rgba(79,142,247,0.3)', color:'#7aaff8'}}>Pro</span>
         ) : (
-          <Link to="/settings"
-            className="text-xs font-semibold px-2.5 py-1 rounded-full transition-all"
-            style={{background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24'}}
-            onMouseEnter={e => e.currentTarget.style.background='rgba(245,158,11,0.2)'}
-            onMouseLeave={e => e.currentTarget.style.background='rgba(245,158,11,0.12)'}>
+          <Link to="/settings" className="glass-pill" style={{color:'#fbbf24', background:'rgba(245,158,11,0.1)', borderColor:'rgba(245,158,11,0.25)', textDecoration:'none'}}>
             Free · Upgrade
           </Link>
         )}
 
-        {/* Bell */}
         <div className="relative" ref={bellRef}>
           <button onClick={openBell}
-            className="flex items-center justify-center w-8 h-8 rounded-xl transition-all"
-            style={{background: bellOpen ? 'rgba(37,99,235,0.2)' : 'transparent', color: '#94A3B8', border: '1px solid transparent'}}
-            onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.1)'; }}
-            onMouseLeave={e => { if (!bellOpen) { e.currentTarget.style.background='transparent'; e.currentTarget.style.borderColor='transparent'; } }}>
+            style={{width:32, height:32, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', background:bellOpen?'rgba(79,142,247,0.15)':'transparent', color:'#4a5a7a', border:'1px solid transparent', cursor:'pointer', position:'relative'}}
+            onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.06)'; }}
+            onMouseLeave={e => { if (!bellOpen) e.currentTarget.style.background='transparent'; }}>
             <BellIcon />
             {unread > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-xs font-bold flex items-center justify-center"
-                style={{background: '#ef4444', color: '#fff', fontSize: 10}}>{unread > 9 ? '9+' : unread}</span>
+              <span style={{position:'absolute', top:-2, right:-2, width:16, height:16, borderRadius:'50%', background:'#ef4444', color:'#fff', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center'}}>{unread > 9 ? '9+' : unread}</span>
             )}
           </button>
 
           {bellOpen && (
-            <div className="absolute right-0 top-10 w-72 rounded-2xl z-50 overflow-hidden"
-              style={{background: '#0f1729', border: '1px solid #1e2a4a', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'}}>
-              <div className="px-4 py-3 flex items-center justify-between" style={{borderBottom: '1px solid #1e2a4a'}}>
-                <span className="text-sm font-semibold" style={{color: '#F5F5FA'}}>Alerts</span>
-                {alerts.length > 0 && (
-                  <button onClick={() => setAlerts([])} className="text-xs" style={{color: '#475569'}}
-                    onMouseEnter={e => e.currentTarget.style.color='#94A3B8'}
-                    onMouseLeave={e => e.currentTarget.style.color='#475569'}>Clear all</button>
-                )}
+            <div style={{position:'absolute', right:0, top:40, width:280, borderRadius:16, background:'#070712', border:'1px solid rgba(255,255,255,0.08)', boxShadow:'0 20px 60px rgba(0,0,0,0.6)', zIndex:50, overflow:'hidden'}}>
+              <div style={{padding:'12px 16px', borderBottom:'1px solid rgba(255,255,255,0.06)', display:'flex', alignItems:'center', justifyContent:'space-between'}}>
+                <span style={{fontSize:14, fontWeight:600, color:'#F5F5FA'}}>Alerts</span>
+                {alerts.length > 0 && <button onClick={() => setAlerts([])} style={{fontSize:12, color:'#4a5a7a', cursor:'pointer', background:'none', border:'none'}}>Clear all</button>}
               </div>
               {alerts.length === 0 ? (
-                <div className="px-4 py-8 text-center text-sm" style={{color: '#475569'}}>No alerts yet</div>
+                <div style={{padding:'32px 16px', textAlign:'center', fontSize:13, color:'#2a3a5a'}}>No alerts yet</div>
               ) : (
-                <div className="flex flex-col max-h-80 overflow-y-auto">
+                <div style={{maxHeight:280, overflowY:'auto'}}>
                   {alerts.map(a => (
-                    <div key={a.id} className="px-4 py-3 flex items-start gap-3" style={{borderBottom: '1px solid rgba(30,42,74,0.5)', opacity: a.read ? 0.6 : 1}}>
-                      <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{background: a.read ? '#334155' : '#2563EB'}} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs leading-snug" style={{color: '#cbd5e1'}}>{a.text}</p>
-                        <p className="text-xs mt-0.5" style={{color: '#475569'}}>{new Date(a.ts).toLocaleTimeString()}</p>
+                    <div key={a.id} style={{padding:'12px 16px', borderBottom:'1px solid rgba(255,255,255,0.04)', opacity:a.read?0.6:1, display:'flex', gap:12}}>
+                      <div style={{width:6, height:6, borderRadius:'50%', background:a.read?'#1a2535':'#4f8ef7', marginTop:4, flexShrink:0}} />
+                      <div>
+                        <p style={{fontSize:12, color:'#cbd5e1', margin:0}}>{a.text}</p>
+                        <p style={{fontSize:11, color:'#2a3a5a', marginTop:2}}>{new Date(a.ts).toLocaleTimeString()}</p>
                       </div>
                     </div>
                   ))}
@@ -107,15 +95,9 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* User email */}
-        <Link to="/settings" className="hidden sm:block text-sm transition-colors" style={{color: '#64748b'}}
-          onMouseEnter={e => e.currentTarget.style.color='#94A3B8'}
-          onMouseLeave={e => e.currentTarget.style.color='#64748b'}>
-          {user?.email}
-        </Link>
+        <span className="hidden sm:block" style={{fontSize:13, color:'#4a5a7a', fontWeight:500}}>{firstName(user?.email)}</span>
 
-        <button onClick={handleSignOut} className="glass-btn text-xs px-3 py-1.5"
-          style={{borderRadius: '10px', fontSize: '12px'}}>
+        <button onClick={async () => { await signOut(); navigate('/login'); }} className="glass-btn" style={{fontSize:12, padding:'6px 14px', borderRadius:8}}>
           Sign out
         </button>
       </div>
