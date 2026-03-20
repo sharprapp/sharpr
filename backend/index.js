@@ -67,11 +67,20 @@ app.use('/api/markets',   require('./routes/markets'));   // no rate limit — c
 app.use('/api/espn',      require('./routes/espn'));      // no rate limit — cached public data
 app.use('/api/community', require('./routes/community'));
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });
+
+// Keep alive — ping self every 5 minutes to prevent Railway sleep
+const BACKEND_URL = process.env.RAILWAY_PUBLIC_DOMAIN
+  ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
+  : `http://localhost:${PORT}`;
+
+setInterval(async () => {
+  try { await fetch(`${BACKEND_URL}/api/health`); } catch {}
+}, 5 * 60 * 1000);
 
 app.listen(PORT, () => console.log(`Sharpr backend running on port ${PORT}`));
