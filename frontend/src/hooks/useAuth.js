@@ -57,5 +57,5 @@ export function useAuth() {
     setTier('free');
   }
 
-  return { user, tier, loading, signIn, signUp, signOut, isPro: tier === 'pro' };
+  return { user, tier, loading, signIn, signUp, signOut, isPro: tier === 'pro' || tier === 'elite' };
 }

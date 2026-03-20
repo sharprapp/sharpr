@@ -98,7 +98,7 @@ export default function Dashboard() {
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <HomeTab onSwitchTab={switchTab} />
         </div>
-      ) : tab === 'Odds' ? (
+      ) : tab === 'Events' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <OddsBoard initialSport={oddsSport} />
         </div>
@@ -160,21 +160,21 @@ function NavGroups({ tab, setTab, onOddsSport }) {
       {/* Odds with sport dropdown */}
       <div style={{ position: 'relative' }}>
         <button
-          onClick={() => openGroup === 'Odds' ? setOpenGroup(null) : setOpenGroup('Odds')}
+          onClick={() => openGroup === 'Events' ? setOpenGroup(null) : setOpenGroup('Events')}
           style={{
-            background: tab === 'Odds' ? 'rgba(79,142,247,0.15)' : openGroup === 'Odds' ? 'rgba(255,255,255,0.05)' : 'transparent',
-            border: tab === 'Odds' ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-            borderBottom: tab === 'Odds' ? '2px solid #4f8ef7' : '2px solid transparent',
-            color: tab === 'Odds' ? '#7aaff8' : openGroup === 'Odds' ? '#94A3B8' : '#2a3a5a',
+            background: tab === 'Events' ? 'rgba(79,142,247,0.15)' : openGroup === 'Events' ? 'rgba(255,255,255,0.05)' : 'transparent',
+            border: tab === 'Events' ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+            borderBottom: tab === 'Events' ? '2px solid #4f8ef7' : '2px solid transparent',
+            color: tab === 'Events' ? '#7aaff8' : openGroup === 'Events' ? '#94A3B8' : '#2a3a5a',
             borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
             cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
           }}
-          onMouseEnter={e => { if (tab !== 'Odds' && openGroup !== 'Odds') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
-          onMouseLeave={e => { if (tab !== 'Odds' && openGroup !== 'Odds') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
+          onMouseEnter={e => { if (tab !== 'Events' && openGroup !== 'Odds') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+          onMouseLeave={e => { if (tab !== 'Events' && openGroup !== 'Odds') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
         >
-          Odds <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.5 }}>{openGroup === 'Odds' ? '\u25B2' : '\u25BC'}</span>
+          Events <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.5 }}>{openGroup === 'Events' ? '\u25B2' : '\u25BC'}</span>
         </button>
-        {openGroup === 'Odds' && (
+        {openGroup === 'Events' && (
           <div style={{
             position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
             marginTop: 8, background: '#070712', border: '1px solid rgba(255,255,255,0.1)',
@@ -182,9 +182,9 @@ function NavGroups({ tab, setTab, onOddsSport }) {
             boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
           }}>
             {ODDS_SPORTS.map(s => (
-              <button key={s} onClick={() => { onOddsSport(s); setTab('Odds'); setOpenGroup(null); }}
+              <button key={s} onClick={() => { onOddsSport(s); setTab('Events'); setOpenGroup(null); }}
                 style={{
-                  background: tab === 'Odds' ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.04)',
+                  background: tab === 'Events' ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.04)',
                   border: '1px solid rgba(255,255,255,0.06)',
                   color: '#6a7a9a', borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600,
                   cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
