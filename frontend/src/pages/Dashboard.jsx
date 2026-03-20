@@ -11,6 +11,7 @@ import CommunityTab from '../components/CommunityTab';
 import MarketDetailModal from '../components/MarketDetailModal';
 import HomeTab from '../components/HomeTab';
 import UpgradeModal from '../components/UpgradeModal';
+import SportsTicker from '../components/SportsTicker';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
   PointElement, ArcElement, Title, Tooltip, Legend,
@@ -89,6 +90,7 @@ export default function Dashboard() {
     <div className="min-h-screen">
       <DashboardNav tab={tab} setTab={switchTab} tier={tier} />
       <TradingViewTicker />
+      <SportsTicker />
 
       {tab === 'Home' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>

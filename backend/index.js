@@ -60,7 +60,8 @@ app.use('/api/stripe',    require('./routes/stripe'));
 app.use('/api/ai',        aiLimiter,   require('./routes/ai'));
 app.use('/api/trades',    require('./routes/trades'));
 app.use('/api/bets',      require('./routes/bets'));
-app.use('/api/odds',      require('./routes/odds'));
+app.use('/api/odds-legacy', require('./routes/polymarket-categories'));
+app.use('/api/odds',        require('./routes/odds-api'));
 app.use('/api/news',      require('./routes/news'));
 app.use('/api/polymarket',require('./routes/polymarket'));
 app.use('/api/markets',   require('./routes/markets'));   // no rate limit — cached public data
