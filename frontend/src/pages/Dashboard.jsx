@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo, useRef, memo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
-import TradingViewChart from '../components/TradingViewChart';
-import TradingViewTicker from '../components/TradingViewTicker';
 import api from '../lib/api';
 import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
@@ -49,18 +47,11 @@ export default function Dashboard() {
     const saved = sessionStorage.getItem('openTab');
     return [saved || 'Polymarket'];
   });
-  const [showTicker, setShowTicker] = useState(false);
   const { tier } = useAuth();
 
   // Warm up Railway backend immediately
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/health`).catch(() => {});
-  }, []);
-
-  // Delay ticker so main content loads first
-  useEffect(() => {
-    const t = setTimeout(() => setShowTicker(true), 2000);
-    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -77,11 +68,6 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen">
       <DashboardNav tab={tab} setTab={switchTab} tier={tier} />
-      {showTicker && (
-        <div style={{borderBottom: '1px solid rgba(255,255,255,0.04)'}}>
-          <TradingViewTicker />
-        </div>
-      )}
 
       {tab === 'Day Trading' ? (
         <div className="tab-content" style={{padding: '24px 24px'}}>
@@ -804,7 +790,6 @@ function DayTradingTab() {
     { id: 'premarket', label: '🌅 Pre-Market' },
     { id: 'riskcalc',  label: '⚖️ Risk Calc' },
     { id: 'reports',   label: '📊 Reports' },
-    { id: 'charts',    label: '📈 Charts' },
   ];
 
   return (
@@ -823,7 +808,6 @@ function DayTradingTab() {
       {subTab === 'premarket' && <PreMarketPanel />}
       {subTab === 'riskcalc'  && <RiskCalcPanel />}
       {subTab === 'reports'   && <ReportsPanel trades={trades} />}
-      {subTab === 'charts'    && <ChartsPanel onExit={() => setSubTab('journal')} />}
 
       {subTab === 'journal' && (<>
         <MonthlyTracker
@@ -1663,61 +1647,6 @@ function NewsTab() {
 /* ─────────────────────────────────────────
    CHARTS PANEL (Day Trading sub-tab) — FULL SCREEN
 ───────────────────────────────────────── */
-function ChartsPanel({ onExit }) {
-  const [selectedSymbol, setSelectedSymbol] = useState(null);
-  const [searchInput, setSearchInput]       = useState('');
-  const PRESETS = ['MNQ1!', 'NQ1!', 'ES1!', 'SPY', 'QQQ', 'BTC', 'ETH'];
-
-  return (
-    <div style={{
-      position: 'fixed', top: 110, left: 0, right: 0, bottom: 0,
-      zIndex: 100, background: '#03030a',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Compact controls bar */}
-      <div style={{
-        height: 52, flexShrink: 0,
-        background: 'rgba(3,3,10,0.95)', backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        display: 'flex', alignItems: 'center', gap: 8, padding: '0 16px',
-      }}>
-        <input
-          type="text"
-          value={searchInput}
-          onChange={e => setSearchInput(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && searchInput.trim()) { setSelectedSymbol(searchInput.trim().toUpperCase()); } }}
-          placeholder="Symbol… e.g. AAPL, NQ1!"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: 'white', padding: '5px 11px', fontSize: 13, outline: 'none', width: 190, flexShrink: 0 }}
-          onFocus={e => e.target.style.borderColor = 'rgba(79,142,247,0.5)'}
-          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
-        />
-        {PRESETS.map(p => (
-          <button key={p} onClick={() => { setSelectedSymbol(p); setSearchInput(p); }}
-            style={{
-              fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', whiteSpace: 'nowrap',
-              background: selectedSymbol === p ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.05)',
-              border: selectedSymbol === p ? '1px solid rgba(79,142,247,0.4)' : '1px solid rgba(255,255,255,0.08)',
-              color: selectedSymbol === p ? '#7aaff8' : '#6a7a9a',
-            }}>
-            {p}
-          </button>
-        ))}
-        {/* Minimize / exit */}
-        <button onClick={onExit}
-          title="Exit fullscreen"
-          style={{ marginLeft: 'auto', flexShrink: 0, width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#6a7a9a', cursor: 'pointer', fontSize: 16 }}>
-          ✕
-        </button>
-      </div>
-
-      {/* Chart fills all remaining space */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
-        <TradingViewChart symbol={selectedSymbol} />
-      </div>
-    </div>
-  );
-}
-
 /* ─────────────────────────────────────────
    PRE-MARKET PANEL (Day Trading sub-tab)
 ───────────────────────────────────────── */
