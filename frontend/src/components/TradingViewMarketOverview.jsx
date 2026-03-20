@@ -20,7 +20,7 @@ export default function TradingViewMarketOverview() {
       showSymbolLogo: true,
       showFloatingTooltip: false,
       width: '100%',
-      height: '400',
+      height: '500',
       tabs: [
         { title: 'Indices',  symbols: [{ s: 'FOREXCOM:SPXUSD', d: 'S&P 500' }, { s: 'FOREXCOM:NSXUSD', d: 'Nasdaq 100' }, { s: 'FOREXCOM:DJI', d: 'Dow Jones' }, { s: 'NASDAQ:QQQ', d: 'QQQ' }] },
         { title: 'Futures',  symbols: [{ s: 'CME_MINI:NQ1!',  d: 'NQ Futures' }, { s: 'CME_MINI:MNQ1!', d: 'MNQ Futures' }, { s: 'CME_MINI:ES1!', d: 'ES Futures' }, { s: 'CME_MINI:MES1!', d: 'MES Futures' }] },
@@ -37,7 +37,7 @@ export default function TradingViewMarketOverview() {
 
   return (
     <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', padding: '4px' }}>
-      <div ref={containerRef} className="tradingview-widget-container" style={{ width: '100%', height: '400px' }} />
+      <div ref={containerRef} className="tradingview-widget-container" style={{ width: '100%', height: '500px' }} />
     </div>
   );
 }

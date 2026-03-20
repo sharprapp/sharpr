@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function TradingViewChart({ symbol, theme = 'dark', height = 650, cssHeight }) {
+export default function TradingViewChart({ symbol, theme = 'dark', height = 700, cssHeight }) {
   const containerRef = useRef(null);
 
   useEffect(() => {

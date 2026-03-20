@@ -60,15 +60,20 @@ export default function Dashboard() {
         <TradingViewTicker />
       </div>
 
-      <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '24px 24px'}}>
-        {tab === 'Polymarket'     && <PolymarketTab />}
-        {tab === 'Day Trading'    && <DayTradingTab />}
-        {tab === 'Sports Betting' && <SportsBettingTab tier={tier} />}
-        {tab === 'EV Calc'        && <EVCalcTab />}
-        {tab === 'AI Research'    && <AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} />}
-        {tab === 'News'           && <NewsTab />}
-        {tab === 'Community'      && <CommunityTab />}
-      </div>
+      {tab === 'Day Trading' ? (
+        <div className="tab-content" style={{padding: '24px 24px'}}>
+          <DayTradingTab />
+        </div>
+      ) : (
+        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '24px 24px'}}>
+          {tab === 'Polymarket'     && <PolymarketTab />}
+          {tab === 'Sports Betting' && <SportsBettingTab tier={tier} />}
+          {tab === 'EV Calc'        && <EVCalcTab />}
+          {tab === 'AI Research'    && <AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} />}
+          {tab === 'News'           && <NewsTab />}
+          {tab === 'Community'      && <CommunityTab />}
+        </div>
+      )}
     </div>
   );
 }
@@ -1641,30 +1646,33 @@ function ChartsPanel() {
   const PRESETS = ['MNQ1!', 'NQ1!', 'ES1!', 'SPY', 'QQQ', 'BTC', 'ETH', 'AAPL', 'NVDA', 'TSLA'];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%' }}>
+      {/* Compact controls row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <input
           type="text"
           value={searchInput}
           onChange={e => setSearchInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && searchInput.trim()) setSelectedSymbol(searchInput.trim().toUpperCase()); }}
-          placeholder="Search symbol... e.g. AAPL, BTC, NQ1!"
-          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, color: 'white', padding: '10px 14px', fontSize: 14, outline: 'none', width: '100%' }}
+          placeholder="Symbol... e.g. AAPL, NQ1!"
+          style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, color: 'white', padding: '6px 12px', fontSize: 13, outline: 'none', width: 200, flexShrink: 0 }}
           onFocus={e => e.target.style.borderColor = 'rgba(79,142,247,0.4)'}
           onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.08)'}
         />
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {PRESETS.map(p => (
-            <button key={p} onClick={() => { setSelectedSymbol(p); setSearchInput(p); }}
-              className="glass-pill"
-              style={selectedSymbol === p ? { background: 'rgba(79,142,247,0.2)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : {}}>
-              {p}
-            </button>
-          ))}
-        </div>
-        {selectedSymbol && <p style={{ fontSize: 12, color: '#2a3a5a', margin: 0 }}>Use the chart toolbar to change timeframes</p>}
+        {PRESETS.map(p => (
+          <button key={p} onClick={() => { setSelectedSymbol(p); setSearchInput(p); }}
+            style={{
+              fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6, cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
+              background: selectedSymbol === p ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.05)',
+              border: selectedSymbol === p ? '1px solid rgba(79,142,247,0.4)' : '1px solid rgba(255,255,255,0.08)',
+              color: selectedSymbol === p ? '#7aaff8' : '#6a7a9a',
+            }}>
+            {p}
+          </button>
+        ))}
       </div>
-      <TradingViewChart symbol={selectedSymbol} cssHeight="calc(100vh - 320px)" />
+      {/* Full-width chart */}
+      <TradingViewChart symbol={selectedSymbol} cssHeight="calc(100vh - 280px)" />
     </div>
   );
 }
