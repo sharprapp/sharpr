@@ -54,7 +54,7 @@ function FAQItem({ q, a }) {
 const FEATURES = [
   {
     icon: '🎯',
-    title: 'Polymarket & Kalshi Markets',
+    title: 'Prediction Markets',
     desc: 'Track 1,500+ live prediction markets across politics, crypto, finance, sports, and more. Filter by category, search, and analyze with AI in one click.',
   },
   {

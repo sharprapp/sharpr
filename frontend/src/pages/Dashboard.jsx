@@ -8,7 +8,6 @@ import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
 import SportsOdds from '../components/SportsOdds';
 import CommunityTab from '../components/CommunityTab';
-import KalshiTab from '../components/KalshiTab';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
   PointElement, ArcElement, Title, Tooltip, Legend,
@@ -19,7 +18,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointEleme
 const NAV_GROUPS = [
   { label: 'Trade', items: ['Day Trading'] },
   { label: 'Bet', items: ['Sports Betting', 'EV Calc'] },
-  { label: 'Predict', items: ['Polymarket', 'Kalshi'] },
+  { label: 'Predict', items: ['Polymarket'] },
   { label: 'Social', items: ['Community'] },
   { label: 'Info', items: ['News'] },
 ];
@@ -87,7 +86,6 @@ export default function Dashboard() {
       ) : (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab /></div>}
-          {visitedTabs.includes('Kalshi')          && <div style={{display: tab==='Kalshi'          ? 'block' : 'none'}}><KalshiTab /></div>}
           {visitedTabs.includes('Sports Betting') && <div style={{display: tab==='Sports Betting' ? 'block' : 'none'}}><SportsBettingTab tier={tier} /></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
           {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></div>}
