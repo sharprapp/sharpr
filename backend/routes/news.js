@@ -264,4 +264,44 @@ router.get('/economic', async (req, res) => {
   }
 });
 
+/* ─────────────────────────────────────────
+   GET /api/news/world?category=top
+   BBC + Reuters RSS feeds
+───────────────────────────────────────── */
+const WORLD_FEEDS = {
+  top:           [{ url: 'https://feeds.bbci.co.uk/news/rss.xml', source: 'BBC' }],
+  us:            [{ url: 'https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml', source: 'BBC' }],
+  world:         [{ url: 'https://feeds.bbci.co.uk/news/world/rss.xml', source: 'BBC' }],
+  politics:      [{ url: 'https://feeds.bbci.co.uk/news/politics/rss.xml', source: 'BBC' }],
+  tech:          [{ url: 'https://feeds.bbci.co.uk/news/technology/rss.xml', source: 'BBC' }],
+  science:       [{ url: 'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml', source: 'BBC' }],
+  business:      [{ url: 'https://feeds.bbci.co.uk/news/business/rss.xml', source: 'BBC' }],
+  entertainment: [{ url: 'https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml', source: 'BBC' }],
+};
+
+router.get('/world', async (req, res) => {
+  const category = req.query.category || 'top';
+  const feeds = WORLD_FEEDS[category] || WORLD_FEEDS.top;
+  const cacheKey = `world_${category}`;
+  const cached = getCached(cacheKey, 5 * 60 * 1000);
+  if (cached) { res.set('Cache-Control', 'public, max-age=300'); return res.json(cached); }
+
+  const results = await Promise.allSettled(
+    feeds.map(({ url, source }) =>
+      parser.parseURL(url).then(feed =>
+        (feed.items || []).slice(0, 20).map(item => normalizeRss(item, source))
+      )
+    )
+  );
+
+  const allItems = [];
+  results.forEach((r) => { if (r.status === 'fulfilled') allItems.push(...r.value); });
+  allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+  const payload = { items: allItems.slice(0, 40), category, timestamp: new Date().toISOString() };
+  setCached(cacheKey, payload);
+  res.set('Cache-Control', 'public, max-age=300');
+  return res.json(payload);
+});
+
 module.exports = router;

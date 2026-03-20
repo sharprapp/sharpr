@@ -13,6 +13,8 @@ import HomeTab from '../components/HomeTab';
 import UpgradeModal from '../components/UpgradeModal';
 import SportsTicker from '../components/SportsTicker';
 import OddsBoard from '../components/OddsBoard';
+import GameDetailModal from '../components/GameDetailModal';
+import NewNewsTab from '../components/NewsTab';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
   PointElement, ArcElement, Title, Tooltip, Legend,
@@ -38,7 +40,11 @@ const NAV_GROUPS = [
     { key: 'EV Calc', label: 'EV Calc', emoji: '🧮', desc: 'Expected value calculator' },
   ]},
   { label: 'Social', items: [{ key: 'Community', label: 'Community', emoji: '💬', desc: 'Trading chat' }] },
-  { label: 'Info', items: [{ key: 'News', label: 'News', emoji: '📰', desc: 'Market & sports news' }] },
+  { label: 'Info', items: [
+    { key: 'news-sports', label: 'Sports News', emoji: '🏆', desc: 'ESPN live coverage' },
+    { key: 'news-trading', label: 'Trading News', emoji: '📈', desc: 'Markets, crypto & macro' },
+    { key: 'news-world', label: 'World News', emoji: '🌍', desc: 'BBC, Reuters & more' },
+  ]},
 ];
 const STANDALONE_TABS_LEFT = ['Home'];
 const STANDALONE_TABS_RIGHT = ['AI Research'];
@@ -113,7 +119,7 @@ export default function Dashboard() {
         </div>
       ) : tab === 'Events' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          <OddsBoard initialSport={oddsSport} />
+          <OddsBoard initialSport={oddsSport} tier={tier} />
         </div>
       ) : tab.startsWith('dt-') ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
@@ -128,7 +134,7 @@ export default function Dashboard() {
           {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab tier={tier} /></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
           {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></div>}
-          {visitedTabs.includes('News')           && <div style={{display: tab==='News'           ? 'block' : 'none'}}><NewsTab /></div>}
+          {tab.startsWith('news-') && <NewNewsTab initialType={tab === 'news-sports' ? 'sports' : tab === 'news-trading' ? 'trading' : 'world'} />}
           {visitedTabs.includes('Community')      && <div style={{display: tab==='Community'      ? 'block' : 'none'}}><CommunityTab /></div>}
         </div>
       )}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
+import GameDetailModal from './GameDetailModal';
 
 const SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'NCAAB', 'NCAAF', 'WNBA', 'soccer_epl', 'soccer_mls', 'soccer_champions', 'UFC', 'boxing', 'tennis_atp', 'golf_pga', 'F1'];
 const SPORT_LABELS = { soccer_epl: 'EPL', soccer_mls: 'MLS', soccer_champions: 'UCL', tennis_atp: 'ATP', golf_pga: 'PGA' };
@@ -32,7 +33,7 @@ function StatusBadge({ status }) {
   return <span style={{ fontSize: 11, color: '#64748b' }}>{status?.detail || ''}</span>;
 }
 
-export default function SportsOdds({ initialSport }) {
+export default function SportsOdds({ initialSport, tier }) {
   // Normalize: nav passes lowercase keys like 'nba', SPORTS array uses 'NBA'
   const normalizeSport = (s) => {
     if (!s) return 'NBA';
@@ -49,6 +50,7 @@ export default function SportsOdds({ initialSport }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [expandedId, setExpandedId] = useState(null);
+  const [selectedGame, setSelectedGame] = useState(null);
 
   useEffect(() => {
     if (initialSport) {
@@ -321,6 +323,7 @@ export default function SportsOdds({ initialSport }) {
           </div>
         );
       })}
+      {selectedGame && <GameDetailModal game={selectedGame} onClose={() => setSelectedGame(null)} userPlan={tier} />}
     </div>
   );
 }
