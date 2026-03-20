@@ -1218,75 +1218,191 @@ function EVCalcTab() {
    AI RESEARCH TAB
 ───────────────────────────────────────── */
 function AIResearchTab({ prefill, onPrefillConsumed }) {
-  const [q, setQ]           = useState('');
-  const [type, setType]     = useState('polymarket');
-  const [result, setResult] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [query, setQuery]             = useState('');
+  const [researchType, setResearchType] = useState('polymarket');
+  const [result, setResult]           = useState(null);
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState(null);
+  const [history, setHistory]         = useState([]);
 
   useEffect(() => {
-    if (prefill) { setQ(prefill.topic || ''); setType(prefill.type || 'polymarket'); onPrefillConsumed?.(); }
+    if (prefill) { setQuery(prefill.topic || ''); setResearchType(prefill.type || 'polymarket'); onPrefillConsumed?.(); }
   }, [prefill]);
 
-  async function run() {
-    if (!q.trim()) return alert('Enter a topic.');
-    setLoading(true); setResult('');
+  const RESEARCH_TYPES = [
+    { value: 'polymarket', label: 'Prediction Market', emoji: '\u{1F3AF}', desc: 'Analyze market probabilities' },
+    { value: 'trading', label: 'Day Trading', emoji: '\u{1F4C8}', desc: 'Technical & fundamental analysis' },
+    { value: 'sports', label: 'Sports Betting', emoji: '\u{1F3C6}', desc: 'Sharp money & line analysis' },
+    { value: 'news', label: 'General Research', emoji: '\u{1F50D}', desc: 'Any market or topic' },
+  ];
+
+  const SUGGESTIONS = [
+    'Will the Fed cut rates before July 2026?',
+    'Lakers vs Celtics \u2014 who has the edge?',
+    'BTC price analysis for next 30 days',
+    'NQ futures key levels for this week',
+    'Sharp money on NFL playoffs?',
+    'Best EV markets on Polymarket right now',
+  ];
+
+  async function handleSubmit() {
+    if (!query.trim() || loading) return;
+    setLoading(true); setError(null); setResult(null);
     try {
-      const { data } = await api.post('/api/ai/query', { query: q, type, use_web_search: true });
+      const { data } = await api.post('/api/ai/query', { query, type: researchType, use_web_search: true });
+      const newEntry = { query, researchType, result: data.result, timestamp: new Date() };
       setResult(data.result);
-    } catch(e) { setResult(e.response?.data?.error || 'Research failed.'); }
-    setLoading(false);
+      setHistory(prev => [newEntry, ...prev.slice(0, 4)]);
+    } catch(e) {
+      setError(e.response?.data?.error || e.response?.data?.message || 'Research failed.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-3xl">
-      <div className="rounded-2xl p-5 flex flex-col gap-4" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-2">
-            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Topic / market / game</label>
-            <input className={`w-full rounded-xl px-4 py-2.5 text-sm ${inp}`}
-              placeholder="e.g. Lakers vs Celtics, BTC price, Fed rate cut…" value={q}
-              onChange={e => setQ(e.target.value)} onKeyDown={e => e.key==='Enter' && run()}
-              style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
-          </div>
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Research type</label>
-            <select className={`w-full rounded-xl px-4 py-2.5 text-sm ${inp}`} value={type} onChange={e => setType(e.target.value)}
-              style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-              <option value="polymarket">Polymarket analysis</option>
-              <option value="sports">Sports betting angle</option>
-              <option value="trading">Day trading setup</option>
-              <option value="news">News impact (all three)</option>
-            </select>
-          </div>
+    <div style={{
+      minHeight: 'calc(100vh - 160px)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      justifyContent: result || loading ? 'flex-start' : 'center',
+      padding: '40px 24px', maxWidth: '780px', margin: '0 auto', width: '100%'
+    }}>
+
+      {/* Header - only show when no result */}
+      {!result && !loading && (
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{
+            width: 64, height: 64,
+            background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)',
+            borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px', fontSize: '28px'
+          }}>{'\u{1F52C}'}</div>
+          <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#f0f4ff', letterSpacing: '-0.5px', marginBottom: '8px' }}>
+            Sharpr Research
+          </h1>
+          <p style={{ fontSize: '14px', color: '#2a3a5a', lineHeight: 1.6 }}>
+            AI-powered analysis for prediction markets, trading, and sports betting
+          </p>
         </div>
-        <button onClick={run} disabled={loading}
-          className="self-start rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
-          style={{background: '#2563EB', color: '#fff'}}
-          onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
-          onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
-          {loading ? 'Researching…' : 'Run research + web search ↗'}
+      )}
+
+      {/* Research type selector */}
+      {!result && !loading && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', marginBottom: '20px' }}>
+          {RESEARCH_TYPES.map(t => (
+            <div key={t.value} onClick={() => setResearchType(t.value)}
+              style={{
+                background: researchType === t.value ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${researchType === t.value ? 'rgba(79,142,247,0.4)' : 'rgba(255,255,255,0.07)'}`,
+                borderRadius: '12px', padding: '12px', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center'
+              }}>
+              <div style={{ fontSize: '20px', marginBottom: '4px' }}>{t.emoji}</div>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: researchType === t.value ? '#7aaff8' : '#4a5a7a' }}>{t.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Input box */}
+      <div style={{
+        width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: '16px', padding: '4px 4px 4px 16px',
+        display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', transition: 'border-color 0.2s'
+      }}>
+        <input value={query} onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+          placeholder="Ask anything \u2014 markets, trades, bets..."
+          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#f0f4ff', fontSize: '15px', padding: '12px 0' }} />
+        <button onClick={handleSubmit} disabled={loading || !query.trim()}
+          style={{
+            background: query.trim() ? '#4f8ef7' : 'rgba(79,142,247,0.2)',
+            border: 'none', borderRadius: '12px', width: '40px', height: '40px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: query.trim() ? 'pointer' : 'not-allowed',
+            transition: 'all 0.2s', flexShrink: 0, fontSize: '16px', color: '#fff'
+          }}>
+          {loading ? '\u23F3' : '\u2191'}
         </button>
       </div>
-      {(result || loading) && (
-        <div className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-          {loading ? (
-            <LoadingDots label="Searching and analyzing…" />
-          ) : (
-            <div className="flex flex-col gap-1.5">
+
+      {/* Suggestions - only when no result */}
+      {!result && !loading && (
+        <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
+          {SUGGESTIONS.map(s => (
+            <div key={s} onClick={() => setQuery(s)}
+              style={{
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '100px', padding: '6px 14px', fontSize: '12px', color: '#4a5a7a',
+                cursor: 'pointer', transition: 'all 0.2s'
+              }}>
+              {s}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Loading state */}
+      {loading && (
+        <div style={{
+          width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
+          borderRadius: '16px', padding: '32px', textAlign: 'center', marginTop: '16px'
+        }}>
+          <div style={{ fontSize: '24px', marginBottom: '12px' }}>{'\u{1F50D}'}</div>
+          <div style={{ fontSize: '14px', color: '#4a5a7a' }}>Searching the web and analyzing...</div>
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && (
+        <div style={{
+          width: '100%', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+          borderRadius: '12px', padding: '16px', color: '#ef4444', fontSize: '13px', marginTop: '16px'
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Result */}
+      {result && !loading && (
+        <div style={{ width: '100%', marginTop: '16px' }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px', padding: '24px', marginBottom: '16px'
+          }}>
+            <div style={{ fontSize: '12px', color: '#2a3a5a', marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>{'\u{1F52C}'} {RESEARCH_TYPES.find(t => t.value === researchType)?.label}</span>
+              <span style={{ cursor: 'pointer', color: '#4f8ef7' }} onClick={() => { setResult(null); setQuery(''); }}>{'\u21BA'} New research</span>
+            </div>
+            <div style={{ fontSize: '13px', color: '#8899bb', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
               {result.split('\n').map((line, i) => {
                 const isVerdict = line.startsWith('VERDICT:');
                 const isConf    = line.startsWith('Confidence:');
                 return (
-                  <div key={i} className="text-sm leading-relaxed"
-                    style={{
-                      color: isVerdict ? '#22c55e' : isConf ? '#60a5fa' : '#cbd5e1',
-                      fontWeight: (isVerdict || isConf) ? 700 : 400,
-                      background: isVerdict ? 'rgba(34,197,94,0.08)' : 'transparent',
-                      padding: isVerdict ? '6px 10px' : '0',
-                      borderRadius: isVerdict ? '8px' : '0',
-                    }}>{line || '\u00A0'}</div>
+                  <div key={i} style={{
+                    color: isVerdict ? '#22c55e' : isConf ? '#60a5fa' : '#8899bb',
+                    fontWeight: (isVerdict || isConf) ? 700 : 400,
+                    background: isVerdict ? 'rgba(34,197,94,0.08)' : 'transparent',
+                    padding: isVerdict ? '6px 10px' : '0',
+                    borderRadius: isVerdict ? '8px' : '0',
+                  }}>{line || '\u00A0'}</div>
                 );
               })}
+            </div>
+          </div>
+
+          {/* History */}
+          {history.length > 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ fontSize: '10px', color: '#1a2535', letterSpacing: '2px', textTransform: 'uppercase' }}>Recent</div>
+              {history.slice(1).map((h, i) => (
+                <div key={i} onClick={() => { setQuery(h.query); setResult(h.result); setResearchType(h.researchType); }}
+                  style={{
+                    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+                    borderRadius: '10px', padding: '10px 14px', cursor: 'pointer', fontSize: '12px', color: '#4a5a7a'
+                  }}>
+                  {h.query}
+                </div>
+              ))}
             </div>
           )}
         </div>
