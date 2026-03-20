@@ -21,15 +21,28 @@ import { Bar, Line, Pie } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
 const NAV_GROUPS = [
-  { label: 'Trade', items: ['Day Trading'] },
-  { label: 'Bet', items: ['Sports Betting', 'EV Calc'] },
-  { label: 'Predict', items: ['Polymarket'] },
-  { label: 'Social', items: ['Community'] },
-  { label: 'Info', items: ['News'] },
+  { label: 'Trade', items: [
+    { key: 'dt-journal', label: 'Journal', emoji: '📓', desc: 'Trade log & calendar' },
+    { key: 'dt-premarket', label: 'Pre-Market', emoji: '🌅', desc: 'Morning prep & levels' },
+    { key: 'dt-riskcalc', label: 'Risk Calc', emoji: '🎯', desc: 'Position sizing & R:R' },
+    { key: 'dt-reports', label: 'Reports', emoji: '📊', desc: 'Performance analytics' },
+  ]},
+  { label: 'Bet', items: [
+    { key: 'sb-journal', label: 'Journal', emoji: '📓', desc: 'Bet log & calendar' },
+    { key: 'sb-arbitrage', label: 'Arbitrage', emoji: '⚖️', desc: 'Find +EV across books' },
+    { key: 'sb-parlay', label: 'Parlay', emoji: '🎰', desc: 'Optimize parlay EV' },
+    { key: 'sb-analytics', label: 'Analytics', emoji: '📈', desc: 'ROI & performance' },
+  ]},
+  { label: 'Predict', items: [
+    { key: 'Polymarket', label: 'Polymarket', emoji: '🎯', desc: '8,300+ live markets' },
+    { key: 'EV Calc', label: 'EV Calc', emoji: '🧮', desc: 'Expected value calculator' },
+  ]},
+  { label: 'Social', items: [{ key: 'Community', label: 'Community', emoji: '💬', desc: 'Trading chat' }] },
+  { label: 'Info', items: [{ key: 'News', label: 'News', emoji: '📰', desc: 'Market & sports news' }] },
 ];
 const STANDALONE_TABS_LEFT = ['Home'];
 const STANDALONE_TABS_RIGHT = ['AI Research'];
-const ALL_TABS = [...STANDALONE_TABS_LEFT, ...NAV_GROUPS.flatMap(g => g.items), ...STANDALONE_TABS_RIGHT];
+const ALL_TABS = [...STANDALONE_TABS_LEFT, ...NAV_GROUPS.flatMap(g => g.items.map(i => i.key)), ...STANDALONE_TABS_RIGHT];
 
 /* ── Polymarket localStorage cache (5 min) ── */
 const PM_LS_KEY = 'pm_markets_v2';
@@ -102,14 +115,17 @@ export default function Dashboard() {
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <OddsBoard initialSport={oddsSport} />
         </div>
-      ) : tab === 'Day Trading' ? (
+      ) : tab.startsWith('dt-') ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
-          {visitedTabs.includes('Day Trading') && <DayTradingTab />}
+          <DayTradingTab activeSubTab={tab.replace('dt-', '')} />
+        </div>
+      ) : tab.startsWith('sb-') ? (
+        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+          <SportsBettingTab tier={tier} activeSubTab={tab.replace('sb-', '')} />
         </div>
       ) : (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab tier={tier} /></div>}
-          {visitedTabs.includes('Sports Betting') && <div style={{display: tab==='Sports Betting' ? 'block' : 'none'}}><SportsBettingTab tier={tier} /></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
           {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></div>}
           {visitedTabs.includes('News')           && <div style={{display: tab==='News'           ? 'block' : 'none'}}><NewsTab /></div>}
@@ -151,7 +167,7 @@ function NavGroups({ tab, setTab, onOddsSport }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const activeGroup = NAV_GROUPS.find(g => g.items.includes(tab))?.label || '';
+  const activeGroup = NAV_GROUPS.find(g => g.items.some(i => i.key === tab))?.label || '';
 
   function StandaloneBtn({ t }) {
     return (
@@ -224,13 +240,13 @@ function NavGroups({ tab, setTab, onOddsSport }) {
       </div>
 
       {NAV_GROUPS.map(g => {
-        const isActive = g.items.includes(tab);
+        const isActive = g.items.some(i => i.key === tab);
         const isOpen = openGroup === g.label;
         return (
           <div key={g.label} style={{ position: 'relative' }}>
             <button
               onClick={() => {
-                if (g.items.length === 1) { setTab(g.items[0]); setOpenGroup(null); }
+                if (g.items.length === 1) { setTab(g.items[0].key); setOpenGroup(null); }
                 else setOpenGroup(isOpen ? null : g.label);
               }}
               style={{
@@ -250,26 +266,32 @@ function NavGroups({ tab, setTab, onOddsSport }) {
             {isOpen && g.items.length > 1 && (
               <div style={{
                 position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                marginTop: 8, background: 'rgba(3,3,10,0.97)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12,
-                padding: '8px', display: 'flex', gap: 4, zIndex: 100,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                marginTop: 8, background: '#070712',
+                border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14,
+                padding: 8, zIndex: 100, minWidth: 220,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
               }}>
-                {g.items.map(item => (
-                  <button key={item} onClick={() => { setTab(item); setOpenGroup(null); }}
-                    style={{
-                      background: tab === item ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.04)',
-                      border: tab === item ? '1px solid rgba(79,142,247,0.4)' : '1px solid rgba(255,255,255,0.06)',
-                      color: tab === item ? '#7aaff8' : '#6a7a9a',
-                      borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600,
-                      cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={e => { if (tab !== item) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-                    onMouseLeave={e => { if (tab !== item) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                  >
-                    {item}
-                  </button>
-                ))}
+                {g.items.map(item => {
+                  const isItemActive = tab === item.key;
+                  return (
+                    <button key={item.key} onClick={() => { setTab(item.key); setOpenGroup(null); }}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '10px 12px', borderRadius: 8, border: 'none',
+                        borderLeft: isItemActive ? '2px solid #4f8ef7' : '2px solid transparent',
+                        background: isItemActive ? 'rgba(79,142,247,0.12)' : 'transparent',
+                        cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left',
+                      }}
+                      onMouseEnter={e => { if (!isItemActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                      onMouseLeave={e => { if (!isItemActive) e.currentTarget.style.background = 'transparent'; }}>
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: isItemActive ? '#7aaff8' : '#f0f4ff' }}>{item.label}</div>
+                        <div style={{ fontSize: 10, color: '#2a3a5a', marginTop: 1 }}>{item.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -939,8 +961,8 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
 /* ─────────────────────────────────────────
    DAY TRADING TAB
 ───────────────────────────────────────── */
-function DayTradingTab() {
-  const [subTab, setSubTab]   = useState('journal');
+function DayTradingTab({ activeSubTab }) {
+  const subTab = activeSubTab || 'journal';
   const [trades, setTrades]   = useState([]);
   const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', setup:'Breakout', status:'open', notes:'' });
   const [loading, setLoading] = useState(false);
@@ -984,25 +1006,8 @@ function DayTradingTab() {
     setTrades(trades.filter(t => t.id !== id));
   }
 
-  const DT_SUBTABS = [
-    { id: 'journal',   label: '📓 Journal' },
-    { id: 'premarket', label: '🌅 Pre-Market' },
-    { id: 'riskcalc',  label: '⚖️ Risk Calc' },
-    { id: 'reports',   label: '📊 Reports' },
-  ];
-
   return (
     <div className="flex flex-col gap-6">
-      {/* Sub-tab bar */}
-      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#0a0f1e'}}>
-        {DT_SUBTABS.map(t => (
-          <button key={t.id} onClick={() => setSubTab(t.id)}
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={subTab===t.id ? {background: '#2563EB', color: '#fff'} : {color: '#94A3B8'}}>
-            {t.label}
-          </button>
-        ))}
-      </div>
 
       {subTab === 'premarket' && <PreMarketPanel />}
       {subTab === 'riskcalc'  && <RiskCalcPanel />}
@@ -1139,8 +1144,8 @@ function TradeForm({ form, setForm, loading, onAdd }) {
 /* ─────────────────────────────────────────
    SPORTS BETTING TAB
 ───────────────────────────────────────── */
-function SportsBettingTab({ tier }) {
-  const [subTab, setSubTab]   = useState('journal');
+function SportsBettingTab({ tier, activeSubTab }) {
+  const subTab = activeSubTab || 'journal';
   const [bets, setBets]       = useState([]);
   const [form, setForm]       = useState({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'' });
   const [loading, setLoading] = useState(false);
@@ -1202,25 +1207,8 @@ function SportsBettingTab({ tier }) {
     setBets(bets.filter(b => b.id !== id));
   }
 
-  const SB_SUBTABS = [
-    { id: 'journal',   label: '📓 Journal' },
-    { id: 'arbitrage', label: '⚖️ Arbitrage' },
-    { id: 'parlay',    label: '🎰 Parlay' },
-    { id: 'analytics', label: '📊 Analytics' },
-  ];
-
   return (
     <div className="flex flex-col gap-5">
-      {/* Sub-tab bar */}
-      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#0a0f1e'}}>
-        {SB_SUBTABS.map(t => (
-          <button key={t.id} onClick={() => setSubTab(t.id)}
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={subTab===t.id ? {background: '#2563EB', color: '#fff'} : {color: '#94A3B8'}}>
-            {t.label}
-          </button>
-        ))}
-      </div>
 
       {subTab === 'arbitrage' && <ArbitragePanel />}
       {subTab === 'parlay'    && <ParlayPanel />}
