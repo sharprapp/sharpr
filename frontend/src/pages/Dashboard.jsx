@@ -15,7 +15,14 @@ import {
 import { Bar, Line, Pie } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
-const TABS = ['Polymarket', 'Day Trading', 'Sports Betting', 'EV Calc', 'AI Research', 'News', 'Community'];
+const NAV_GROUPS = [
+  { label: 'Trade', items: ['Day Trading'] },
+  { label: 'Bet', items: ['Sports Betting', 'EV Calc'] },
+  { label: 'Predict', items: ['Polymarket', 'AI Research'] },
+  { label: 'Social', items: ['Community'] },
+  { label: 'Info', items: ['News'] },
+];
+const ALL_TABS = NAV_GROUPS.flatMap(g => g.items);
 
 /* ── Polymarket localStorage cache (5 min) ── */
 const PM_LS_KEY = 'pm_markets_v2';
@@ -72,11 +79,11 @@ export default function Dashboard() {
       <TradingViewTicker />
 
       {tab === 'Day Trading' ? (
-        <div className="tab-content" style={{padding: '24px 24px'}}>
+        <div className="tab-content" style={{padding: '32px 24px'}}>
           {visitedTabs.includes('Day Trading') && <DayTradingTab />}
         </div>
       ) : (
-        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '24px 24px'}}>
+        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab /></div>}
           {visitedTabs.includes('Sports Betting') && <div style={{display: tab==='Sports Betting' ? 'block' : 'none'}}><SportsBettingTab tier={tier} /></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
@@ -85,6 +92,76 @@ export default function Dashboard() {
           {visitedTabs.includes('Community')      && <div style={{display: tab==='Community'      ? 'block' : 'none'}}><CommunityTab /></div>}
         </div>
       )}
+    </div>
+  );
+}
+
+function NavGroups({ tab, setTab }) {
+  const [openGroup, setOpenGroup] = useState(null);
+  const navRef = useRef(null);
+
+  useEffect(() => {
+    function handler(e) { if (navRef.current && !navRef.current.contains(e.target)) setOpenGroup(null); }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const activeGroup = NAV_GROUPS.find(g => g.items.includes(tab))?.label || '';
+
+  return (
+    <div ref={navRef} style={{ display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
+      {NAV_GROUPS.map(g => {
+        const isActive = g.items.includes(tab);
+        const isOpen = openGroup === g.label;
+        return (
+          <div key={g.label} style={{ position: 'relative' }}>
+            <button
+              onClick={() => {
+                if (g.items.length === 1) { setTab(g.items[0]); setOpenGroup(null); }
+                else setOpenGroup(isOpen ? null : g.label);
+              }}
+              style={{
+                background: isActive ? 'rgba(79,142,247,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
+                border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+                borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
+                color: isActive ? '#7aaff8' : isOpen ? '#94A3B8' : '#2a3a5a',
+                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+              onMouseLeave={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
+            >
+              {g.label}
+              {g.items.length > 1 && <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.5 }}>{isOpen ? '\u25B2' : '\u25BC'}</span>}
+            </button>
+            {isOpen && g.items.length > 1 && (
+              <div style={{
+                position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                marginTop: 8, background: 'rgba(3,3,10,0.97)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12,
+                padding: '8px', display: 'flex', gap: 4, zIndex: 100,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+              }}>
+                {g.items.map(item => (
+                  <button key={item} onClick={() => { setTab(item); setOpenGroup(null); }}
+                    style={{
+                      background: tab === item ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.04)',
+                      border: tab === item ? '1px solid rgba(79,142,247,0.4)' : '1px solid rgba(255,255,255,0.06)',
+                      color: tab === item ? '#7aaff8' : '#6a7a9a',
+                      borderRadius: 8, padding: '6px 14px', fontSize: 12, fontWeight: 600,
+                      cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { if (tab !== item) e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                    onMouseLeave={e => { if (tab !== item) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -136,19 +213,8 @@ function DashboardNav({ tab, setTab, tier }) {
           <Logo size="md" />
         </div>
 
-        {/* Center: Tabs */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          {TABS.map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              style={tab === t
-                ? { background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', borderBottom: '2px solid #4f8ef7', color: '#7aaff8', borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }
-                : { background: 'transparent', border: '1px solid transparent', borderBottom: '2px solid transparent', color: '#2a3a5a', borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
-              onMouseEnter={e => { if (tab !== t) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
-              onMouseLeave={e => { if (tab !== t) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
-              {t}
-            </button>
-          ))}
-        </div>
+        {/* Center: Grouped Nav */}
+        <NavGroups tab={tab} setTab={setTab} />
 
         {/* Right: User controls */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
@@ -657,6 +723,18 @@ function PolymarketTab() {
   );
 }
 
+const CAT_COLORS = {
+  Politics: { background: 'rgba(167,139,250,0.15)', color: '#c084fc' },
+  Crypto: { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
+  Sports: { background: 'rgba(34,197,94,0.15)', color: '#4ade80' },
+  Finance: { background: 'rgba(79,142,247,0.15)', color: '#7aaff8' },
+  Science: { background: 'rgba(20,184,166,0.15)', color: '#2dd4bf' },
+  Entertainment: { background: 'rgba(244,63,94,0.15)', color: '#fb7185' },
+  Economics: { background: 'rgba(245,158,11,0.15)', color: '#f59e0b' },
+  Other: { background: 'rgba(148,163,184,0.15)', color: '#94a3b8' },
+};
+function catColor(cat) { return CAT_COLORS[cat] || CAT_COLORS.Other; }
+
 const MarketCard = memo(function MarketCard({ market: m }) {
   const [expanded, setExpanded] = useState(false);
   const pct      = m.yes ?? 50;
@@ -694,12 +772,12 @@ const MarketCard = memo(function MarketCard({ market: m }) {
   return (
     <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all cursor-default"
       style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease'}}
-      onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(79,142,247,0.3)'; e.currentTarget.style.boxShadow='0 0 20px rgba(79,142,247,0.1)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow='none'; }}>
+      onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(79,142,247,0.3)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; e.currentTarget.style.transform='translateY(-2px)'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='translateY(0)'; }}>
 
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{background: '#1e2a4a', color: '#94A3B8'}}>{m.cat}</span>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={catColor(m.cat)}>{m.cat}</span>
           {isSharp && (
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background: 'rgba(239,68,68,0.15)', color: '#f87171'}}>🔥 Sharp</span>
           )}
@@ -707,12 +785,12 @@ const MarketCard = memo(function MarketCard({ market: m }) {
         <span className="text-xs font-medium" style={{color: '#64748b'}}>Vol {vol}</span>
       </div>
 
-      <p className="text-sm font-medium leading-snug flex-1" style={{color: '#F5F5FA'}}>{m.title}</p>
+      <p style={{fontSize: 13, fontWeight: 500, color: '#F5F5FA', lineHeight: 1.4, flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{m.title}</p>
 
       <div>
         <div className="flex justify-between items-baseline mb-1.5">
           <span className="text-xs" style={{color: '#64748b'}}>YES</span>
-          <span className="text-lg font-bold" style={{color: fill}}>{pct}%</span>
+          <span style={{fontSize: 28, fontWeight: 900, color: fill}}>{pct}%</span>
           <span className="text-xs" style={{color: '#64748b'}}>NO {m.no ?? 100 - pct}%</span>
         </div>
         <div className="h-2 rounded-full overflow-hidden" style={{background: '#1e2a4a'}}>
@@ -795,7 +873,7 @@ function DayTradingTab() {
   ];
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-6">
       {/* Sub-tab bar */}
       <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#0a0f1e'}}>
         {DT_SUBTABS.map(t => (
@@ -819,11 +897,20 @@ function DayTradingTab() {
           onLimitChange={v => { setDailyLimit(v); localStorage.setItem('dt_daily_limit', v); }}
           onTargetChange={v => { setWrTarget(v);  localStorage.setItem('dt_wr_target',   v); }}
         />
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[['Total trades', stats.total, ''], ['Win rate', stats.wr+'%', ''], ['Total P&L', (stats.pnl>=0?'+':'')+'$'+stats.pnl.toFixed(2), stats.pnl], ['Avg winner', stats.avgW?'$'+stats.avgW.toFixed(0):'—', null]].map(([l,v,pnl],i) => (
-            <div key={l} className="rounded-2xl p-5" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease'}}>
-              <div className="text-xs font-medium uppercase tracking-wide mb-1.5" style={{color: '#64748b'}}>{l}</div>
-              <div className={`text-2xl font-bold ${i===2 ? (pnl>=0 ? 'text-green-500' : 'text-red-500') : ''}`} style={i!==2 ? {color: '#F5F5FA'} : {}}>{v}</div>
+        {/* Hero P&L */}
+        <div className="rounded-2xl p-6" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center'}}>
+          <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#64748b'}}>Total P&L</div>
+          <div style={{fontSize: 48, fontWeight: 900, color: stats.pnl >= 0 ? '#22c55e' : '#ef4444', letterSpacing: '-0.02em', lineHeight: 1}}>
+            {(stats.pnl>=0?'+':'')+'$'+stats.pnl.toFixed(2)}
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {[['Win Rate', stats.wr+'%', '#F5F5FA', 28], ['Max Drawdown', maxDD ? '-$'+Math.abs(maxDD).toFixed(0) : '$0', maxDD < 0 ? '#ef4444' : '#F5F5FA', 28], ['Total Trades', stats.total, '#F5F5FA', 28]].map(([l,v,c,sz]) => (
+            <div key={l} className="rounded-2xl p-5" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center', transition: 'all 0.2s ease'}}
+              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
+              <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#64748b'}}>{l}</div>
+              <div style={{fontSize: sz, fontWeight: 700, color: c}}>{v}</div>
             </div>
           ))}
         </div>
@@ -1184,12 +1271,12 @@ function EVCalcTab() {
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Inputs */}
-      <div style={{ ...gc, padding: 24 }}>
+      <div style={{ ...gc, padding: 32 }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 20 }}>Calculator</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {SLIDERS.map(([label, val, set, min, max, step, unit]) => (
             <div key={label}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                 <span style={{ fontSize: 13, fontWeight: 500, color: '#6a7a9a' }}>{label}</span>
                 <span style={{ fontSize: 20, fontWeight: 700, color: '#F5F5FA' }}>{unit === '$' ? '$' + val.toLocaleString() : val + '%'}</span>
               </div>
@@ -1201,10 +1288,31 @@ function EVCalcTab() {
         </div>
       </div>
 
-      {/* Results 2×2 + 1 full-width */}
+      {/* Hero EV */}
+      <div style={{ ...gc, padding: 32, textAlign: 'center' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 12 }}>Expected Value</div>
+        <div style={{ fontSize: 48, fontWeight: 900, color: ev >= 0 ? '#22c55e' : '#ef4444', letterSpacing: '-0.02em', lineHeight: 1 }}>
+          {(ev >= 0 ? '+' : '') + '$' + ev.toFixed(2)}
+        </div>
+      </div>
+      {/* Edge hero */}
+      <div style={{ ...gc, padding: 24, textAlign: 'center', borderLeft: `3px solid ${parseFloat(edge) > 5 ? '#22c55e' : parseFloat(edge) > 0 ? '#f59e0b' : '#ef4444'}` }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 8 }}>Edge</div>
+        <div style={{ fontSize: 36, fontWeight: 800, color: parseFloat(edge) > 5 ? '#22c55e' : parseFloat(edge) > 0 ? '#f59e0b' : '#ef4444', lineHeight: 1 }}>
+          {(parseFloat(edge) > 0 ? '+' : '') + edge + '%'}
+        </div>
+        <div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 8 }}>Breakeven: {mp}% · Your estimate: {tp}%</div>
+      </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        {RESULTS.map(([label, value, color], idx) => (
-          <div key={label} style={{ ...gc, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16, minHeight: 110, ...(idx === 4 ? { gridColumn: '1 / -1' } : {}) }}>
+        {[
+          ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#22c55e' : '#ef4444'],
+          ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#7aaff8' : '#4a5a7a'],
+          ['Max Payout', '$' + (ba + payout).toFixed(0), '#F5F5FA'],
+          ['Breakeven Odds', mp + '%', '#94A3B8'],
+        ].map(([label, value, color]) => (
+          <div key={label} style={{ ...gc, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16, minHeight: 110, transition: 'all 0.2s ease' }}
+            onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
+            onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a' }}>{label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
           </div>

@@ -500,6 +500,43 @@ export default function CommunityTab() {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* First post incentive */}
+      {posts.length === 0 || !posts.some(p => p.user_id) ? (
+        <div style={{
+          background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.2)',
+          borderRadius: 16, padding: '16px 20px', marginBottom: 16,
+          display: 'flex', alignItems: 'center', gap: 12,
+        }}>
+          <div style={{ fontSize: 20 }}>{'\u2728'}</div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#7aaff8' }}>Share your first trade idea and get verified</div>
+            <div style={{ fontSize: 11, color: '#4a5a7a', marginTop: 2 }}>Verified members get a blue badge next to their name</div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Most liked today */}
+      {posts.length > 0 && (() => {
+        const topPost = [...posts].sort((a, b) => (b.upvotes || 0) - (a.upvotes || 0))[0];
+        if (!topPost || (topPost.upvotes || 0) < 1) return null;
+        return (
+          <div style={{
+            background: 'rgba(251,191,36,0.05)', border: '1px solid rgba(251,191,36,0.3)',
+            borderRadius: 16, padding: 20, marginBottom: 16,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <span style={{ fontSize: 14 }}>{'\u{1F31F}'}</span>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#fbbf24' }}>Most liked today</span>
+            </div>
+            <p style={{ fontSize: 14, color: '#F5F5FA', margin: 0, lineHeight: 1.5 }}>{topPost.content}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10, fontSize: 12, color: '#475569' }}>
+              <span style={{ fontWeight: 600, color: '#94A3B8' }}>{topPost.display_name}</span>
+              <span>{'\u25B2'} {topPost.upvotes || 0}</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Top-level tabs: Feed vs Leaderboard */}
       <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#0a0f1e'}}>
         {[{id:'feed',label:'💬 Community Feed'},{id:'leaderboard',label:'🏆 Leaderboard'}].map(t => (

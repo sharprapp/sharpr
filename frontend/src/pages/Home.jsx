@@ -208,6 +208,102 @@ export default function Home() {
           ))}
         </div>
 
+        {/* ── TODAY'S EDGE ── */}
+        <section>
+          <div style={{ marginBottom: 16 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: '#f0f4ff' }}>Today's Edge</h2>
+            <p style={{ fontSize: 13, color: '#2a3a5a', marginTop: 4 }}>Your best opportunities right now</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+            {/* Top EV Market */}
+            <div style={{ ...card, borderLeft: '3px solid #4f8ef7', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4f8ef7' }}>Top Market</span>
+                {markets[0]?.volume >= 1000000 && (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>High volume</span>
+                )}
+              </div>
+              {marketsLoading ? (
+                <div style={{ height: 40, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
+              ) : markets[0] ? (
+                <>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>{markets[0].title}</p>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                    <span style={{ fontSize: 24, fontWeight: 900, color: markets[0].yes > 60 ? '#22c55e' : markets[0].yes > 40 ? '#f59e0b' : '#ef4444' }}>{markets[0].yes}%</span>
+                    <span style={{ fontSize: 12, color: '#475569' }}>YES</span>
+                  </div>
+                  <button onClick={() => { sessionStorage.setItem('ai-prefill-topic', markets[0].title); sessionStorage.setItem('ai-prefill-type', 'polymarket'); goTab('AI Research'); }}
+                    style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#60a5fa', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,142,247,0.2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(79,142,247,0.12)'}>
+                    Analyze with AI →
+                  </button>
+                </>
+              ) : (
+                <p style={{ fontSize: 13, color: '#475569' }}>No markets loaded</p>
+              )}
+            </div>
+
+            {/* Trading Setup */}
+            <div style={{ ...card, borderLeft: '3px solid #22c55e', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#22c55e' }}>Trading Setup</span>
+              {(() => {
+                const saved = JSON.parse(localStorage.getItem('premarket_levels') || '{}');
+                if (saved.bias && saved.date === new Date().toDateString()) {
+                  const biasColor = saved.bias === 'LONG' ? '#22c55e' : saved.bias === 'SHORT' ? '#ef4444' : '#f59e0b';
+                  return (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                        <span style={{ fontSize: 24, fontWeight: 900, color: biasColor }}>{saved.bias}</span>
+                        <span style={{ fontSize: 12, color: '#475569' }}>bias today</span>
+                      </div>
+                      {saved.thesis && <p style={{ fontSize: 12, color: '#6a7a9a', margin: 0 }}>{saved.thesis}</p>}
+                      {saved.nqLevels?.vwap && <div style={{ fontSize: 11, color: '#475569' }}>VWAP: {saved.nqLevels.vwap}</div>}
+                    </>
+                  );
+                }
+                return (
+                  <>
+                    <p style={{ fontSize: 14, color: '#475569', margin: 0 }}>No bias set for today</p>
+                    <button onClick={() => goTab('Day Trading')}
+                      style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#4ade80', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.2)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.12)'}>
+                      Set your bias in Pre-Market →
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* Sharp Bet */}
+            <div style={{ ...card, borderLeft: '3px solid #f59e0b', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#f59e0b' }}>Sharp Bet</span>
+              {gamesLoading ? (
+                <div style={{ height: 40, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
+              ) : games.length > 0 ? (
+                <>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>
+                    {games[0].away?.name || '—'} @ {games[0].home?.name || '—'}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>{sport}</span>
+                    <span style={{ fontSize: 12, color: '#475569' }}>{games[0].status?.detail || fmtDate(games[0].date)}</span>
+                  </div>
+                  <button onClick={() => goTab('Sports Betting')}
+                    style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#f59e0b', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.12)'}>
+                    View odds →
+                  </button>
+                </>
+              ) : (
+                <p style={{ fontSize: 13, color: '#475569' }}>No {sport} games today</p>
+              )}
+            </div>
+          </div>
+        </section>
+
         {/* ── LIVE MARKETS ── */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -228,7 +324,9 @@ export default function Home() {
                 const pct = m.yes ?? 50;
                 const fill = pct > 60 ? '#22c55e' : pct > 40 ? '#f59e0b' : '#ef4444';
                 return (
-                  <div key={`${m.id}-${i}`} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div key={`${m.id}-${i}`} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s ease', cursor: 'default' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: '#1e2a4a', color: '#94A3B8' }}>{m.cat || 'Market'}</span>
                       <span style={{ fontSize: 11, color: '#475569' }}>Vol {m.volume >= 1e6 ? '$'+(m.volume/1e6).toFixed(1)+'M' : m.volume >= 1e3 ? '$'+(m.volume/1e3).toFixed(0)+'k' : '$'+(m.volume||0).toFixed(0)}</span>
@@ -237,7 +335,7 @@ export default function Home() {
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                         <span style={{ fontSize: 11, color: '#64748b' }}>YES</span>
-                        <span style={{ fontSize: 16, fontWeight: 700, color: fill }}>{pct}%</span>
+                        <span style={{ fontSize: 22, fontWeight: 900, color: fill }}>{pct}%</span>
                         <span style={{ fontSize: 11, color: '#64748b' }}>NO {m.no ?? 100 - pct}%</span>
                       </div>
                       <div style={{ height: 6, borderRadius: 4, background: '#1e2a4a', overflow: 'hidden' }}>
@@ -295,7 +393,9 @@ export default function Home() {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
               {games.slice(0, 8).map((g, i) => (
-                <div key={g.id || i} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div key={g.id || i} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 10, transition: 'all 0.2s ease' }}
+                  onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: SPORT_COLORS[sport] || '#94A3B8', letterSpacing: '0.05em' }}>{sport}</span>
                     {g.status?.state === 'in' && (
@@ -327,6 +427,58 @@ export default function Home() {
               ))}
             </div>
           )}
+        </section>
+
+        {/* ── SHARPR SCORE ── */}
+        <section>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Your Sharpr Score</h2>
+          </div>
+          {(() => {
+            const allSettled = [...trades.filter(t => t.status !== 'open'), ...bets.filter(b => b.result !== 'pending')];
+            if (allSettled.length === 0) {
+              return (
+                <div style={{ ...card, textAlign: 'center', padding: 32 }}>
+                  <div style={{ fontSize: 48, fontWeight: 900, color: '#1e2a4a', marginBottom: 8 }}>--</div>
+                  <div style={{ fontSize: 13, color: '#475569' }}>Log trades and bets to calculate your score</div>
+                </div>
+              );
+            }
+            // Win rate component (40 pts)
+            const totalWins = trades.filter(t => t.status === 'win').length + bets.filter(b => b.result === 'win').length;
+            const totalSettled = allSettled.length;
+            const wr = totalSettled ? totalWins / totalSettled : 0;
+            const wrPts = Math.min(40, Math.round(wr / 0.55 * 40));
+            // ROI component (30 pts)
+            const totalPnlAll = allSettled.reduce((s, x) => s + (x.pnl || 0), 0);
+            const totalRisk = allSettled.reduce((s, x) => s + (x.stake || Math.abs(x.entry * x.qty) || 100), 0);
+            const roiRatio = totalRisk > 0 ? totalPnlAll / totalRisk : 0;
+            const roiPts = Math.max(0, Math.min(30, Math.round((roiRatio + 0.1) / 0.3 * 30)));
+            // Discipline component (30 pts) - based on consistency
+            const discPts = Math.min(30, Math.round(Math.min(totalSettled, 20) / 20 * 30));
+            const score = Math.max(0, Math.min(100, wrPts + roiPts + discPts));
+            const scoreColor = score >= 71 ? '#22c55e' : score >= 41 ? '#f59e0b' : '#ef4444';
+            const scoreLabel = score >= 85 ? 'Elite' : score >= 71 ? 'Sharp money' : score >= 41 ? 'Finding your edge' : 'Keep grinding';
+            return (
+              <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 24 }}>
+                <div style={{ textAlign: 'center', minWidth: 100 }}>
+                  <div style={{ fontSize: 48, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{score}</div>
+                  <div style={{ fontSize: 11, color: '#475569', marginTop: 6 }}>/ 100</div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F5FA', marginBottom: 6 }}>{scoreLabel}</div>
+                  <div style={{ height: 8, borderRadius: 4, background: '#1e2a4a', overflow: 'hidden', marginBottom: 10 }}>
+                    <div style={{ height: '100%', borderRadius: 4, background: scoreColor, width: score + '%', transition: 'width 0.8s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#475569' }}>
+                    <span>Win rate: {wrPts}/40</span>
+                    <span>ROI: {roiPts}/30</span>
+                    <span>Discipline: {discPts}/30</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </section>
 
         {/* ── TWO-COLUMN SUMMARY ── */}
