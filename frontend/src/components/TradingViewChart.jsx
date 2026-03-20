@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function TradingViewChart({ symbol, theme = 'dark', height = 520 }) {
+export default function TradingViewChart({ symbol, theme = 'dark', height = 650, cssHeight }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -41,10 +41,12 @@ export default function TradingViewChart({ symbol, theme = 'dark', height = 520 
     };
   }, [symbol]);
 
+  const h = cssHeight || `${height}px`;
+
   if (!symbol) {
     return (
       <div style={{
-        height: `${height}px`,
+        height: h,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -65,7 +67,7 @@ export default function TradingViewChart({ symbol, theme = 'dark', height = 520 
     <div
       ref={containerRef}
       className="tradingview-widget-container"
-      style={{ height: `${height}px`, width: '100%' }}
+      style={{ height: h, width: '100%' }}
     />
   );
 }

@@ -1664,7 +1664,7 @@ function ChartsPanel() {
         </div>
         {selectedSymbol && <p style={{ fontSize: 12, color: '#2a3a5a', margin: 0 }}>Use the chart toolbar to change timeframes</p>}
       </div>
-      <TradingViewChart symbol={selectedSymbol} height={520} />
+      <TradingViewChart symbol={selectedSymbol} cssHeight="calc(100vh - 320px)" />
     </div>
   );
 }
