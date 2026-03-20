@@ -32,9 +32,28 @@ export function useAuth() {
     isFetching = true;
     try {
       const { data } = await api.get('/api/auth/me');
-      setTier(data.tier || 'free');
+      const t = data.tier || 'free';
+      console.log('[useAuth] tier from backend:', t);
+      setTier(t);
     } catch (e) {
-      setTier('free');
+      console.warn('[useAuth] /api/auth/me failed, trying Supabase direct fallback:', e.message);
+      // Fallback: query Supabase directly
+      try {
+        const { data: { user: u } } = await supabase.auth.getUser();
+        if (u) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('tier')
+            .eq('id', u.id)
+            .single();
+          const t = profile?.tier || 'free';
+          console.log('[useAuth] tier from Supabase fallback:', t);
+          setTier(t);
+        }
+      } catch (e2) {
+        console.warn('[useAuth] Supabase fallback also failed:', e2.message);
+        setTier('free');
+      }
     } finally {
       setLoading(false);
       isFetching = false;
