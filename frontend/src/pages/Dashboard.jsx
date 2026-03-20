@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef, memo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
+import TradingViewTicker from '../components/TradingViewTicker';
 import api from '../lib/api';
 import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
@@ -68,6 +69,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen">
       <DashboardNav tab={tab} setTab={switchTab} tier={tier} />
+      <TradingViewTicker />
 
       {tab === 'Day Trading' ? (
         <div className="tab-content" style={{padding: '24px 24px'}}>
