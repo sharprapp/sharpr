@@ -9,6 +9,8 @@ import TradingCalendar from '../components/TradingCalendar';
 import SportsOdds from '../components/SportsOdds';
 import CommunityTab from '../components/CommunityTab';
 import MarketDetailModal from '../components/MarketDetailModal';
+import HomeTab from '../components/HomeTab';
+import UpgradeModal from '../components/UpgradeModal';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
   PointElement, ArcElement, Title, Tooltip, Legend,
@@ -23,8 +25,9 @@ const NAV_GROUPS = [
   { label: 'Social', items: ['Community'] },
   { label: 'Info', items: ['News'] },
 ];
-const STANDALONE_TABS = ['AI Research'];
-const ALL_TABS = [...NAV_GROUPS.flatMap(g => g.items), ...STANDALONE_TABS];
+const STANDALONE_TABS_LEFT = ['Home'];
+const STANDALONE_TABS_RIGHT = ['AI Research'];
+const ALL_TABS = [...STANDALONE_TABS_LEFT, ...NAV_GROUPS.flatMap(g => g.items), ...STANDALONE_TABS_RIGHT];
 
 /* ── Polymarket localStorage cache (5 min) ── */
 const PM_LS_KEY = 'pm_markets_v2';
@@ -50,13 +53,14 @@ export default function Dashboard() {
   const [tab, setTab]     = useState(() => {
     const saved = sessionStorage.getItem('openTab');
     if (saved) { sessionStorage.removeItem('openTab'); return saved; }
-    return 'Polymarket';
+    return 'Home';
   });
   const [aiFill, setAiFill]       = useState(null);
   const [visitedTabs, setVisitedTabs] = useState(() => {
     const saved = sessionStorage.getItem('openTab');
-    return [saved || 'Polymarket'];
+    return [saved || 'Home'];
   });
+  const [showUpgrade, setShowUpgrade] = useState(false);
   const { tier } = useAuth();
 
   // Warm up Railway backend immediately
@@ -70,6 +74,12 @@ export default function Dashboard() {
     return () => window.removeEventListener('ai-prefill', handler);
   }, []);
 
+  useEffect(() => {
+    function handler() { setShowUpgrade(true); }
+    window.addEventListener('open-upgrade', handler);
+    return () => window.removeEventListener('open-upgrade', handler);
+  }, []);
+
   function switchTab(t) {
     setTab(t);
     setVisitedTabs(prev => [...new Set([...prev, t])]);
@@ -80,7 +90,11 @@ export default function Dashboard() {
       <DashboardNav tab={tab} setTab={switchTab} tier={tier} />
       <TradingViewTicker />
 
-      {tab === 'Day Trading' ? (
+      {tab === 'Home' ? (
+        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+          <HomeTab onSwitchTab={switchTab} />
+        </div>
+      ) : tab === 'Day Trading' ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
           {visitedTabs.includes('Day Trading') && <DayTradingTab />}
         </div>
@@ -94,6 +108,7 @@ export default function Dashboard() {
           {visitedTabs.includes('Community')      && <div style={{display: tab==='Community'      ? 'block' : 'none'}}><CommunityTab /></div>}
         </div>
       )}
+      {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
     </div>
   );
 }
@@ -110,8 +125,27 @@ function NavGroups({ tab, setTab }) {
 
   const activeGroup = NAV_GROUPS.find(g => g.items.includes(tab))?.label || '';
 
+  function StandaloneBtn({ t }) {
+    return (
+      <button onClick={() => { setTab(t); setOpenGroup(null); }}
+        style={{
+          background: tab === t ? 'rgba(79,142,247,0.15)' : 'transparent',
+          border: tab === t ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+          borderBottom: tab === t ? '2px solid #4f8ef7' : '2px solid transparent',
+          color: tab === t ? '#7aaff8' : '#2a3a5a',
+          borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+          cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => { if (tab !== t) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+        onMouseLeave={e => { if (tab !== t) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
+        {t}
+      </button>
+    );
+  }
+
   return (
     <div ref={navRef} style={{ display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
+      {STANDALONE_TABS_LEFT.map(t => <StandaloneBtn key={t} t={t} />)}
       {NAV_GROUPS.map(g => {
         const isActive = g.items.includes(tab);
         const isOpen = openGroup === g.label;
@@ -164,23 +198,7 @@ function NavGroups({ tab, setTab }) {
           </div>
         );
       })}
-      {/* Standalone tabs */}
-      {STANDALONE_TABS.map(t => (
-        <button key={t} onClick={() => { setTab(t); setOpenGroup(null); }}
-          style={{
-            background: tab === t ? 'rgba(79,142,247,0.15)' : 'transparent',
-            border: tab === t ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-            borderBottom: tab === t ? '2px solid #4f8ef7' : '2px solid transparent',
-            color: tab === t ? '#7aaff8' : '#2a3a5a',
-            borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { if (tab !== t) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
-          onMouseLeave={e => { if (tab !== t) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
-        >
-          {t}
-        </button>
-      ))}
+      {STANDALONE_TABS_RIGHT.map(t => <StandaloneBtn key={t} t={t} />)}
     </div>
   );
 }

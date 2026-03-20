@@ -1,78 +1,89 @@
-import { useState, useEffect } from 'react';
-import api from '../lib/api';
+import { useNavigate } from 'react-router-dom';
 
-export default function UpgradeModal() {
-  const [open, setOpen]       = useState(false);
-  const [message, setMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function UpgradeModal({ onClose }) {
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    function handler(e) {
-      setMessage(e.detail?.message || 'Upgrade to Pro to access this feature.');
-      setOpen(true);
-    }
-    window.addEventListener('upgrade-required', handler);
-    return () => window.removeEventListener('upgrade-required', handler);
-  }, []);
-
-  async function handleUpgrade() {
-    setLoading(true);
-    try {
-      const { data } = await api.post('/api/stripe/create-checkout');
-      window.location.href = data.url;
-    } catch {
-      alert('Could not start checkout.');
-      setLoading(false);
-    }
+  function goUpgrade() {
+    onClose();
+    navigate('/settings');
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)'}}
-      onClick={() => setOpen(false)}>
-      <div className="glass-card max-w-sm w-full mx-4 p-6" onClick={e => e.stopPropagation()}
-        style={{background: '#070712', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, boxShadow: '0 0 60px rgba(79,142,247,0.12)'}}>
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20,
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: '100%', maxWidth: 680, background: '#070712',
+        border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 32,
+        position: 'relative',
+      }}>
+        {/* Close */}
+        <button onClick={onClose} style={{
+          position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: 10,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+          color: '#6a7a9a', cursor: 'pointer', fontSize: 16,
+        }}>✕</button>
 
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{background: 'rgba(37,99,235,0.2)'}}>
-            <span className="text-xl">⚡</span>
-          </div>
-          <div>
-            <div className="font-bold text-base" style={{color: '#F5F5FA'}}>Upgrade to Pro</div>
-            <div className="text-xs" style={{color: '#64748b'}}>Unlock everything</div>
-          </div>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: '#f0f4ff', margin: 0, marginBottom: 6 }}>Find Your Edge</h2>
+          <p style={{ fontSize: 13, color: '#4a5a7a', margin: 0 }}>Choose the plan that fits your game</p>
         </div>
 
-        <p className="text-sm mb-4" style={{color: '#94A3B8'}}>{message}</p>
+        {/* 3 tiers */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+          {/* Free */}
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#94A3B8', marginBottom: 4 }}>Free</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: '#F5F5FA' }}>$0<span style={{ fontSize: 13, fontWeight: 400, color: '#4a5a7a' }}>/mo</span></div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: '#6a7a9a', flex: 1 }}>
+              {['50 markets', '5 AI/day', 'Basic journal', 'EV calc', 'Community'].map(f => (
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: '#22c55e', fontSize: 12 }}>✓</span> {f}
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: '8px 16px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)', color: '#4a5a7a', textAlign: 'center', fontSize: 12, fontWeight: 600 }}>Current plan</div>
+          </div>
 
-        <div className="rounded-xl p-4 mb-4" style={{background: '#0a0f1e', border: '1px solid #1e2a4a'}}>
-          <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#64748b'}}>Pro includes</div>
-          <div className="flex flex-col gap-2">
-            {[
-              'Unlimited AI research queries',
-              'Live odds (NFL, NBA, MLB, Soccer, UFC)',
-              'Unlimited trade & bet journal entries',
-              'CSV export',
-              'Priority support',
-            ].map(f => (
-              <div key={f} className="flex items-center gap-2 text-sm" style={{color: '#cbd5e1'}}>
-                <span className="text-green-400 font-bold">✓</span> {f}
-              </div>
-            ))}
+          {/* Pro */}
+          <div style={{ background: 'rgba(79,142,247,0.04)', border: '2px solid rgba(79,142,247,0.4)', borderRadius: 14, padding: 20, display: 'flex', flexDirection: 'column', gap: 14, position: 'relative' }}>
+            <div style={{ position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)', fontSize: 9, fontWeight: 700, padding: '2px 10px', borderRadius: 20, background: '#4f8ef7', color: '#fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Most popular</div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#7aaff8', marginBottom: 4 }}>Pro</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: '#F5F5FA' }}>$19<span style={{ fontSize: 13, fontWeight: 400, color: '#4a5a7a' }}>/mo</span></div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: '#6a7a9a', flex: 1 }}>
+              {['All 8,300+ markets', '50 AI/day', 'Market AI analysis', 'Sports props', 'Sharpr Score', 'Unlimited journal', 'CSV export'].map(f => (
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: '#4f8ef7', fontSize: 12 }}>✓</span> {f}
+                </div>
+              ))}
+            </div>
+            <button onClick={goUpgrade} style={{ padding: '8px 16px', borderRadius: 10, background: '#4f8ef7', border: 'none', color: '#fff', textAlign: 'center', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Upgrade to Pro — $19/mo</button>
+          </div>
+
+          {/* Elite */}
+          <div style={{ background: 'rgba(251,191,36,0.03)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 14, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24', marginBottom: 4 }}>Elite</div>
+              <div style={{ fontSize: 28, fontWeight: 900, color: '#F5F5FA' }}>$49<span style={{ fontSize: 13, fontWeight: 400, color: '#4a5a7a' }}>/mo</span></div>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12, color: '#6a7a9a', flex: 1 }}>
+              {['Everything in Pro', 'Unlimited AI', 'Options flow (soon)', 'Sharp alerts (soon)', 'Priority AI', 'Early access'].map(f => (
+                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: '#fbbf24', fontSize: 12 }}>✓</span> {f}
+                </div>
+              ))}
+            </div>
+            <button onClick={goUpgrade} style={{ padding: '8px 16px', borderRadius: 10, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.25)', color: '#fbbf24', textAlign: 'center', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Go Elite — $49/mo</button>
           </div>
         </div>
-
-        <button onClick={handleUpgrade} disabled={loading}
-          className="glass-btn-blue w-full py-3 text-sm disabled:opacity-50">
-          {loading ? 'Loading…' : 'Upgrade — $19/month'}
-        </button>
-        <button onClick={() => setOpen(false)}
-          className="w-full mt-2 py-2 text-sm transition-colors" style={{color: '#475569'}}
-          onMouseEnter={e => e.currentTarget.style.color='#94A3B8'}
-          onMouseLeave={e => e.currentTarget.style.color='#475569'}>
-          Maybe later
-        </button>
       </div>
     </div>
   );
