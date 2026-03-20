@@ -342,11 +342,11 @@ function DashboardNav({ tab, setTab, tier, onOddsSport }) {
 
   return (
     <div className="sticky top-0 z-40 glass-nav">
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: 52 }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: 64 }}>
 
         {/* Left: Logo */}
         <div style={{ flex: 1 }}>
-          <Logo size="md" />
+          <Logo size="lg" />
         </div>
 
         {/* Center: Grouped Nav */}

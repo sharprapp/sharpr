@@ -146,7 +146,7 @@ export default function Home() {
       {/* ── NAVBAR ── */}
       <nav className="glass-nav" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '12px 24px', display: 'flex', alignItems: 'center', gap: 24 }}>
-          <Logo />
+          <Logo size="lg" />
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginLeft: 16 }}>
             {['Markets', 'Journal', 'Settings'].map(label => (
               <a key={label}

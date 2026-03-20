@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom';
 export default function Logo({ size = 'md' }) {
   const navigate = useNavigate();
   const sizes = {
-    sm: { box: 24, svg: 14, text: 14 },
-    md: { box: 32, svg: 18, text: 18 },
-    lg: { box: 48, svg: 28, text: 26 }
+    sm: { box: 28, svg: 16, text: 15 },
+    md: { box: 40, svg: 24, text: 22 },
+    lg: { box: 52, svg: 32, text: 28 }
   }
   const s = sizes[size] || sizes.md
   return (
