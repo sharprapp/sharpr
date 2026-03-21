@@ -62,6 +62,23 @@ export default function HomeTab({ onSwitchTab }) {
   const todayPnl = useMemo(() => todayTrades.filter(t => t.status !== 'open').reduce((s, t) => s + (t.pnl || 0), 0), [todayTrades]);
   const monthPnl = useMemo(() => monthTrades.filter(t => t.status !== 'open').reduce((s, t) => s + (t.pnl || 0), 0), [monthTrades]);
 
+  // Sharpr Score — calculated from existing trades/bets data
+  const sharprScore = useMemo(() => {
+    const settled = [...trades.filter(t => t.status !== 'open'), ...bets.filter(b => b.result !== 'pending')];
+    if (settled.length === 0) return null;
+    const wins = settled.filter(r => r.status === 'win' || r.result === 'win' || (r.pnl > 0)).length;
+    const winRate = wins / settled.length;
+    const totalPnl = settled.reduce((s, r) => s + (r.pnl || 0), 0);
+    const totalStake = settled.reduce((s, r) => s + (r.stake || Math.abs((r.entry || 0) * (r.qty || 1)) || 100), 0);
+    const roi = totalStake > 0 ? totalPnl / totalStake : 0;
+    const roiScore = Math.min(1, Math.max(0, (roi + 0.5) / 1));
+    const activityScore = Math.min(1, settled.length / 50);
+    return Math.min(100, Math.max(0, Math.round(winRate * 50 + roiScore * 30 + activityScore * 20)));
+  }, [trades, bets]);
+
+  const scoreColor = sharprScore == null ? '#2a3a5a' : sharprScore >= 75 ? '#22c55e' : sharprScore >= 50 ? '#f59e0b' : '#ef4444';
+  const scoreLabel = sharprScore == null ? '' : sharprScore >= 75 ? 'Sharp edge' : sharprScore >= 50 ? 'Building consistency' : 'Focus on discipline';
+
   // Pick most interesting market (not 0% or 100%, closest to 50% with volume)
   const topMarket = useMemo(() => {
     if (!markets.length) return null;
@@ -118,6 +135,37 @@ export default function HomeTab({ onSwitchTab }) {
           </div>
         ))}
       </div>
+
+      {/* Sharpr Score */}
+      {(tier === 'pro' || tier === 'elite') ? (
+        <div style={{ ...card, background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.15)', display: 'flex', alignItems: 'center', gap: 24 }}>
+          <div style={{ textAlign: 'center', minWidth: 80 }}>
+            <div style={{ fontSize: 48, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{sharprScore ?? '--'}</div>
+            <div style={{ fontSize: 10, color: '#4a5a7a', marginTop: 4 }}>/ 100</div>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', color: '#4f8ef7', textTransform: 'uppercase', marginBottom: 6 }}>Sharpr Score</div>
+            <div style={{ height: 6, borderRadius: 3, background: '#1e2a4a', overflow: 'hidden', marginBottom: 8 }}>
+              <div style={{ height: '100%', borderRadius: 3, background: scoreColor, width: (sharprScore ?? 0) + '%', transition: 'width 0.8s ease' }} />
+            </div>
+            <div style={{ fontSize: 12, color: '#6a7a9a' }}>{sharprScore != null ? scoreLabel : 'Log trades and bets to calculate'}</div>
+          </div>
+        </div>
+      ) : (
+        <div style={{ ...card, background: 'rgba(79,142,247,0.04)', border: '1px solid rgba(79,142,247,0.12)', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20, filter: 'blur(3px)', pointerEvents: 'none' }}>
+            <div style={{ fontSize: 48, fontWeight: 900, color: 'rgba(79,142,247,0.15)', lineHeight: 1 }}>72</div>
+            <div><div style={{ fontSize: 11, fontWeight: 700, color: '#4f8ef7', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 4 }}>Sharpr Score</div><div style={{ height: 6, borderRadius: 3, background: '#1e2a4a', width: 200 }}><div style={{ height: '100%', borderRadius: 3, background: '#4f8ef7', width: '72%' }} /></div></div>
+          </div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(3,3,10,0.6)', backdropFilter: 'blur(4px)', borderRadius: 16 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 16, marginBottom: 4 }}>🔒</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4ff', marginBottom: 2 }}>Sharpr Score</div>
+              <div style={{ fontSize: 10, color: '#4a5a7a' }}>Upgrade to Pro</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* SECTION 3 — Today's Edge */}
       <section>
@@ -224,7 +272,7 @@ export default function HomeTab({ onSwitchTab }) {
       <section>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
           <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#f0f4ff' }}>Today's games</h2>
-          <button onClick={() => goTab('sb-journal')} style={{ fontSize: 12, color: '#4f8ef7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View odds →</button>
+          <button onClick={() => goTab('Events')} style={{ fontSize: 12, color: '#4f8ef7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View odds →</button>
         </div>
         {gamesLoading ? (
           <div style={{ display: 'flex', gap: 12, overflowX: 'auto' }}>
@@ -235,7 +283,7 @@ export default function HomeTab({ onSwitchTab }) {
         ) : (
           <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
             {games.slice(0, 8).map((g, i) => (
-              <div key={g.id || i} onClick={() => goTab('sb-journal')}
+              <div key={g.id || i} onClick={() => goTab('Events')}
                 style={{ ...card, minWidth: 240, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 8, cursor: 'pointer', transition: 'all 0.2s ease' }}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
