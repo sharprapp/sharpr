@@ -90,6 +90,8 @@ router.post('/webhook', async (req, res) => {
         .from('profiles')
         .update({
           tier: isActive ? 'pro' : 'free',
+          plan: isActive ? 'pro' : 'free',
+          plan_status: isActive ? 'active' : 'inactive',
           stripe_subscription_id: data.id,
           subscription_status: data.status,
           current_period_end: new Date(data.current_period_end * 1000).toISOString()
@@ -102,7 +104,7 @@ router.post('/webhook', async (req, res) => {
       if (!userId) break;
       await supabase
         .from('profiles')
-        .update({ tier: 'free', subscription_status: 'canceled' })
+        .update({ tier: 'free', plan: 'free', plan_status: 'cancelled', subscription_status: 'canceled' })
         .eq('id', userId);
       break;
     }

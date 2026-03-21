@@ -17,7 +17,9 @@ router.post('/register', async (req, res) => {
   await supabase.from('profiles').insert({
     id: data.user.id,
     email: data.user.email,
-    tier: 'free'
+    tier: 'free',
+    plan: 'free',
+    plan_status: 'inactive'
   });
 
   res.json({ message: 'Account created. Please sign in.' });
@@ -25,11 +27,14 @@ router.post('/register', async (req, res) => {
 
 // Get current user profile + tier
 router.get('/me', requireAuth, async (req, res) => {
+  const p = req.profile || {};
   res.json({
     id: req.user.id,
     email: req.user.email,
-    tier: req.tier,
-    profile: req.profile
+    tier: p.tier || p.plan || 'free',
+    plan: p.plan || p.tier || 'free',
+    plan_status: p.plan_status || p.subscription_status || 'inactive',
+    profile: p
   });
 });
 

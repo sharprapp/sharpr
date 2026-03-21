@@ -34,7 +34,7 @@ export function useAuth() {
     isFetching = true;
     try {
       const { data } = await api.get('/api/auth/me');
-      const t = data.tier || 'free';
+      const t = data.tier || data.plan || 'free';
       console.log('[useAuth] tier from backend:', t);
       setTier(t);
       setUsername(data.profile?.username || null);
