@@ -24,7 +24,7 @@ import {
 import { Bar, Line, Pie } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
 
-const NAV_GROUPS = [
+const NAV_GROUPS_LEFT = [
   { label: 'Trade', items: [
     { key: 'dt-journal', label: 'Journal', emoji: '📓', desc: 'Trade log & calendar' },
     { key: 'dt-premarket', label: 'Pre-Market', emoji: '🌅', desc: 'Morning prep & levels' },
@@ -40,15 +40,18 @@ const NAV_GROUPS = [
   { label: 'Predict', items: [
     { key: 'Polymarket', label: 'Polymarket', emoji: '🎯', desc: '8,300+ live markets' },
     { key: 'EV Calc', label: 'EV Calc', emoji: '🧮', desc: 'Expected value calculator' },
-    { key: 'AI Research', label: 'AI Research', emoji: '🔬', desc: 'Claude-powered analysis' },
   ]},
+];
+const STANDALONE_TABS = ['AI Research', 'Events'];
+const NAV_GROUPS_RIGHT = [
   { label: 'Social', items: [{ key: 'Community', label: 'Community', emoji: '💬', desc: 'Trading chat' }] },
-  { label: 'Info', items: [
+  { label: 'News', items: [
     { key: 'news-sports', label: 'Sports News', emoji: '🏆', desc: 'ESPN live coverage' },
     { key: 'news-trading', label: 'Trading News', emoji: '📈', desc: 'Markets, crypto & macro' },
     { key: 'news-world', label: 'World News', emoji: '🌍', desc: 'BBC, Reuters & more' },
   ]},
 ];
+const NAV_GROUPS = [...NAV_GROUPS_LEFT, ...NAV_GROUPS_RIGHT];
 const ALL_TABS = NAV_GROUPS.flatMap(g => g.items.map(i => i.key));
 
 /* ── Polymarket localStorage cache (5 min) ── */
@@ -120,6 +123,10 @@ export default function Dashboard() {
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><HomeTab onSwitchTab={switchTab} /></ErrorBoundary>
         </div>
+      ) : tab === 'Events' ? (
+        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+          <ErrorBoundary><OddsBoard initialSport="NBA" tier={tier} /></ErrorBoundary>
+        </div>
       ) : tab.startsWith('dt-') ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
           <ErrorBoundary><DayTradingTab activeSubTab={tab.replace('dt-', '')} /></ErrorBoundary>
@@ -170,7 +177,85 @@ function NavGroups({ tab, setTab }) {
         onMouseLeave={e => { if (tab !== 'Home') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
         Home
       </button>
-      {NAV_GROUPS.map(g => {
+      {NAV_GROUPS_LEFT.map(g => {
+        const isActive = g.items.some(i => i.key === tab);
+        const isOpen = openGroup === g.label;
+        return (
+          <div key={g.label} style={{ position: 'relative' }}>
+            <button
+              onClick={() => {
+                if (g.items.length === 1) { setTab(g.items[0].key); setOpenGroup(null); }
+                else setOpenGroup(isOpen ? null : g.label);
+              }}
+              style={{
+                background: isActive ? 'rgba(79,142,247,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
+                border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+                borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
+                color: isActive ? '#7aaff8' : isOpen ? '#94A3B8' : '#2a3a5a',
+                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+              onMouseLeave={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
+            >
+              {g.label}
+              {g.items.length > 1 && <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.5 }}>{isOpen ? '\u25B2' : '\u25BC'}</span>}
+            </button>
+            {isOpen && g.items.length > 1 && (
+              <div style={{
+                position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                marginTop: 8, background: '#070712',
+                border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14,
+                padding: 8, zIndex: 100, minWidth: 220,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              }}>
+                {g.items.map(item => {
+                  const isItemActive = tab === item.key;
+                  return (
+                    <button key={item.key} onClick={() => { setTab(item.key); setOpenGroup(null); }}
+                      style={{
+                        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '10px 12px', borderRadius: 8, border: 'none',
+                        borderLeft: isItemActive ? '2px solid #4f8ef7' : '2px solid transparent',
+                        background: isItemActive ? 'rgba(79,142,247,0.12)' : 'transparent',
+                        cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left',
+                      }}
+                      onMouseEnter={e => { if (!isItemActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                      onMouseLeave={e => { if (!isItemActive) e.currentTarget.style.background = 'transparent'; }}>
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: isItemActive ? '#7aaff8' : '#f0f4ff' }}>{item.label}</div>
+                        <div style={{ fontSize: 10, color: '#2a3a5a', marginTop: 1 }}>{item.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      {/* Standalone tabs: AI Research, Events */}
+      {STANDALONE_TABS.map(t => {
+        const isActive = tab === t;
+        return (
+          <button key={t} onClick={() => { setTab(t); setOpenGroup(null); }}
+            style={{
+              background: isActive ? 'rgba(79,142,247,0.15)' : 'transparent',
+              border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+              borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
+              color: isActive ? '#7aaff8' : '#2a3a5a',
+              borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
+            {t}
+          </button>
+        );
+      })}
+      {/* Right nav groups: Social, News */}
+      {NAV_GROUPS_RIGHT.map(g => {
         const isActive = g.items.some(i => i.key === tab);
         const isOpen = openGroup === g.label;
         return (
