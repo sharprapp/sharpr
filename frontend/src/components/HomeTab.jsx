@@ -104,10 +104,10 @@ export default function HomeTab({ onSwitchTab }) {
       {/* Greeting */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em', margin: 0, color: '#f0f4ff' }}>
             {greeting()}, <span style={{ color: '#2563EB' }}>{firstName(user?.email)}</span>
           </h1>
-          <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Here's your trading overview for today.</p>
+          <p style={{ fontSize: 14, color: '#4a5a7a', marginTop: 4 }}>Here's your trading overview for today.</p>
         </div>
         <div style={{ ...card, padding: '10px 18px', borderRadius: 12 }}>
           <div style={{ fontSize: 12, color: '#64748b' }}>Today</div>
