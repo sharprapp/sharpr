@@ -30,8 +30,8 @@ router.post('/create-checkout', requireAuth, async (req, res) => {
       payment_method_types: ['card'],
       line_items: [{ price: price_id, quantity: 1 }],
       mode: 'subscription',
-      success_url: `${process.env.FRONTEND_URL}/settings?upgraded=true`,
-      cancel_url: `${process.env.FRONTEND_URL}/settings?canceled=true`,
+      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/dashboard`,
       subscription_data: {
         metadata: { supabase_user_id: user.id }
       }
