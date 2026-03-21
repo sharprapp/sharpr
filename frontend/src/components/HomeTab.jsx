@@ -3,6 +3,25 @@ import { useAuth } from '../hooks/useAuth';
 import api from '../lib/api';
 import TradingViewMarketOverview from './TradingViewMarketOverview';
 
+const EDGE_CACHE_KEY = 'sharpr_edge_v1';
+const EDGE_TTL = 24 * 60 * 60 * 1000; // 1 day
+
+function getEdgeCache(key) {
+  try {
+    const raw = localStorage.getItem(EDGE_CACHE_KEY + '_' + key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > EDGE_TTL) { localStorage.removeItem(EDGE_CACHE_KEY + '_' + key); return null; }
+    // Also expire at midnight
+    const cached = new Date(ts), now = new Date();
+    if (cached.toDateString() !== now.toDateString()) { localStorage.removeItem(EDGE_CACHE_KEY + '_' + key); return null; }
+    return data;
+  } catch { return null; }
+}
+function setEdgeCache(key, data) {
+  try { localStorage.setItem(EDGE_CACHE_KEY + '_' + key, JSON.stringify({ data, ts: Date.now() })); } catch {}
+}
+
 function greeting() {
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return 'Good morning';
@@ -61,6 +80,50 @@ export default function HomeTab({ onSwitchTab }) {
   const [betsLoading, setBetsLoading] = useState(true);
   const [marketsLoading, setMarketsLoading] = useState(true);
   const [gamesLoading, setGamesLoading] = useState(false);
+  const [sharpBet, setSharpBet] = useState(() => getEdgeCache('sharp_bet'));
+  const [sharpBetLoading, setSharpBetLoading] = useState(!getEdgeCache('sharp_bet'));
+  const [topMarket, setTopMarket] = useState(() => getEdgeCache('top_market'));
+  const [topMarketLoading, setTopMarketLoading] = useState(!getEdgeCache('top_market'));
+
+  // AI-powered Sharp Bet
+  useEffect(() => {
+    if (sharpBet) return;
+    (async () => {
+      try {
+        const { data } = await api.post('/api/ai/query', {
+          query: 'You are a sharp sports bettor. Given today\'s NBA, NFL, MLB, NHL, and soccer games, identify ONE bet you are most confident in where there is genuine value — NOT a massive favorite (avoid anything more than -200 moneyline). Look for underdogs with value, totals with clear edge, or spreads where the line is off. Return JSON only, no markdown: {"sport":"NBA","teams":"Team A vs Team B","betType":"Spread","line":"+4.5","odds":"-110","confidence":"High","reasoning":"One sentence max"}',
+          type: 'sports', use_web_search: true,
+        });
+        try {
+          const cleaned = data.result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+          setSharpBet(parsed);
+          setEdgeCache('sharp_bet', parsed);
+        } catch { setSharpBet(null); }
+      } catch { setSharpBet(null); }
+      finally { setSharpBetLoading(false); }
+    })();
+  }, []);
+
+  // AI-powered Top Market
+  useEffect(() => {
+    if (topMarket) return;
+    (async () => {
+      try {
+        const { data } = await api.post('/api/ai/query', {
+          query: 'Given current Polymarket prediction markets, identify ONE market you are most confident has mispriced odds — where the YES% seems too low or too high based on real-world probability. Avoid markets under $10k volume. Return JSON only, no markdown: {"title":"Market question here","currentYes":45,"yourEstimate":62,"edge":17,"reasoning":"One sentence max"}',
+          type: 'polymarket', use_web_search: true,
+        });
+        try {
+          const cleaned = data.result.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+          setTopMarket(parsed);
+          setEdgeCache('top_market', parsed);
+        } catch { setTopMarket(null); }
+      } catch { setTopMarket(null); }
+      finally { setTopMarketLoading(false); }
+    })();
+  }, []);
 
   useEffect(() => {
     api.get('/api/trades').then(r => setTrades(r.data || [])).catch(() => {}).finally(() => setTradesLoading(false));
@@ -137,22 +200,40 @@ export default function HomeTab({ onSwitchTab }) {
           <p style={{ fontSize: 13, color: '#2a3a5a', marginTop: 4 }}>Your best opportunities right now</p>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+          {/* AI Top Market */}
           <div style={{ ...card, borderLeft: '3px solid #4f8ef7', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4f8ef7' }}>Top Market</span>
-              {markets[0]?.volume >= 1000000 && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>High volume</span>}
+              <span style={{ fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 10, background: 'rgba(79,142,247,0.1)', color: '#4f8ef7' }}>AI Pick</span>
             </div>
-            {marketsLoading ? <div style={{ height: 40, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /> : markets[0] ? (
+            {topMarketLoading ? (
+              <><div style={{ height: 14, width: '90%', borderRadius: 6, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /><div style={{ height: 28, width: '40%', borderRadius: 6, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /><div style={{ height: 10, width: '70%', borderRadius: 4, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /></>
+            ) : topMarket ? (
               <>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>{markets[0].title}</p>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                  <span style={{ fontSize: 24, fontWeight: 900, color: markets[0].yes > 60 ? '#22c55e' : markets[0].yes > 40 ? '#f59e0b' : '#ef4444' }}>{markets[0].yes}%</span>
-                  <span style={{ fontSize: 12, color: '#475569' }}>YES</span>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>{topMarket.title}</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b' }}>{topMarket.currentYes}%</span>
+                  <span style={{ fontSize: 11, color: '#4a5a7a' }}>YES now</span>
+                  <span style={{ fontSize: 11, color: '#4a5a7a' }}>→</span>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: '#22c55e' }}>{topMarket.yourEstimate}%</span>
+                  <span style={{ fontSize: 11, color: '#4a5a7a' }}>true prob</span>
                 </div>
-                <button onClick={() => goTab('AI Research')} style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#60a5fa', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}>Analyze with AI →</button>
+                {topMarket.edge != null && (
+                  <div style={{ fontSize: 12, fontWeight: 700, color: topMarket.edge > 0 ? '#22c55e' : '#ef4444' }}>
+                    {topMarket.edge > 0 ? '+' : ''}{topMarket.edge}% edge
+                  </div>
+                )}
+                <p style={{ fontSize: 11, color: '#6a7a9a', margin: 0, lineHeight: 1.5 }}>{topMarket.reasoning}</p>
               </>
-            ) : <p style={{ fontSize: 13, color: '#475569' }}>No markets loaded</p>}
+            ) : (
+              <>
+                <p style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>{markets[0]?.title || 'Loading markets...'}</p>
+                {markets[0] && <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}><span style={{ fontSize: 22, fontWeight: 900, color: markets[0].yes > 60 ? '#22c55e' : '#f59e0b' }}>{markets[0].yes}%</span><span style={{ fontSize: 11, color: '#4a5a7a' }}>YES</span></div>}
+              </>
+            )}
           </div>
+
+          {/* Trading Setup — unchanged */}
           <div style={{ ...card, borderLeft: '3px solid #22c55e', display: 'flex', flexDirection: 'column', gap: 12 }}>
             <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#22c55e' }}>Trading Setup</span>
             {(() => {
@@ -164,18 +245,31 @@ export default function HomeTab({ onSwitchTab }) {
               return (<><p style={{ fontSize: 14, color: '#475569', margin: 0 }}>No bias set for today</p><button onClick={() => goTab('Day Trading')} style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#4ade80', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}>Set your bias in Pre-Market →</button></>);
             })()}
           </div>
+
+          {/* AI Sharp Bet */}
           <div style={{ ...card, borderLeft: '3px solid #f59e0b', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#f59e0b' }}>Sharp Bet</span>
-            {gamesLoading ? <div style={{ height: 40, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /> : games.length > 0 ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#f59e0b' }}>Sharp Bet</span>
+              <span style={{ fontSize: 9, fontWeight: 600, padding: '2px 6px', borderRadius: 10, background: 'rgba(245,158,11,0.1)', color: '#f59e0b' }}>AI Pick</span>
+            </div>
+            {sharpBetLoading ? (
+              <><div style={{ height: 14, width: '80%', borderRadius: 6, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /><div style={{ height: 20, width: '60%', borderRadius: 6, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /><div style={{ height: 10, width: '70%', borderRadius: 4, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} /></>
+            ) : sharpBet ? (
               <>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>{games[0].away?.name || '—'} @ {games[0].home?.name || '—'}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>{sport}</span>
-                  <span style={{ fontSize: 12, color: '#475569' }}>{games[0].status?.detail || fmtDate(games[0].date)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>{sharpBet.sport}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA' }}>{sharpBet.teams}</span>
                 </div>
-                <button onClick={() => goTab('Sports Betting')} style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#f59e0b', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}>View odds →</button>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff' }}>{sharpBet.betType} {sharpBet.line}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: String(sharpBet.odds).startsWith('+') || parseInt(sharpBet.odds) > 0 ? '#22c55e' : '#ef4444' }}>{sharpBet.odds}</span>
+                </div>
+                {sharpBet.confidence && <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: sharpBet.confidence === 'High' ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', color: sharpBet.confidence === 'High' ? '#22c55e' : '#f59e0b' }}>{sharpBet.confidence} confidence</span>}
+                <p style={{ fontSize: 11, color: '#6a7a9a', margin: 0, lineHeight: 1.5 }}>{sharpBet.reasoning}</p>
               </>
-            ) : <p style={{ fontSize: 13, color: '#475569' }}>No {sport} games today</p>}
+            ) : (
+              <p style={{ fontSize: 13, color: '#475569' }}>No sharp picks available today</p>
+            )}
           </div>
         </div>
       </section>
