@@ -178,49 +178,61 @@ export default function SportsOdds({ initialSport, tier }) {
                 <span style={{ fontSize: 11, color: '#4a5a7a' }}>{fmtDate(game.commenceTime)}</span>
               </div>
 
-              {/* Teams */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <TeamLogo teamName={game.awayTeam} size={28} />
-                    <span style={{ fontSize: 15, fontWeight: 600, color: '#F5F5FA' }}>{game.awayTeam}</span>
-                  </div>
-                  {game.awayML != null && <span style={{ fontSize: 14, fontWeight: 700, color: game.awayML > 0 ? '#22c55e' : '#F5F5FA' }}>{formatOdds(game.awayML)}</span>}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <TeamLogo teamName={game.homeTeam} size={28} />
-                    <span style={{ fontSize: 15, fontWeight: 600, color: '#F5F5FA' }}>{game.homeTeam}</span>
-                  </div>
-                  {game.homeML != null && <span style={{ fontSize: 14, fontWeight: 700, color: game.homeML > 0 ? '#22c55e' : '#F5F5FA' }}>{formatOdds(game.homeML)}</span>}
-                </div>
-              </div>
-
-              {/* Odds grid */}
+              {/* Odds grid: 2 rows (away/home) × 3 columns (spread/ml/total) */}
               {hasOdds ? (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12 }}>
-                  <div style={{ background: '#0a0f1e', borderRadius: 10, padding: '8px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 10, color: '#2a3a5a', marginBottom: 4 }}>SPREAD</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA' }}>
+                <div style={{ marginBottom: 12 }}>
+                  {/* Column headers */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6, marginBottom: 6 }}>
+                    <div />
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Spread</div>
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Moneyline</div>
+                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Total</div>
+                  </div>
+                  {/* Away row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6, marginBottom: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <TeamLogo teamName={game.awayTeam} size={24} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{game.awayTeam}</span>
+                    </div>
+                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
                       {formatSpread(game.awaySpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.awaySpreadOdds)})</span>
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA' }}>
-                      {formatSpread(game.homeSpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.homeSpreadOdds)})</span>
+                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.awayML > 0 ? '#22c55e' : '#ef4444' }}>
+                      {formatOdds(game.awayML)}
+                    </div>
+                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
+                      O {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.overOdds)})</span>
                     </div>
                   </div>
-                  <div style={{ background: '#0a0f1e', borderRadius: 10, padding: '8px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 10, color: '#2a3a5a', marginBottom: 4 }}>MONEYLINE</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: game.awayML > 0 ? '#22c55e' : '#F5F5FA' }}>{formatOdds(game.awayML)}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: game.homeML > 0 ? '#22c55e' : '#F5F5FA' }}>{formatOdds(game.homeML)}</div>
-                  </div>
-                  <div style={{ background: '#0a0f1e', borderRadius: 10, padding: '8px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 10, color: '#2a3a5a', marginBottom: 4 }}>TOTAL</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA' }}>O {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.overOdds)})</span></div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA' }}>U {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.underOdds)})</span></div>
+                  {/* Home row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <TeamLogo teamName={game.homeTeam} size={24} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{game.homeTeam}</span>
+                    </div>
+                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
+                      {formatSpread(game.homeSpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.homeSpreadOdds)})</span>
+                    </div>
+                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.homeML > 0 ? '#22c55e' : '#ef4444' }}>
+                      {formatOdds(game.homeML)}
+                    </div>
+                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
+                      U {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.underOdds)})</span>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div style={{ fontSize: 12, color: '#2a3a5a', marginBottom: 12 }}>Odds not yet available</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <TeamLogo teamName={game.awayTeam} size={24} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA' }}>{game.awayTeam}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <TeamLogo teamName={game.homeTeam} size={24} />
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA' }}>{game.homeTeam}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#2a3a5a', marginTop: 4 }}>Odds not yet available</div>
+                </div>
               )}
 
               {/* Action row */}
