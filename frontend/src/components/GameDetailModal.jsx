@@ -203,8 +203,18 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
                         </tr>
                       );
                     })}
-                    {(!g.allBookmakers || g.allBookmakers.length === 0) && (
-                      <tr><td colSpan={6} style={{ padding: 16, textAlign: 'center', color: '#1a2535', fontSize: 12 }}>Detailed odds not available</td></tr>
+                    {(!g.allBookmakers || g.allBookmakers.length === 0) && (g.homeML != null || g.awayML != null) && (
+                      <tr>
+                        <td style={{ padding: '7px 8px', color: '#4a5a7a', fontSize: 10, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>Best line</td>
+                        <td style={{ padding: '7px', textAlign: 'center', color: '#6a7a9a', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatSpread(g.awaySpread)} ({formatOdds(g.awaySpreadOdds)})</td>
+                        <td style={{ padding: '7px', textAlign: 'center', color: '#6a7a9a', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatSpread(g.homeSpread)} ({formatOdds(g.homeSpreadOdds)})</td>
+                        <td style={{ padding: '7px', textAlign: 'center', color: g.awayML > 0 ? '#22c55e' : '#6a7a9a', fontSize: 11, fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatOdds(g.awayML)}</td>
+                        <td style={{ padding: '7px', textAlign: 'center', color: g.homeML > 0 ? '#22c55e' : '#6a7a9a', fontSize: 11, fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatOdds(g.homeML)}</td>
+                        <td style={{ padding: '7px', textAlign: 'center', color: '#6a7a9a', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{g.overTotal ? `O ${g.overTotal} (${formatOdds(g.overOdds)})` : '--'}</td>
+                      </tr>
+                    )}
+                    {(!g.allBookmakers || g.allBookmakers.length === 0) && g.homeML == null && g.awayML == null && (
+                      <tr><td colSpan={6} style={{ padding: 16, textAlign: 'center', color: '#1a2535', fontSize: 12 }}>Odds not yet posted — check back closer to game time</td></tr>
                     )}
                   </tbody>
                 </table>

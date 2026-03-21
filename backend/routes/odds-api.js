@@ -71,6 +71,7 @@ router.get('/games', async (req, res) => {
         awaySpread: awaySpread?.point, awaySpreadOdds: awaySpread?.price,
         overTotal: over?.point, overOdds: over?.price, underOdds: under?.price,
         bookmakers: g.bookmakers?.map(b => b.title),
+        allBookmakers: g.bookmakers || [],
       };
     });
     const result = { games, sport, total: games.length, requestsRemaining: remaining };
