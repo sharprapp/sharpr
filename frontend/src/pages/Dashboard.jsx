@@ -13,6 +13,7 @@ import HomeTab from '../components/HomeTab';
 import UpgradeModal from '../components/UpgradeModal';
 import SportsTicker from '../components/SportsTicker';
 import ErrorBoundary from '../components/ErrorBoundary';
+import SharpSignal from '../components/SharpSignal';
 import UsernameModal from '../components/UsernameModal';
 import OddsBoard from '../components/OddsBoard';
 import GameDetailModal from '../components/GameDetailModal';
@@ -130,6 +131,10 @@ export default function Dashboard() {
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><HomeTab onSwitchTab={switchTab} /></ErrorBoundary>
         </div>
+      ) : tab === 'Signals' ? (
+        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+          <ErrorBoundary><SharpSignal userPlan={tier} /></ErrorBoundary>
+        </div>
       ) : tab === 'Events' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><OddsBoard initialSport={eventsSport} tier={tier} /></ErrorBoundary>
@@ -242,6 +247,25 @@ function NavGroups({ tab, setTab }) {
           </div>
         );
       })}
+      {/* Signals standalone */}
+      {(() => {
+        const isActive = tab === 'Signals';
+        return (
+          <button onClick={() => { setTab('Signals'); setOpenGroup(null); }}
+            style={{
+              background: isActive ? 'rgba(245,158,11,0.15)' : 'transparent',
+              border: isActive ? '1px solid rgba(245,158,11,0.3)' : '1px solid transparent',
+              borderBottom: isActive ? '2px solid #f59e0b' : '2px solid transparent',
+              color: isActive ? '#fbbf24' : '#2a3a5a',
+              borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+            onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
+            ⚡ Signals
+          </button>
+        );
+      })()}
       {/* AI Research standalone */}
       {(() => {
         const isActive = tab === 'AI Research';
