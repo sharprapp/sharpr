@@ -9,6 +9,8 @@ let isFetching = false;
 export function useAuth() {
   const [user, setUser] = useState(null);
   const [tier, setTier] = useState('free');
+  const [username, setUsername] = useState(null);
+  const [usernameSet, setUsernameSet] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,6 +37,8 @@ export function useAuth() {
       const t = data.tier || 'free';
       console.log('[useAuth] tier from backend:', t);
       setTier(t);
+      setUsername(data.profile?.username || null);
+      setUsernameSet(data.profile?.username_set !== false);
     } catch (e) {
       console.warn('[useAuth] /api/auth/me failed, trying Supabase direct fallback:', e.message);
       // Fallback: query Supabase directly
@@ -43,12 +47,14 @@ export function useAuth() {
         if (u) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('tier')
+            .select('tier, username, username_set')
             .eq('id', u.id)
             .single();
           const t = profile?.tier || 'free';
           console.log('[useAuth] tier from Supabase fallback:', t);
           setTier(t);
+          setUsername(profile?.username || null);
+          setUsernameSet(profile?.username_set !== false);
         }
       } catch (e2) {
         console.warn('[useAuth] Supabase fallback also failed:', e2.message);
@@ -76,5 +82,5 @@ export function useAuth() {
     setTier('free');
   }
 
-  return { user, tier, loading, signIn, signUp, signOut, isPro: tier === 'pro' || tier === 'elite' };
+  return { user, tier, username, usernameSet, setUsername, loading, signIn, signUp, signOut, isPro: tier === 'pro' || tier === 'elite' };
 }

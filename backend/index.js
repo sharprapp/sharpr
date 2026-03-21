@@ -75,6 +75,7 @@ app.use('/api/polymarket',require('./routes/polymarket'));
 app.use('/api/markets',   require('./routes/markets'));   // no rate limit — cached public data
 app.use('/api/espn',      require('./routes/espn'));      // no rate limit — cached public data
 app.use('/api/community', require('./routes/community'));
+app.use('/api/user',      require('./routes/user'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 

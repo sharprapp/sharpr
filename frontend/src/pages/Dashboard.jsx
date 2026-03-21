@@ -13,6 +13,7 @@ import HomeTab from '../components/HomeTab';
 import UpgradeModal from '../components/UpgradeModal';
 import SportsTicker from '../components/SportsTicker';
 import ErrorBoundary from '../components/ErrorBoundary';
+import UsernameModal from '../components/UsernameModal';
 import OddsBoard from '../components/OddsBoard';
 import GameDetailModal from '../components/GameDetailModal';
 import NewNewsTab from '../components/NewsTab';
@@ -84,7 +85,7 @@ export default function Dashboard() {
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [oddsSport, setOddsSport] = useState('NBA');
-  const { tier } = useAuth();
+  const { tier, username, usernameSet, setUsername } = useAuth();
 
   // Warm up Railway backend immediately
   useEffect(() => {
@@ -110,7 +111,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <DashboardNav tab={tab} setTab={switchTab} tier={tier} onOddsSport={setOddsSport} />
+      {!usernameSet && (
+        <UsernameModal onComplete={(newUsername) => { setUsername(newUsername); }} />
+      )}
+      <DashboardNav tab={tab} setTab={switchTab} tier={tier} onOddsSport={setOddsSport} username={username} />
       <TradingViewTicker />
       <SportsTicker />
 
@@ -312,7 +316,7 @@ function NavGroups({ tab, setTab, onOddsSport }) {
 /* ─────────────────────────────────────────
    UNIFIED DASHBOARD NAVBAR
 ───────────────────────────────────────── */
-function DashboardNav({ tab, setTab, tier, onOddsSport }) {
+function DashboardNav({ tab, setTab, tier, onOddsSport, username }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [alerts, setAlerts]     = useState([]);
@@ -408,7 +412,7 @@ function DashboardNav({ tab, setTab, tier, onOddsSport }) {
             )}
           </div>
 
-          <span className="hidden sm:block" style={{ fontSize: 13, color: '#2a3a5a', fontWeight: 500 }}>{firstName(user?.email)}</span>
+          <span className="hidden sm:block" style={{ fontSize: 13, color: '#4a5a7a', fontWeight: 600 }}>{username ? `@${username}` : firstName(user?.email)}</span>
 
           <button onClick={async () => { await signOut(); navigate('/login'); }} className="glass-btn" style={{ fontSize: 12, padding: '5px 12px', borderRadius: 8 }}>
             Sign out
