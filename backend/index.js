@@ -54,6 +54,14 @@ const aiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+// Default cache headers for GET requests
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/auth') && !req.path.startsWith('/api/stripe')) {
+    res.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60');
+  }
+  next();
+});
+
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth',      authLimiter, require('./routes/auth'));
 app.use('/api/stripe',    require('./routes/stripe'));

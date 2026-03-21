@@ -12,6 +12,7 @@ import MarketDetailModal from '../components/MarketDetailModal';
 import HomeTab from '../components/HomeTab';
 import UpgradeModal from '../components/UpgradeModal';
 import SportsTicker from '../components/SportsTicker';
+import ErrorBoundary from '../components/ErrorBoundary';
 import OddsBoard from '../components/OddsBoard';
 import GameDetailModal from '../components/GameDetailModal';
 import NewNewsTab from '../components/NewsTab';
@@ -115,27 +116,27 @@ export default function Dashboard() {
 
       {tab === 'Home' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          <HomeTab onSwitchTab={switchTab} />
+          <ErrorBoundary><HomeTab onSwitchTab={switchTab} /></ErrorBoundary>
         </div>
       ) : tab === 'Events' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          <OddsBoard initialSport={oddsSport} tier={tier} />
+          <ErrorBoundary><OddsBoard initialSport={oddsSport} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('dt-') ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
-          <DayTradingTab activeSubTab={tab.replace('dt-', '')} />
+          <ErrorBoundary><DayTradingTab activeSubTab={tab.replace('dt-', '')} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('sb-') ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          <SportsBettingTab tier={tier} activeSubTab={tab.replace('sb-', '')} />
+          <ErrorBoundary><SportsBettingTab tier={tier} activeSubTab={tab.replace('sb-', '')} /></ErrorBoundary>
         </div>
       ) : (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><PolymarketTab tier={tier} /></div>}
-          {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><EVCalcTab /></div>}
-          {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></div>}
-          {tab.startsWith('news-') && <NewNewsTab initialType={tab === 'news-sports' ? 'sports' : tab === 'news-trading' ? 'trading' : 'world'} />}
-          {visitedTabs.includes('Community')      && <div style={{display: tab==='Community'      ? 'block' : 'none'}}><CommunityTab /></div>}
+          {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><ErrorBoundary><PolymarketTab tier={tier} /></ErrorBoundary></div>}
+          {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><ErrorBoundary><EVCalcTab /></ErrorBoundary></div>}
+          {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><ErrorBoundary><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></ErrorBoundary></div>}
+          {tab.startsWith('news-') && <ErrorBoundary><NewNewsTab initialType={tab === 'news-sports' ? 'sports' : tab === 'news-trading' ? 'trading' : 'world'} /></ErrorBoundary>}
+          {visitedTabs.includes('Community')      && <div style={{display: tab==='Community'      ? 'block' : 'none'}}><ErrorBoundary><CommunityTab /></ErrorBoundary></div>}
         </div>
       )}
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
