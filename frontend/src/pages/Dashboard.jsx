@@ -42,7 +42,6 @@ const NAV_GROUPS_LEFT = [
     { key: 'EV Calc', label: 'EV Calc', emoji: '🧮', desc: 'Expected value calculator' },
   ]},
 ];
-const STANDALONE_TABS = ['AI Research', 'Events'];
 const NAV_GROUPS_RIGHT = [
   { label: 'Social', items: [{ key: 'Community', label: 'Community', emoji: '💬', desc: 'Trading chat' }] },
   { label: 'News', items: [
@@ -86,7 +85,9 @@ export default function Dashboard() {
     return [saved || 'Home'];
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [eventsSport, setEventsSport] = useState('NBA');
   const { tier, username, usernameSet, setUsername } = useAuth();
+  console.log('[Dashboard] tier:', tier);
 
   // Warm up Railway backend immediately
   useEffect(() => {
@@ -103,6 +104,12 @@ export default function Dashboard() {
     function handler() { setShowUpgrade(true); }
     window.addEventListener('open-upgrade', handler);
     return () => window.removeEventListener('open-upgrade', handler);
+  }, []);
+
+  useEffect(() => {
+    function handler(e) { setEventsSport(e.detail); }
+    window.addEventListener('events-sport', handler);
+    return () => window.removeEventListener('events-sport', handler);
   }, []);
 
   function switchTab(t) {
@@ -125,7 +132,7 @@ export default function Dashboard() {
         </div>
       ) : tab === 'Events' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          <ErrorBoundary><OddsBoard initialSport="NBA" tier={tier} /></ErrorBoundary>
+          <ErrorBoundary><OddsBoard initialSport={eventsSport} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('dt-') ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
@@ -235,11 +242,11 @@ function NavGroups({ tab, setTab }) {
           </div>
         );
       })}
-      {/* Standalone tabs: AI Research, Events */}
-      {STANDALONE_TABS.map(t => {
-        const isActive = tab === t;
+      {/* AI Research standalone */}
+      {(() => {
+        const isActive = tab === 'AI Research';
         return (
-          <button key={t} onClick={() => { setTab(t); setOpenGroup(null); }}
+          <button onClick={() => { setTab('AI Research'); setOpenGroup(null); }}
             style={{
               background: isActive ? 'rgba(79,142,247,0.15)' : 'transparent',
               border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
@@ -250,10 +257,62 @@ function NavGroups({ tab, setTab }) {
             }}
             onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
             onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
-            {t}
+            AI Research
           </button>
         );
-      })}
+      })()}
+      {/* Events with sport dropdown */}
+      {(() => {
+        const isActive = tab === 'Events';
+        const isOpen = openGroup === 'Events';
+        const EVENTS_SPORTS = [
+          { key: 'nfl', label: 'NFL', emoji: '🏈' }, { key: 'nba', label: 'NBA', emoji: '🏀' },
+          { key: 'mlb', label: 'MLB', emoji: '⚾' }, { key: 'nhl', label: 'NHL', emoji: '🏒' },
+          { key: 'soccer_epl', label: 'Soccer', emoji: '⚽' }, { key: 'tennis_atp', label: 'Tennis', emoji: '🎾' },
+          { key: 'golf_pga', label: 'Golf', emoji: '🏌️' }, { key: 'ufc', label: 'Boxing / MMA', emoji: '🥊' },
+          { key: 'ncaab', label: 'NCAAB', emoji: '🏐' }, { key: 'ncaaf', label: 'NCAAF', emoji: '🏈' },
+        ];
+        return (
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => { if (isOpen) { setOpenGroup(null); } else { setOpenGroup('Events'); } setTab('Events'); }}
+              style={{
+                background: isActive ? 'rgba(79,142,247,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
+                border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+                borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
+                color: isActive ? '#7aaff8' : isOpen ? '#94A3B8' : '#2a3a5a',
+                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+              onMouseLeave={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
+              Events <span style={{ fontSize: 9, opacity: 0.5, marginLeft: 2 }}>{isOpen ? '\u25B4' : '\u25BE'}</span>
+            </button>
+            {isOpen && (
+              <div style={{
+                position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                marginTop: 8, background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 8, padding: 6, zIndex: 100, minWidth: 180,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+              }}>
+                {EVENTS_SPORTS.map(s => (
+                  <button key={s.key} onClick={() => { setTab('Events'); setOpenGroup(null); window.dispatchEvent(new CustomEvent('events-sport', { detail: s.key })); }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                      padding: '7px 10px', borderRadius: 6, border: 'none',
+                      background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.12s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.1)'; e.currentTarget.querySelector('span:last-child').style.color = '#fff'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.querySelector('span:last-child').style.color = '#6a7a9a'; }}>
+                    <span style={{ fontSize: 14 }}>{s.emoji}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#6a7a9a', transition: 'color 0.12s' }}>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {/* Right nav groups: Social, News */}
       {NAV_GROUPS_RIGHT.map(g => {
         const isActive = g.items.some(i => i.key === tab);
@@ -372,9 +431,9 @@ function DashboardNav({ tab, setTab, tier, username }) {
           {tier === 'elite' ? (
             <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24' }}>⚡ Elite</span>
           ) : tier === 'pro' ? (
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', color: '#7aaff8' }}>✓ Pro</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b' }}>⚡ Pro</span>
           ) : (
-            <button onClick={() => navigate('/settings')} style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24', cursor: 'pointer' }}>
+            <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24', cursor: 'pointer' }}>
               Upgrade
             </button>
           )}
