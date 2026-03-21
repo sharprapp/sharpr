@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../lib/api';
 import GameDetailModal from './GameDetailModal';
+import TeamLogo from './TeamLogo';
 
 const SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'NCAAB', 'NCAAF', 'WNBA', 'soccer_epl', 'soccer_mls', 'soccer_champions', 'UFC', 'boxing', 'tennis_atp', 'golf_pga', 'F1'];
 const SPORT_LABELS = { soccer_epl: 'EPL', soccer_mls: 'MLS', soccer_champions: 'UCL', tennis_atp: 'ATP', golf_pga: 'PGA' };
@@ -181,15 +182,15 @@ export default function SportsOdds({ initialSport, tier }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <TeamLogo teamName={game.awayTeam} size={28} />
                     <span style={{ fontSize: 15, fontWeight: 600, color: '#F5F5FA' }}>{game.awayTeam}</span>
-                    <span style={{ fontSize: 10, color: '#2a3a5a' }}>Away</span>
                   </div>
                   {game.awayML != null && <span style={{ fontSize: 14, fontWeight: 700, color: game.awayML > 0 ? '#22c55e' : '#F5F5FA' }}>{formatOdds(game.awayML)}</span>}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <TeamLogo teamName={game.homeTeam} size={28} />
                     <span style={{ fontSize: 15, fontWeight: 600, color: '#F5F5FA' }}>{game.homeTeam}</span>
-                    <span style={{ fontSize: 10, color: '#2a3a5a' }}>Home</span>
                   </div>
                   {game.homeML != null && <span style={{ fontSize: 14, fontWeight: 700, color: game.homeML > 0 ? '#22c55e' : '#F5F5FA' }}>{formatOdds(game.homeML)}</span>}
                 </div>

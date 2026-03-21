@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import TeamLogo from './TeamLogo';
 
 function formatOdds(n) { return n == null ? '--' : n > 0 ? '+' + n : '' + n; }
 function formatSpread(n) { return n == null ? '--' : n > 0 ? '+' + n : '' + n; }
@@ -37,16 +38,6 @@ const INJURIES = {
 
 const stColor = s => s === 'Out' ? { bg: 'rgba(239,68,68,0.15)', c: '#ef4444' } : s === 'Questionable' ? { bg: 'rgba(245,158,11,0.15)', c: '#f59e0b' } : s === 'Probable' ? { bg: 'rgba(34,197,94,0.15)', c: '#22c55e' } : s === 'Doubtful' ? { bg: 'rgba(251,146,60,0.15)', c: '#fb923c' } : { bg: 'rgba(148,163,184,0.15)', c: '#94a3b8' };
 
-function TeamLogo({ name, size = 44 }) {
-  const colors = { Lakers: '#552583', Celtics: '#007A33', Warriors: '#1D428A', Heat: '#98002E', Bulls: '#CE1141', Knicks: '#006BB6', Bucks: '#00471B', Chiefs: '#E31837', '49ers': '#AA0000', Cowboys: '#003594', Yankees: '#003087', Dodgers: '#005A9C' };
-  const words = (name || '').split(' ');
-  const last = words[words.length - 1];
-  return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: colors[last] || '#1a2a4a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.25, fontWeight: 800, color: 'white', flexShrink: 0 }}>
-      {(words.length > 1 ? words[0][0] + last[0] : (name || '').slice(0, 2)).toUpperCase()}
-    </div>
-  );
-}
 
 export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const [aiResult, setAiResult] = useState(null);
@@ -150,7 +141,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
         {/* Header */}
         <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <TeamLogo name={g.awayTeam} />
+            <TeamLogo teamName={g.awayTeam} size={52} />
             <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff' }}>{g.awayTeam}</div>
             <div style={{ fontSize: 10, color: '#2a3a5a' }}>{awayStats.record}</div>
           </div>
@@ -160,7 +151,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
             <span style={{ background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: 100, padding: '3px 10px', fontSize: 10, fontWeight: 700, color: '#7aaff8' }}>{(g.sport || '').toUpperCase()}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <TeamLogo name={g.homeTeam} />
+            <TeamLogo teamName={g.homeTeam} size={52} />
             <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff' }}>{g.homeTeam}</div>
             <div style={{ fontSize: 10, color: '#2a3a5a' }}>{homeStats.record}</div>
           </div>
