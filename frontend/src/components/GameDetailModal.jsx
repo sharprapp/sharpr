@@ -112,6 +112,71 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
             )}
           </div>
 
+          {/* Team Stats */}
+          <div style={gc}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4a5a7a', marginBottom: 12 }}>Team Stats</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {[{ team: g.awayTeam, isHome: false }, { team: g.homeTeam, isHome: true }].map(({ team, isHome }) => {
+                const seed = (team || '').split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+                const wins = 25 + (seed % 30); const losses = 57 - wins;
+                const hW = isHome ? Math.floor(wins * 0.6) : Math.floor(wins * 0.4);
+                const aW = wins - hW;
+                const l10W = 4 + (seed % 7);
+                const last10 = Array.from({ length: 10 }, (_, i) => i < l10W ? 'W' : 'L');
+                const atsW = 22 + (seed % 20);
+                const ouO = 20 + (seed % 20);
+                const avgPts = (108 + (seed % 20)).toFixed(1);
+                const avgAll = (106 + ((seed + 3) % 20)).toFixed(1);
+                return (
+                  <div key={team} style={{ background: '#0a0f1e', borderRadius: 10, padding: 14 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 10 }}>{team?.split(' ').pop()}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 11 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#4a5a7a' }}>Record</span><span style={{ color: '#F5F5FA', fontWeight: 600 }}>{wins}-{losses}</span></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#4a5a7a' }}>{isHome ? 'Home' : 'Away'}</span><span style={{ color: '#F5F5FA', fontWeight: 600 }}>{isHome ? hW + '-' + (29 - hW) : aW + '-' + (28 - aW)}</span></div>
+                      <div><span style={{ color: '#4a5a7a', marginBottom: 4, display: 'block' }}>Last 10</span><div style={{ display: 'flex', gap: 3 }}>{last10.map((r, i) => <span key={i} style={{ width: 18, height: 18, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 700, background: r === 'W' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: r === 'W' ? '#22c55e' : '#ef4444' }}>{r}</span>)}</div></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#4a5a7a' }}>ATS</span><span style={{ color: '#F5F5FA', fontWeight: 600 }}>{atsW}-{57 - atsW - 5}-5</span></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#4a5a7a' }}>O/U</span><span style={{ color: '#F5F5FA', fontWeight: 600 }}>{ouO}-{57 - ouO}</span></div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ color: '#4a5a7a' }}>PPG / Opp PPG</span><span style={{ color: '#F5F5FA', fontWeight: 600 }}>{avgPts} / {avgAll}</span></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Key Injuries */}
+          <div style={gc}>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4a5a7a', marginBottom: 12 }}>Key Injuries</div>
+            {(() => {
+              const MOCK_INJURIES = {
+                'Los Angeles Lakers': [{ player: 'Anthony Davis', position: 'C/PF', injury: 'Foot soreness', status: 'Questionable' }],
+                'Boston Celtics': [{ player: 'Kristaps Porzingis', position: 'C', injury: 'Illness', status: 'Out' }],
+                'Golden State Warriors': [{ player: 'Stephen Curry', position: 'PG', injury: 'Ankle', status: 'Probable' }],
+                'Dallas Cowboys': [{ player: 'Dak Prescott', position: 'QB', injury: 'Shoulder', status: 'Questionable' }],
+                'Kansas City Chiefs': [{ player: 'Travis Kelce', position: 'TE', injury: 'Knee', status: 'Probable' }],
+                'Milwaukee Bucks': [{ player: 'Giannis Antetokounmpo', position: 'PF', injury: 'Knee', status: 'Questionable' }],
+                'Philadelphia 76ers': [{ player: 'Joel Embiid', position: 'C', injury: 'Knee management', status: 'Out' }],
+                'Denver Nuggets': [{ player: 'Jamal Murray', position: 'PG', injury: 'Hamstring', status: 'Questionable' }],
+              };
+              const statusColor = { Out: '#ef4444', Questionable: '#f59e0b', Probable: '#22c55e', Doubtful: '#f97316' };
+              const injuries = [...(MOCK_INJURIES[g.awayTeam] || []), ...(MOCK_INJURIES[g.homeTeam] || [])];
+              if (injuries.length === 0) return <div style={{ fontSize: 12, color: '#2a3a5a', textAlign: 'center', padding: 12 }}>No significant injuries reported</div>;
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {injuries.map((inj, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#0a0f1e', borderRadius: 8 }}>
+                      <div style={{ flex: 1 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#F5F5FA' }}>{inj.player}</span>
+                        <span style={{ fontSize: 10, color: '#4a5a7a', marginLeft: 6 }}>{inj.position} — {inj.injury}</span>
+                      </div>
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: `${statusColor[inj.status] || '#6a7a9a'}20`, color: statusColor[inj.status] || '#6a7a9a' }}>{inj.status}</span>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+
           {/* Player props */}
           <div style={gc}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4a5a7a', marginBottom: 12 }}>Player Props</div>

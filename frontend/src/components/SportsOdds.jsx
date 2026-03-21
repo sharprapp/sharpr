@@ -59,7 +59,15 @@ export default function SportsOdds({ initialSport, tier }) {
     }
   }, [initialSport]);
 
+  const [lastUpdated, setLastUpdated] = useState(null);
+
   useEffect(() => { fetchGames(); }, [sport]);
+
+  // Auto-refresh every 60s
+  useEffect(() => {
+    const interval = setInterval(() => fetchGames(), 60000);
+    return () => clearInterval(interval);
+  }, [sport]);
 
   async function fetchGames() {
     setLoading(true); setError(''); setExpandedId(null);
@@ -78,6 +86,7 @@ export default function SportsOdds({ initialSport, tier }) {
       setError(e.response?.data?.error || 'Could not load games.');
       setGames([]);
     }
+    setLastUpdated(new Date());
     setLoading(false);
   }
 

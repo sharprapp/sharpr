@@ -35,13 +35,25 @@ const ESPN_APIS = {
   UFC:    'https://site.api.espn.com/apis/site/v2/sports/mma/ufc/news',
 };
 
-/* ── Financial/trading RSS feeds in priority order ── */
-const TRADING_FEEDS = [
-  { url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html',              source: 'CNBC' },
-  { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines',  source: 'MarketWatch' },
-  { url: 'https://feeds.bloomberg.com/markets/news.rss',                       source: 'Bloomberg' },
-  { url: 'https://seekingalpha.com/feed.xml',                                  source: 'Seeking Alpha' },
-];
+/* ── Financial/trading RSS feeds by category ── */
+const TRADING_FEEDS_BY_CAT = {
+  markets: [
+    { url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html', source: 'CNBC' },
+    { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', source: 'MarketWatch' },
+  ],
+  crypto: [
+    { url: 'https://cointelegraph.com/rss', source: 'CoinTelegraph' },
+  ],
+  macro: [
+    { url: 'https://www.cnbc.com/id/20910258/device/rss/rss.html', source: 'CNBC Macro' },
+    { url: 'https://feeds.bloomberg.com/markets/news.rss', source: 'Bloomberg' },
+  ],
+  earnings: [
+    { url: 'https://www.cnbc.com/id/15839135/device/rss/rss.html', source: 'CNBC Earnings' },
+    { url: 'https://seekingalpha.com/feed.xml', source: 'Seeking Alpha' },
+  ],
+};
+const TRADING_FEEDS = Object.values(TRADING_FEEDS_BY_CAT).flat();
 
 const AXIOS_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -159,7 +171,9 @@ router.get('/sports', async (req, res) => {
    Fetched in parallel, sorted by date
 ───────────────────────────────────────── */
 router.get('/trading', async (req, res) => {
-  const cacheKey = 'trading_news';
+  const category = req.query.category || 'all';
+  const feeds = category === 'all' ? TRADING_FEEDS : (TRADING_FEEDS_BY_CAT[category] || TRADING_FEEDS);
+  const cacheKey = `trading_news_${category}`;
   const cached   = getCached(cacheKey, 5 * 60 * 1000); // 5 min
   if (cached) {
     res.set('Cache-Control', 'public, max-age=300');
@@ -168,7 +182,7 @@ router.get('/trading', async (req, res) => {
 
   // Fetch all feeds in parallel — any that fail are silently skipped
   const results = await Promise.allSettled(
-    TRADING_FEEDS.map(({ url, source }) =>
+    feeds.map(({ url, source }) =>
       parser.parseURL(url).then(feed =>
         (feed.items || []).slice(0, 15).map(item => normalizeRss(item, source))
       )

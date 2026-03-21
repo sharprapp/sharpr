@@ -161,4 +161,24 @@ router.get('/props', async (req, res) => {
   }
 });
 
+// GET /api/odds/scores?sport=nba
+router.get('/scores', async (req, res) => {
+  const sport = (req.query.sport || 'nba').toLowerCase();
+  const espnMap = { nba: 'basketball/nba', nfl: 'football/nfl', mlb: 'baseball/mlb', nhl: 'hockey/nhl', soccer: 'soccer/eng.1', ufc: 'mma/ufc' };
+  try {
+    const r = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${espnMap[sport] || 'basketball/nba'}/scoreboard`);
+    const data = await r.json();
+    const scores = (data.events || []).map(ev => ({
+      id: ev.id, name: ev.name,
+      status: ev.status?.type?.description,
+      homeTeam: ev.competitions?.[0]?.competitors?.find(c => c.homeAway === 'home')?.team?.displayName,
+      awayTeam: ev.competitions?.[0]?.competitors?.find(c => c.homeAway === 'away')?.team?.displayName,
+      homeScore: ev.competitions?.[0]?.competitors?.find(c => c.homeAway === 'home')?.score,
+      awayScore: ev.competitions?.[0]?.competitors?.find(c => c.homeAway === 'away')?.score,
+      date: ev.date,
+    }));
+    res.json({ scores, sport });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

@@ -15,6 +15,7 @@ const SUB_CATS = {
   ],
   trading: [
     { key: 'markets', label: 'Markets' }, { key: 'crypto', label: 'Crypto' },
+    { key: 'macro', label: 'Macro' }, { key: 'earnings', label: 'Earnings' },
   ],
   world: [
     { key: 'top', label: 'Top' }, { key: 'us', label: 'US' }, { key: 'world', label: 'World' },
@@ -68,7 +69,7 @@ export default function NewsTab({ initialType }) {
     setLoading(true);
     let endpoint = '';
     if (newsType === 'sports') endpoint = `/api/news/sports?sport=${subCat}`;
-    else if (newsType === 'trading') endpoint = `/api/news/trading`;
+    else if (newsType === 'trading') endpoint = `/api/news/trading?category=${subCat}`;
     else endpoint = `/api/news/world?category=${subCat}`;
 
     api.get(endpoint).then(r => {
