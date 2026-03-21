@@ -1,6 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 export default function Logo({ size = 'md' }) {
-  const navigate = useNavigate();
   const sizes = {
     sm: { box: 28, svg: 16, text: 15 },
     md: { box: 40, svg: 24, text: 22 },
@@ -8,7 +7,7 @@ export default function Logo({ size = 'md' }) {
   }
   const s = sizes[size] || sizes.md
   return (
-    <div onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+    <Link to="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textDecoration: 'none' }}>
       <div style={{
         width: s.box, height: s.box,
         background: '#050e2a',
@@ -30,6 +29,6 @@ export default function Logo({ size = 'md' }) {
       }}>
         sharp<span style={{ color: '#4f8ef7' }}>r</span>
       </span>
-    </div>
+    </Link>
   )
 }

@@ -156,6 +156,20 @@ function NavGroups({ tab, setTab }) {
 
   return (
     <div ref={navRef} style={{ display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
+      {/* Home */}
+      <button onClick={() => { setTab('Home'); setOpenGroup(null); }}
+        style={{
+          background: tab === 'Home' ? 'rgba(79,142,247,0.15)' : 'transparent',
+          border: tab === 'Home' ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
+          borderBottom: tab === 'Home' ? '2px solid #4f8ef7' : '2px solid transparent',
+          color: tab === 'Home' ? '#7aaff8' : '#2a3a5a',
+          borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+          cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+        }}
+        onMouseEnter={e => { if (tab !== 'Home') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
+        onMouseLeave={e => { if (tab !== 'Home') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
+        Home
+      </button>
       {NAV_GROUPS.map(g => {
         const isActive = g.items.some(i => i.key === tab);
         const isOpen = openGroup === g.label;
