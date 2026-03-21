@@ -24,6 +24,12 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
   const catStyle = CAT_COLORS[m.cat] || CAT_COLORS.Other;
   const isPro = userPlan === 'pro' || userPlan === 'elite';
 
+  useEffect(() => {
+    const h = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+
   // Auto-load AI analysis for pro users
   useEffect(() => {
     if (!isPro) return;

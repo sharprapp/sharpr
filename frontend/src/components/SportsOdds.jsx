@@ -41,6 +41,8 @@ function timeAgo(date) {
   return Math.floor(secs / 3600) + 'h ago';
 }
 
+const oddsCache = {};
+
 export default function SportsOdds({ initialSport, tier }) {
   const normalizeSport = (s) => {
     if (!s) return 'NBA';
@@ -73,19 +75,32 @@ export default function SportsOdds({ initialSport, tier }) {
   }, [sport]);
 
   async function fetchGames() {
-    setLoading(true); setError('');
     const oddsKey = ODDS_API_KEY_MAP[sport] || sport.toLowerCase();
+    const cacheKey = 'odds_' + oddsKey;
+    // Check frontend cache (5 min TTL)
+    if (oddsCache[cacheKey] && Date.now() - oddsCache[cacheKey].ts < 300000) {
+      setGames(oddsCache[cacheKey].games);
+      if (oddsCache[cacheKey].remaining != null) setRequestsRemaining(oddsCache[cacheKey].remaining);
+      setLastUpdated(new Date(oddsCache[cacheKey].ts));
+      setLoading(false);
+      return;
+    }
+    setLoading(true); setError('');
     try {
       const { data } = await api.get(`/api/odds/games?sport=${oddsKey}`);
-      if (data.error && data.error.includes('ODDS_API_KEY')) {
-        setError('Odds API key not configured — contact admin');
+      if (data.quotaExceeded) {
+        setError('Live odds temporarily unavailable — quota refreshes daily');
+        setGames([]);
+      } else if (data.error && !data.games?.length) {
+        setError(data.message || 'Could not load odds right now');
         setGames([]);
       } else {
         setGames(data.games || []);
         if (data.requestsRemaining != null) setRequestsRemaining(data.requestsRemaining);
+        oddsCache[cacheKey] = { games: data.games || [], remaining: data.requestsRemaining, ts: Date.now() };
       }
     } catch (e) {
-      setError(e.response?.data?.error || 'Could not load games');
+      setError('Could not load games — try refreshing');
       setGames([]);
     }
     setLastUpdated(new Date());
@@ -109,7 +124,7 @@ export default function SportsOdds({ initialSport, tier }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Sport selector */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, padding: 4, borderRadius: 12, background: '#0a0f1e' }}>
+        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 12, background: '#0a0f1e', overflowX: 'auto', scrollbarWidth: 'none' }}>
           {SPORTS.map(s => (
             <button key={s} onClick={() => setSport(s)}
               style={{

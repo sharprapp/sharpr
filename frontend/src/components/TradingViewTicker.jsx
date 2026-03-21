@@ -26,8 +26,8 @@ export default function TradingViewTicker() {
         {"proName":"NASDAQ:AAPL","title":"Apple"},
         {"proName":"NASDAQ:NVDA","title":"NVIDIA"},
         {"proName":"NASDAQ:TSLA","title":"Tesla"},
-        {"proName":"COMEX:GC1!","title":"Gold"},
-        {"proName":"NYMEX:CL1!","title":"Oil"}
+        {"proName":"TVC:GOLD","title":"Gold"},
+        {"proName":"TVC:USOIL","title":"Oil"}
       ],
       showSymbolLogo: true,
       isTransparent: true,

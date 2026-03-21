@@ -152,9 +152,10 @@ export default function NewsTab({ initialType }) {
 
       {/* Articles */}
       {!loading && articles.length === 0 && (
-        <div style={{ ...gc, padding: 40, textAlign: 'center' }}>
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 40, textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>📰</div>
-          <div style={{ fontSize: 14, color: '#6a7a9a' }}>No articles available right now</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#6a7a9a' }}>No {newsType === 'sports' ? subCat : newsType} headlines right now</div>
+          <div style={{ fontSize: 12, color: '#2a3a5a', marginTop: 4 }}>Check back soon for the latest updates</div>
         </div>
       )}
 

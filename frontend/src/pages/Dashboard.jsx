@@ -20,10 +20,10 @@ import GameDetailModal from '../components/GameDetailModal';
 import NewNewsTab from '../components/NewsTab';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement,
-  PointElement, ArcElement, Title, Tooltip, Legend,
+  PointElement, ArcElement, Title, Tooltip, Legend, Filler,
 } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend, Filler);
 
 const NAV_GROUPS_LEFT = [
   { label: 'Trade', items: [
@@ -493,8 +493,8 @@ function DashboardNav({ tab, setTab, tier, username }) {
           ) : tier === 'pro' ? (
             <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b' }}>⚡ Pro</span>
           ) : (
-            <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.3)', color: '#fbbf24', cursor: 'pointer' }}>
-              Upgrade
+            <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(148,163,184,0.1)', border: '1px solid rgba(148,163,184,0.2)', color: '#94a3b8', cursor: 'pointer' }}>
+              Free — Upgrade
             </button>
           )}
 

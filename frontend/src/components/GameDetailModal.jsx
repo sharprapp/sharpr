@@ -49,6 +49,12 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const [betLogged, setBetLogged] = useState(false);
   const isPro = userPlan === 'pro' || userPlan === 'elite';
 
+  useEffect(() => {
+    const h = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, [onClose]);
+
   const awayStats = genStats(g.awayTeam);
   const homeStats = genStats(g.homeTeam);
   const injuries = [...(INJURIES[g.awayTeam] || []).map(i => ({ ...i, team: g.awayTeam })), ...(INJURIES[g.homeTeam] || []).map(i => ({ ...i, team: g.homeTeam }))];

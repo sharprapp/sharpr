@@ -30,7 +30,7 @@ router.get('/games', async (req, res) => {
   const cacheKey = `odds_${sportKey}`;
 
   const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.ts < 30000) return res.json(cached.data);
+  if (cached && Date.now() - cached.ts < 300000) return res.json(cached.data);
 
   if (!API_KEY) {
     return res.json({ games: [], sport, error: 'ODDS_API_KEY not configured', requestsRemaining: null });
@@ -42,7 +42,14 @@ router.get('/games', async (req, res) => {
       { headers: { Accept: 'application/json' } }
     );
     const remaining = r.headers.get('x-requests-remaining');
-    if (!r.ok) return res.status(r.status).json({ error: await r.text() });
+    if (!r.ok) {
+      const errText = await r.text();
+      let errData = {}; try { errData = JSON.parse(errText); } catch {}
+      if (errData.error_code === 'OUT_OF_USAGE_CREDITS' || r.status === 422) {
+        return res.json({ error: 'odds_quota_exceeded', message: 'Odds data temporarily unavailable', games: [], quotaExceeded: true });
+      }
+      return res.status(r.status).json({ error: 'odds_unavailable', message: 'Could not load odds', games: [] });
+    }
 
     const data = await r.json();
     const games = data.map(g => {
