@@ -8,7 +8,7 @@ export default function Logo({ size = 'md' }) {
   }
   const s = sizes[size] || sizes.md
   return (
-    <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+    <div onClick={() => navigate('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
       <div style={{
         width: s.box, height: s.box,
         background: '#050e2a',

@@ -40,6 +40,7 @@ const NAV_GROUPS = [
   { label: 'Predict', items: [
     { key: 'Polymarket', label: 'Polymarket', emoji: '🎯', desc: '8,300+ live markets' },
     { key: 'EV Calc', label: 'EV Calc', emoji: '🧮', desc: 'Expected value calculator' },
+    { key: 'AI Research', label: 'AI Research', emoji: '🔬', desc: 'Claude-powered analysis' },
   ]},
   { label: 'Social', items: [{ key: 'Community', label: 'Community', emoji: '💬', desc: 'Trading chat' }] },
   { label: 'Info', items: [
@@ -48,9 +49,7 @@ const NAV_GROUPS = [
     { key: 'news-world', label: 'World News', emoji: '🌍', desc: 'BBC, Reuters & more' },
   ]},
 ];
-const STANDALONE_TABS_LEFT = ['Home'];
-const STANDALONE_TABS_RIGHT = ['AI Research'];
-const ALL_TABS = [...STANDALONE_TABS_LEFT, ...NAV_GROUPS.flatMap(g => g.items.map(i => i.key)), ...STANDALONE_TABS_RIGHT];
+const ALL_TABS = NAV_GROUPS.flatMap(g => g.items.map(i => i.key));
 
 /* ── Polymarket localStorage cache (5 min) ── */
 const PM_LS_KEY = 'pm_markets_v2';
@@ -84,7 +83,6 @@ export default function Dashboard() {
     return [saved || 'Home'];
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [oddsSport, setOddsSport] = useState('NBA');
   const { tier, username, usernameSet, setUsername } = useAuth();
 
   // Warm up Railway backend immediately
@@ -114,17 +112,13 @@ export default function Dashboard() {
       {!usernameSet && (
         <UsernameModal onComplete={(newUsername) => { setUsername(newUsername); }} />
       )}
-      <DashboardNav tab={tab} setTab={switchTab} tier={tier} onOddsSport={setOddsSport} username={username} />
+      <DashboardNav tab={tab} setTab={switchTab} tier={tier} username={username} />
       <TradingViewTicker />
       <SportsTicker />
 
       {tab === 'Home' ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><HomeTab onSwitchTab={switchTab} /></ErrorBoundary>
-        </div>
-      ) : tab === 'Events' ? (
-        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          <ErrorBoundary><OddsBoard initialSport={oddsSport} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('dt-') ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
@@ -148,27 +142,7 @@ export default function Dashboard() {
   );
 }
 
-const SPORT_GROUPS = [
-  { label: 'American', sports: [
-    { key: 'nba', label: 'NBA', emoji: '🏀' }, { key: 'nfl', label: 'NFL', emoji: '🏈' },
-    { key: 'mlb', label: 'MLB', emoji: '⚾' }, { key: 'nhl', label: 'NHL', emoji: '🏒' },
-    { key: 'ncaab', label: 'NCAAB', emoji: '🏀' }, { key: 'ncaaf', label: 'NCAAF', emoji: '🏈' },
-    { key: 'wnba', label: 'WNBA', emoji: '🏀' },
-  ]},
-  { label: 'Soccer', sports: [
-    { key: 'soccer_epl', label: 'EPL', emoji: '⚽' }, { key: 'soccer_mls', label: 'MLS', emoji: '⚽' },
-    { key: 'soccer_laliga', label: 'La Liga', emoji: '⚽' }, { key: 'soccer_champions', label: 'UCL', emoji: '⚽' },
-  ]},
-  { label: 'Combat', sports: [
-    { key: 'ufc', label: 'UFC', emoji: '🥊' }, { key: 'boxing', label: 'Boxing', emoji: '🥊' },
-  ]},
-  { label: 'Other', sports: [
-    { key: 'tennis_atp', label: 'ATP', emoji: '🎾' }, { key: 'golf_pga', label: 'PGA', emoji: '⛳' },
-    { key: 'f1', label: 'F1', emoji: '🏎️' }, { key: 'rugby', label: 'Rugby', emoji: '🏉' },
-  ]},
-];
-
-function NavGroups({ tab, setTab, onOddsSport }) {
+function NavGroups({ tab, setTab }) {
   const [openGroup, setOpenGroup] = useState(null);
   const navRef = useRef(null);
 
@@ -180,76 +154,8 @@ function NavGroups({ tab, setTab, onOddsSport }) {
 
   const activeGroup = NAV_GROUPS.find(g => g.items.some(i => i.key === tab))?.label || '';
 
-  function StandaloneBtn({ t }) {
-    return (
-      <button onClick={() => { setTab(t); setOpenGroup(null); }}
-        style={{
-          background: tab === t ? 'rgba(79,142,247,0.15)' : 'transparent',
-          border: tab === t ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-          borderBottom: tab === t ? '2px solid #4f8ef7' : '2px solid transparent',
-          color: tab === t ? '#7aaff8' : '#2a3a5a',
-          borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
-          cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
-        }}
-        onMouseEnter={e => { if (tab !== t) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
-        onMouseLeave={e => { if (tab !== t) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
-        {t}
-      </button>
-    );
-  }
-
   return (
     <div ref={navRef} style={{ display: 'flex', alignItems: 'center', gap: 2, position: 'relative' }}>
-      {STANDALONE_TABS_LEFT.map(t => <StandaloneBtn key={t} t={t} />)}
-
-      {/* Odds with sport dropdown */}
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={() => openGroup === 'Events' ? setOpenGroup(null) : setOpenGroup('Events')}
-          style={{
-            background: tab === 'Events' ? 'rgba(79,142,247,0.15)' : openGroup === 'Events' ? 'rgba(255,255,255,0.05)' : 'transparent',
-            border: tab === 'Events' ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-            borderBottom: tab === 'Events' ? '2px solid #4f8ef7' : '2px solid transparent',
-            color: tab === 'Events' ? '#7aaff8' : openGroup === 'Events' ? '#94A3B8' : '#2a3a5a',
-            borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
-            cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
-          }}
-          onMouseEnter={e => { if (tab !== 'Events' && openGroup !== 'Events') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
-          onMouseLeave={e => { if (tab !== 'Events' && openGroup !== 'Events') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}
-        >
-          Events <span style={{ marginLeft: 4, fontSize: 9, opacity: 0.5 }}>{openGroup === 'Events' ? '\u25B2' : '\u25BC'}</span>
-        </button>
-        {openGroup === 'Events' && (
-          <div style={{
-            position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-            marginTop: 8, background: '#070712', border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 12, padding: 12, zIndex: 100, maxHeight: 400, overflowY: 'auto',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.6)', minWidth: 280,
-          }}>
-            {SPORT_GROUPS.map(g => (
-              <div key={g.label} style={{ marginBottom: 8 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2a3a5a', padding: '4px 8px' }}>{g.label}</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {g.sports.map(s => (
-                    <button key={s.key} onClick={() => { onOddsSport(s.key); setTab('Events'); setOpenGroup(null); }}
-                      style={{
-                        background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
-                        color: '#6a7a9a', borderRadius: 8, padding: '5px 10px', fontSize: 11, fontWeight: 600,
-                        cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
-                        display: 'flex', alignItems: 'center', gap: 4,
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.15)'; e.currentTarget.style.color = '#7aaff8'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#6a7a9a'; }}>
-                      <span style={{ fontSize: 12 }}>{s.emoji}</span> {s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
       {NAV_GROUPS.map(g => {
         const isActive = g.items.some(i => i.key === tab);
         const isOpen = openGroup === g.label;
@@ -308,7 +214,6 @@ function NavGroups({ tab, setTab, onOddsSport }) {
           </div>
         );
       })}
-      {STANDALONE_TABS_RIGHT.map(t => <StandaloneBtn key={t} t={t} />)}
     </div>
   );
 }
@@ -316,7 +221,7 @@ function NavGroups({ tab, setTab, onOddsSport }) {
 /* ─────────────────────────────────────────
    UNIFIED DASHBOARD NAVBAR
 ───────────────────────────────────────── */
-function DashboardNav({ tab, setTab, tier, onOddsSport, username }) {
+function DashboardNav({ tab, setTab, tier, username }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [alerts, setAlerts]     = useState([]);
@@ -361,7 +266,7 @@ function DashboardNav({ tab, setTab, tier, onOddsSport, username }) {
         </div>
 
         {/* Center: Grouped Nav */}
-        <NavGroups tab={tab} setTab={setTab} onOddsSport={onOddsSport} />
+        <NavGroups tab={tab} setTab={setTab} />
 
         {/* Right: User controls */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
