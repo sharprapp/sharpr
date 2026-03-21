@@ -261,21 +261,36 @@ function NavGroups({ tab, setTab }) {
           </button>
         );
       })()}
-      {/* Events with sport dropdown */}
+      {/* Events with categorized sport dropdown */}
       {(() => {
         const isActive = tab === 'Events';
         const isOpen = openGroup === 'Events';
-        const EVENTS_SPORTS = [
-          { key: 'nfl', label: 'NFL', emoji: '🏈' }, { key: 'nba', label: 'NBA', emoji: '🏀' },
-          { key: 'mlb', label: 'MLB', emoji: '⚾' }, { key: 'nhl', label: 'NHL', emoji: '🏒' },
-          { key: 'soccer_epl', label: 'Soccer', emoji: '⚽' }, { key: 'tennis_atp', label: 'Tennis', emoji: '🎾' },
-          { key: 'golf_pga', label: 'Golf', emoji: '🏌️' }, { key: 'ufc', label: 'Boxing / MMA', emoji: '🥊' },
-          { key: 'ncaab', label: 'NCAAB', emoji: '🏐' }, { key: 'ncaaf', label: 'NCAAF', emoji: '🏈' },
+        const sections = [
+          { label: 'American Sports', items: [
+            { key: 'nfl', label: 'NFL', emoji: '🏈' }, { key: 'nba', label: 'NBA', emoji: '🏀' },
+            { key: 'mlb', label: 'MLB', emoji: '⚾' }, { key: 'nhl', label: 'NHL', emoji: '🏒' },
+            { key: 'ncaaf', label: 'NCAAF', emoji: '🏈' }, { key: 'ncaab', label: 'NCAAB', emoji: '🏀' },
+          ]},
+          { label: 'Combat', items: [
+            { key: 'boxing', label: 'Boxing', emoji: '🥊' }, { key: 'ufc', label: 'MMA / UFC', emoji: '🥋' },
+          ]},
+          { label: 'Global Sports', items: [
+            { key: 'soccer_epl', label: 'Soccer — EPL', emoji: '⚽' }, { key: 'soccer_laliga', label: 'Soccer — La Liga', emoji: '⚽' },
+            { key: 'soccer_seriea', label: 'Soccer — Serie A', emoji: '⚽' }, { key: 'soccer_bundesliga', label: 'Soccer — Bundesliga', emoji: '⚽' },
+            { key: 'soccer_mls', label: 'Soccer — MLS', emoji: '⚽' },
+            { key: 'tennis_atp', label: 'Tennis — ATP', emoji: '🎾' }, { key: 'tennis_wta', label: 'Tennis — WTA', emoji: '🎾' },
+            { key: 'rugby', label: 'Rugby', emoji: '🏉' }, { key: 'cricket', label: 'Cricket', emoji: '🏏' },
+          ]},
+          { label: 'Motorsports & Other', items: [
+            { key: 'f1', label: 'Formula 1', emoji: '🏎️' },
+            { key: 'golf_pga', label: 'Golf — PGA', emoji: '🏌️' },
+          ]},
         ];
+        const pickSport = (key) => { setTab('Events'); setOpenGroup(null); window.dispatchEvent(new CustomEvent('events-sport', { detail: key })); };
         return (
           <div style={{ position: 'relative' }}>
             <button
-              onClick={() => { if (isOpen) { setOpenGroup(null); } else { setOpenGroup('Events'); } setTab('Events'); }}
+              onClick={() => { if (isOpen) setOpenGroup(null); else setOpenGroup('Events'); setTab('Events'); }}
               style={{
                 background: isActive ? 'rgba(79,142,247,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
                 border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
@@ -283,30 +298,44 @@ function NavGroups({ tab, setTab }) {
                 color: isActive ? '#7aaff8' : isOpen ? '#94A3B8' : '#2a3a5a',
                 borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
                 cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 4,
               }}
               onMouseEnter={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
               onMouseLeave={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#2a3a5a'; } }}>
-              Events <span style={{ fontSize: 9, opacity: 0.5, marginLeft: 2 }}>{isOpen ? '\u25B4' : '\u25BE'}</span>
+              Events
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transition: 'transform 0.2s', transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <path d="M2 4L5 7L8 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </button>
             {isOpen && (
               <div style={{
                 position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
                 marginTop: 8, background: '#0d1117', border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 8, padding: 6, zIndex: 100, minWidth: 180,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                borderRadius: 8, padding: 8, zIndex: 100, minWidth: 260, maxHeight: 480, overflowY: 'auto',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.6)',
               }}>
-                {EVENTS_SPORTS.map(s => (
-                  <button key={s.key} onClick={() => { setTab('Events'); setOpenGroup(null); window.dispatchEvent(new CustomEvent('events-sport', { detail: s.key })); }}
-                    style={{
-                      width: '100%', display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '7px 10px', borderRadius: 6, border: 'none',
-                      background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.12s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.1)'; e.currentTarget.querySelector('span:last-child').style.color = '#fff'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.querySelector('span:last-child').style.color = '#6a7a9a'; }}>
-                    <span style={{ fontSize: 14 }}>{s.emoji}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: '#6a7a9a', transition: 'color 0.12s' }}>{s.label}</span>
-                  </button>
+                {/* All Events */}
+                <button onClick={() => { setTab('Events'); setOpenGroup(null); window.dispatchEvent(new CustomEvent('events-sport', { detail: 'NBA' })); }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, border: 'none', background: 'rgba(79,142,247,0.06)', cursor: 'pointer', textAlign: 'left', marginBottom: 6, transition: 'all 0.12s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,142,247,0.12)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(79,142,247,0.06)'}>
+                  <span style={{ fontSize: 13 }}>📅</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#7aaff8' }}>All Events</span>
+                </button>
+                {sections.map((sec, si) => (
+                  <div key={sec.label}>
+                    {si > 0 && <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '6px 0' }} />}
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: '#2a3a5a', textTransform: 'uppercase', padding: '6px 10px 4px' }}>{sec.label}</div>
+                    {sec.items.map(s => (
+                      <button key={s.key} onClick={() => pickSport(s.key)}
+                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '0 10px', height: 32, borderRadius: 6, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.12s' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.1)'; e.currentTarget.querySelector('[data-label]').style.color = '#fff'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.querySelector('[data-label]').style.color = '#6a7a9a'; }}>
+                        <span style={{ fontSize: 13, width: 20, textAlign: 'center', flexShrink: 0 }}>{s.emoji}</span>
+                        <span data-label style={{ fontSize: 13, fontWeight: 600, color: '#6a7a9a', transition: 'color 0.12s' }}>{s.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 ))}
               </div>
             )}
