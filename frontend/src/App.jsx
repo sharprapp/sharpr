@@ -5,7 +5,6 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Landing from './pages/Landing';
-import Home from './pages/Home';
 import Success from './pages/Success';
 
 function PrivateRoute({ children }) {
@@ -17,7 +16,7 @@ function PrivateRoute({ children }) {
 function SmartHome() {
   const { user, loading } = useAuth();
   if (loading) return null;
-  if (user) return <Home />;
+  if (user) return <Navigate to="/dashboard" replace />;
   return <Landing />;
 }
 

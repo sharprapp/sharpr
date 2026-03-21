@@ -164,7 +164,7 @@ export default function Home() {
             <button onClick={handleSignOut} style={{ fontSize: 13, color: '#64748b', background: 'none', border: 'none', cursor: 'pointer' }}
               onMouseEnter={e => e.currentTarget.style.color = '#94A3B8'}
               onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>Sign out</button>
-            <button onClick={() => goTab('Polymarket')}
+            <button onClick={() => navigate('/dashboard')}
               style={{ background: '#2563EB', color: '#fff', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
               onMouseEnter={e => e.currentTarget.style.background = '#1d4ed8'}
               onMouseLeave={e => e.currentTarget.style.background = '#2563EB'}>
