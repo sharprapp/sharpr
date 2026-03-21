@@ -41,15 +41,20 @@ VERDICT: LONG 📈 | SHORT 📉 | WAIT ⚠️
 
 Specific numbers. No paragraphs. Be actionable.`,
 
-  news: `You are a cross-market analyst. Today is ${new Date().toDateString()}.
-RESPOND IN THIS EXACT FORMAT (max 150 words):
-🔮 Polymarket: • [impact on prediction markets]
-🏈 Sports betting: • [impact on lines or props]
-📈 Trading: • [impact on tickers or sectors]
+  news: `You are Sharpr's AI analyst. Today is ${new Date().toDateString()}.
+The user has shared a news article or story. Your job is to analyze the NEWS STORY itself.
 
-KEY PLAY: [one specific actionable recommendation with emoji]
+RESPOND IN THIS EXACT FORMAT:
 
-No paragraphs. Sharp takes only.`
+**What happened**
+[3-4 sentences analyzing the actual news — what happened, why it matters, the key context and backstory. This is the main section. Write in clear prose, not bullets.]
+
+---
+
+🎯 **Edge**
+[2-3 sentences max on how a sharp bettor or trader could potentially profit — prediction markets, props, futures, or related stocks. Keep this brief and actionable.]
+
+IMPORTANT: Lead with the news analysis. The story is the main event, the edge is the bonus. Do NOT use bullet-point lists or split into separate Polymarket/Sports/Trading sections.`
 };
 
 router.post('/query', requireAuth, checkAILimit, async (req, res) => {

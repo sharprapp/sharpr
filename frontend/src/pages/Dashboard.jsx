@@ -1599,19 +1599,27 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
               <span>{'\u{1F52C}'} {RESEARCH_TYPES.find(t => t.value === researchType)?.label}</span>
               <span style={{ cursor: 'pointer', color: '#4f8ef7' }} onClick={() => { setResult(null); setQuery(''); }}>{'\u21BA'} New research</span>
             </div>
-            <div style={{ fontSize: '13px', color: '#8899bb', lineHeight: 1.8, whiteSpace: 'pre-wrap' }}>
+            <div style={{ fontSize: '13px', color: '#8899bb', lineHeight: 1.8 }}>
               {result.split('\n').map((line, i) => {
-                const isVerdict = line.startsWith('VERDICT:');
-                const isConf    = line.startsWith('Confidence:');
-                return (
-                  <div key={i} style={{
-                    color: isVerdict ? '#22c55e' : isConf ? '#60a5fa' : '#8899bb',
-                    fontWeight: (isVerdict || isConf) ? 700 : 400,
-                    background: isVerdict ? 'rgba(34,197,94,0.08)' : 'transparent',
-                    padding: isVerdict ? '6px 10px' : '0',
-                    borderRadius: isVerdict ? '8px' : '0',
-                  }}>{line || '\u00A0'}</div>
+                const trimmed = line.trim();
+                const isVerdict = trimmed.startsWith('VERDICT:');
+                const isConf = trimmed.startsWith('Confidence:');
+                const isSeparator = trimmed === '---';
+                const isBoldHeader = /^\*\*(.+)\*\*$/.test(trimmed);
+                const isEdge = trimmed.startsWith('\u{1F3AF}') || trimmed.startsWith('🎯');
+
+                if (isSeparator) return <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', margin: '12px 0' }} />;
+                if (isBoldHeader) {
+                  const text = trimmed.replace(/\*\*/g, '');
+                  const isEdgeHeader = text.toLowerCase().includes('edge');
+                  return <div key={i} style={{ fontSize: 14, fontWeight: 700, color: isEdgeHeader ? '#4f8ef7' : '#f0f4ff', marginTop: 8, marginBottom: 4 }}>{text}</div>;
+                }
+                if (isEdge) return <div key={i} style={{ fontSize: 14, fontWeight: 700, color: '#4f8ef7', marginTop: 8, marginBottom: 4 }}>{trimmed}</div>;
+                if (isVerdict) return (
+                  <div key={i} style={{ background: 'rgba(34,197,94,0.08)', padding: '6px 10px', borderRadius: 8, color: '#22c55e', fontWeight: 700, marginTop: 4 }}>{trimmed}</div>
                 );
+                if (isConf) return <div key={i} style={{ color: '#60a5fa', fontWeight: 700 }}>{trimmed}</div>;
+                return <div key={i} style={{ color: '#8899bb' }}>{trimmed || '\u00A0'}</div>;
               })}
             </div>
           </div>
