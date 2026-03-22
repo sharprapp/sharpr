@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import api from '../lib/api';
 import Logo from '../components/Logo';
+import { requestPermission, subscribeToPush, unsubscribeFromPush } from '../lib/notifications';
 
 const inp = 'outline-none transition-colors';
 const inpStyle = { background: '#0a0f1e', border: '1px solid #1e2a4a', color: '#F5F5FA', borderRadius: '12px', padding: '10px 14px', fontSize: 14, width: '100%' };
@@ -51,6 +52,7 @@ export default function Settings() {
   const [timezone,      setTimezone]      = useState(() => localStorage.getItem('pref_tz')       || 'America/New_York');
   const [journalPublic, setJournalPublic] = useState(() => localStorage.getItem('pref_public')   === 'true');
   const [alertsOn,      setAlertsOn]      = useState(() => localStorage.getItem('pref_alerts')   !== 'false');
+  const [pushEnabled,   setPushEnabled]   = useState(() => localStorage.getItem('pref_push')     === 'true');
   const [saved, setSaved]                 = useState(false);
 
   useEffect(() => {
@@ -189,9 +191,29 @@ export default function Settings() {
         {/* ── Notifications ── */}
         <div style={CARD}>
           <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Notifications</div>
-          <Toggle value={alertsOn} onChange={setAlertsOn}
-            label="Market alerts"
-            sub="Get in-app alerts when Polymarket prices cross your thresholds." />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Toggle value={alertsOn} onChange={setAlertsOn}
+              label="In-app alerts"
+              sub="Get alerts when Polymarket prices cross your thresholds." />
+            <Toggle value={pushEnabled} onChange={async (val) => {
+              if (val) {
+                const perm = await requestPermission();
+                if (perm !== 'granted') { alert('Please allow notifications in your browser settings.'); return; }
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                  const ok = await subscribeToPush(session.access_token);
+                  if (ok) setPushEnabled(true);
+                }
+              } else {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) await unsubscribeFromPush(session.access_token);
+                setPushEnabled(false);
+              }
+              localStorage.setItem('pref_push', String(val));
+            }}
+              label="Push notifications"
+              sub="Line movement alerts and sharp signals sent to your device." />
+          </div>
         </div>
 
         {/* ── Subscription ── */}

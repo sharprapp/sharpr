@@ -76,6 +76,7 @@ app.use('/api/markets',   require('./routes/markets'));   // no rate limit — c
 app.use('/api/espn',      require('./routes/espn'));      // no rate limit — cached public data
 app.use('/api/community', require('./routes/community'));
 app.use('/api/sharpsignal', require('./routes/sharpsignal'));
+app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/user',      require('./routes/user'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
