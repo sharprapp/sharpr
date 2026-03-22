@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../lib/api';
 import TradingViewMarketOverview from './TradingViewMarketOverview';
+import { Line } from 'react-chartjs-2';
 
 function greeting() {
   const h = new Date().getHours();
@@ -104,6 +105,47 @@ export default function HomeTab({ onSwitchTab }) {
     const isAway = (g.awayML || 0) > (g.homeML || 0);
     return { ...g, pickTeam: isAway ? g.awayTeam : g.homeTeam, pickML: isAway ? g.awayML : g.homeML };
   }, [games]);
+
+  // Performance chart data
+  const [perfView, setPerfView] = useState('combined');
+  const perfData = useMemo(() => {
+    const settledBets = bets.filter(b => b.result === 'win' || b.result === 'loss').map(b => ({ date: b.created_at, pnl: b.pnl || 0, type: 'bet' }));
+    const settledTrades = trades.filter(t => t.status === 'win' || t.status === 'loss').map(t => ({ date: t.created_at, pnl: t.pnl || 0, type: 'trade' }));
+    const all = [...settledBets, ...settledTrades].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const filtered = perfView === 'betting' ? settledBets.sort((a, b) => new Date(a.date) - new Date(b.date)) : perfView === 'trading' ? settledTrades.sort((a, b) => new Date(a.date) - new Date(b.date)) : all;
+    if (filtered.length === 0) return null;
+
+    let cum = 0;
+    const points = filtered.map(r => { cum += r.pnl; return { date: new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), total: Math.round(cum * 100) / 100 }; });
+    // Dedupe by date (sum same-day entries)
+    const byDate = {};
+    points.forEach(p => { byDate[p.date] = p.total; });
+    const labels = Object.keys(byDate);
+    const data = Object.values(byDate);
+    const totalPnl = data[data.length - 1] || 0;
+    const color = totalPnl >= 0 ? '#22c55e' : '#ef4444';
+
+    // Stats
+    const wins = filtered.filter(r => r.pnl > 0).length;
+    const winRate = filtered.length ? Math.round(wins / filtered.length * 100) : 0;
+    const dailyPnl = {};
+    filtered.forEach(r => {
+      const d = new Date(r.date).toDateString();
+      dailyPnl[d] = (dailyPnl[d] || 0) + r.pnl;
+    });
+    const days = Object.values(dailyPnl);
+    const bestDay = days.length ? Math.max(...days) : 0;
+    const worstDay = days.length ? Math.min(...days) : 0;
+    let streak = 0, streakType = '';
+    for (let i = filtered.length - 1; i >= 0; i--) {
+      const w = filtered[i].pnl > 0;
+      if (i === filtered.length - 1) { streakType = w ? 'W' : 'L'; streak = 1; }
+      else if ((w && streakType === 'W') || (!w && streakType === 'L')) streak++;
+      else break;
+    }
+
+    return { labels, data, color, totalPnl, winRate, total: filtered.length, bestDay, worstDay, streak, streakType };
+  }, [bets, trades, perfView]);
 
   const displayName = username ? `@${username}` : firstName(user?.email);
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -300,6 +342,73 @@ export default function HomeTab({ onSwitchTab }) {
               </div>
             ))}
           </div>
+        )}
+      </section>
+
+      {/* SECTION 6 — Performance */}
+      <section>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#f0f4ff' }}>Performance</h2>
+          <div style={{ display: 'flex', gap: 4, padding: 3, borderRadius: 10, background: '#0a0f1e' }}>
+            {[{ k: 'combined', l: 'All' }, { k: 'betting', l: 'Betting' }, { k: 'trading', l: 'Trading' }].map(v => (
+              <button key={v.k} onClick={() => setPerfView(v.k)}
+                style={{ padding: '4px 12px', borderRadius: 7, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: 'none', background: perfView === v.k ? '#2563EB' : 'transparent', color: perfView === v.k ? '#fff' : '#4a5a7a' }}>
+                {v.l}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {!perfData ? (
+          <div style={{ ...card, padding: 40, textAlign: 'center' }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>📊</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#4a5a7a' }}>Start logging bets and trades to see your performance</div>
+          </div>
+        ) : (
+          <>
+            {/* Stats bar */}
+            <div className="grid-responsive-4" style={{ marginBottom: 14 }}>
+              {[
+                { l: 'Total P&L', v: (perfData.totalPnl >= 0 ? '+$' : '-$') + Math.abs(perfData.totalPnl).toFixed(2), c: perfData.totalPnl >= 0 ? '#22c55e' : '#ef4444' },
+                { l: 'Win Rate', v: perfData.winRate + '%', c: '#F5F5FA' },
+                { l: 'Best / Worst Day', v: '+$' + perfData.bestDay.toFixed(0) + ' / -$' + Math.abs(perfData.worstDay).toFixed(0), c: '#F5F5FA' },
+                { l: 'Streak', v: perfData.streakType + perfData.streak, c: perfData.streakType === 'W' ? '#22c55e' : '#ef4444' },
+              ].map(s => (
+                <div key={s.l} style={{ ...card, padding: '12px 16px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#2a3a5a', marginBottom: 4 }}>{s.l}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: s.c }}>{s.v}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Chart */}
+            <div style={{ ...card, padding: 16 }}>
+              <div style={{ height: 200 }}>
+                <Line
+                  data={{
+                    labels: perfData.labels,
+                    datasets: [{
+                      data: perfData.data,
+                      borderColor: perfData.color,
+                      backgroundColor: perfData.color + '14',
+                      fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: perfData.color, borderWidth: 2,
+                    }],
+                  }}
+                  options={{
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(2) } } },
+                    scales: {
+                      x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#2a3a5a', font: { size: 10 }, maxTicksLimit: 8 } },
+                      y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#2a3a5a', font: { size: 10 }, callback: v => '$' + v } },
+                    },
+                  }}
+                />
+              </div>
+              <div style={{ textAlign: 'center', fontSize: 11, color: '#1a2535', marginTop: 8 }}>
+                Cumulative P&L · {perfData.total} {perfView === 'betting' ? 'bets' : perfView === 'trading' ? 'trades' : 'entries'}
+              </div>
+            </div>
+          </>
         )}
       </section>
     </div>
