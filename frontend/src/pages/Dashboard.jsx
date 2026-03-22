@@ -141,7 +141,7 @@ export default function Dashboard() {
         </div>
       ) : tab.startsWith('dt-') ? (
         <div className="tab-content" style={{padding: '32px 24px'}}>
-          <ErrorBoundary><DayTradingTab activeSubTab={tab.replace('dt-', '')} /></ErrorBoundary>
+          <ErrorBoundary><DayTradingTab activeSubTab={tab.replace('dt-', '')} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('sb-') ? (
         <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
@@ -1139,7 +1139,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
 /* ─────────────────────────────────────────
    DAY TRADING TAB
 ───────────────────────────────────────── */
-function DayTradingTab({ activeSubTab }) {
+function DayTradingTab({ activeSubTab, tier }) {
   const subTab = activeSubTab || 'journal';
   const [trades, setTrades]   = useState([]);
   const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', setup:'Breakout', status:'open', notes:'' });
@@ -1221,7 +1221,7 @@ function DayTradingTab({ activeSubTab }) {
           <TradingCalendar trades={trades} />
         ) : (
           <>
-            <TradeForm form={form} setForm={setForm} loading={loading} onAdd={addTrade} />
+            <TradeForm form={form} setForm={setForm} loading={loading} onAdd={addTrade} tier={tier} />
             <DarkTable
               headers={['Ticker','Dir','Setup','Entry','Exit','P&L','Status','']}
               empty="No trades yet. Log your first trade above.">
@@ -1261,8 +1261,9 @@ function DayTradingTab({ activeSubTab }) {
   );
 }
 
-function TradeForm({ form, setForm, loading, onAdd }) {
+function TradeForm({ form, setForm, loading, onAdd, tier }) {
   const f = (k, v) => setForm(p => ({...p, [k]: v}));
+  const [imgParsing, setImgParsing] = useState(false);
   return (
     <div className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
       <div className="text-xs font-semibold uppercase tracking-wider mb-4" style={{color: '#64748b'}}>Log a trade</div>
@@ -1308,13 +1309,48 @@ function TradeForm({ form, setForm, loading, onAdd }) {
             onFocus={inpFocus} onBlur={inpBlur} />
         </div>
       </div>
-      <button onClick={onAdd} disabled={loading}
-        className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
-        style={{background: '#2563EB', color: '#fff'}}
-        onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
-        onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
-        {loading ? 'Adding…' : '+ Add trade'}
-      </button>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <button onClick={onAdd} disabled={loading}
+          className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+          style={{background: '#2563EB', color: '#fff'}}
+          onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
+          onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
+          {loading ? 'Adding…' : '+ Add trade'}
+        </button>
+        {(tier === 'pro' || tier === 'elite') ? (
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            {imgParsing ? 'Analyzing...' : '📷 Upload Screenshot'}
+            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+              const file = e.target.files?.[0]; if (!file) return;
+              setImgParsing(true);
+              try {
+                const reader = new FileReader();
+                reader.onload = async () => {
+                  const base64 = reader.result.split(',')[1];
+                  const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'trade' });
+                  if (data.parsed) {
+                    const p = data.parsed;
+                    setForm(prev => ({
+                      ...prev,
+                      ticker: p.ticker || prev.ticker,
+                      direction: p.direction?.toUpperCase() === 'SHORT' ? 'SHORT' : p.direction?.toUpperCase() === 'LONG' ? 'LONG' : prev.direction,
+                      entry: p.entry || p.price || prev.entry,
+                      exit: p.exit || prev.exit,
+                      qty: p.qty || p.quantity || prev.qty,
+                      notes: p.notes || prev.notes,
+                    }));
+                  }
+                };
+                reader.readAsDataURL(file);
+              } catch { alert('Could not read screenshot'); }
+              finally { setTimeout(() => setImgParsing(false), 1000); }
+              e.target.value = '';
+            }} />
+          </label>
+        ) : (
+          <span style={{ fontSize: 11, color: '#2a3a5a' }}>📷 Screenshot upload — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
+        )}
+      </div>
     </div>
   );
 }
