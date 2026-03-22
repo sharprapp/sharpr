@@ -65,7 +65,7 @@ export default function Register() {
             </button>
           </form>
           <div className="text-xs mt-3 text-center" style={{ color: '#475569' }}>
-            By signing up you agree to our Terms of Service.
+            By signing up you agree to our <Link to="/terms" style={{ color: '#4f8ef7', textDecoration: 'none' }}>Terms of Service</Link> and <Link to="/privacy" style={{ color: '#4f8ef7', textDecoration: 'none' }}>Privacy Policy</Link>.
           </div>
           <div className="text-sm mt-3 text-center" style={{ color: '#64748b' }}>
             Already have an account?{' '}
