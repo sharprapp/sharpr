@@ -23,7 +23,86 @@ const SPORT_KEYS = {
   rugby: 'rugbyleague_nrl', cricket: 'cricket_icc_world_cup', afl: 'aussierules_afl',
 };
 
-const BOOKS = 'draftkings,fanduel,betmgm,caesars,pointsbet';
+const BOOKS = 'draftkings,fanduel,betmgm,caesars,pointsbet,betrivers,unibet';
+
+// Quota tracking
+let quotaRemaining = null;
+let quotaLastChecked = null;
+
+// Smart polling: priority sports get polled more often
+const PRIORITY_SPORTS = ['basketball_nba', 'americanfootball_nfl', 'baseball_mlb', 'icehockey_nhl'];
+const pollTimers = new Map();
+
+function getCacheTTL(sportKey) {
+  // Tighter cache for priority sports
+  if (PRIORITY_SPORTS.includes(sportKey)) return 180000; // 3 min
+  return 900000; // 15 min for others
+}
+
+// Background polling for priority sports
+function startSmartPolling() {
+  if (!API_KEY) return;
+  // Poll priority sports every 10 minutes in background to keep cache warm
+  PRIORITY_SPORTS.forEach(sportKey => {
+    if (pollTimers.has(sportKey)) return;
+    const timer = setInterval(async () => {
+      if (quotaRemaining != null && quotaRemaining < 500) return; // conserve quota
+      try {
+        const r = await fetch(
+          `${ODDS_BASE}/sports/${sportKey}/odds?apiKey=${API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKS}`,
+          { headers: { Accept: 'application/json' } }
+        );
+        if (r.ok) {
+          const remaining = r.headers.get('x-requests-remaining');
+          if (remaining) { quotaRemaining = parseInt(remaining); quotaLastChecked = Date.now(); }
+          if (quotaRemaining < 1000) console.warn(`[Odds] Quota low: ${quotaRemaining} remaining`);
+          const data = await r.json();
+          const games = data.map(g => mapGame(g, sportKey.replace(/basketball_|americanfootball_|baseball_|icehockey_|soccer_|mma_/g, '')));
+          cache.set(`odds_${sportKey}`, { data: { games, sport: sportKey, total: games.length, requestsRemaining: remaining }, ts: Date.now() });
+        }
+      } catch {}
+    }, 600000); // every 10 min
+    pollTimers.set(sportKey, timer);
+  });
+}
+
+// Shared game mapping function
+function mapGame(g, sport) {
+  const getOdds = (market, team) => {
+    for (const b of g.bookmakers || []) {
+      const m = b.markets?.find(x => x.key === market);
+      const o = m?.outcomes?.find(x => x.name === team);
+      if (o) return { price: o.price, point: o.point, book: b.title };
+    }
+    return null;
+  };
+  const homeML = getOdds('h2h', g.home_team);
+  const awayML = getOdds('h2h', g.away_team);
+  const homeSpread = getOdds('spreads', g.home_team);
+  const awaySpread = getOdds('spreads', g.away_team);
+  let over = null, under = null;
+  for (const b of g.bookmakers || []) {
+    const m = b.markets?.find(x => x.key === 'totals');
+    if (m) { over = m.outcomes?.find(x => x.name === 'Over'); under = m.outcomes?.find(x => x.name === 'Under'); if (over) break; }
+  }
+  // Check if game is live (commenced and not completed)
+  const commence = new Date(g.commence_time);
+  const isLive = commence < new Date() && !g.completed;
+
+  return {
+    id: g.id, sport, homeTeam: g.home_team, awayTeam: g.away_team,
+    commenceTime: g.commence_time, isLive,
+    homeML: homeML?.price, awayML: awayML?.price,
+    homeSpread: homeSpread?.point, homeSpreadOdds: homeSpread?.price,
+    awaySpread: awaySpread?.point, awaySpreadOdds: awaySpread?.price,
+    overTotal: over?.point, overOdds: over?.price, underOdds: under?.price,
+    bookmakers: g.bookmakers?.map(b => b.title),
+    allBookmakers: g.bookmakers || [],
+  };
+}
+
+// Start polling on module load
+setTimeout(startSmartPolling, 5000);
 
 function fmtML(n) { return n == null ? null : n > 0 ? `+${n}` : `${n}`; }
 
@@ -34,7 +113,8 @@ router.get('/games', async (req, res) => {
   const cacheKey = `odds_${sportKey}`;
 
   const cached = cache.get(cacheKey);
-  if (cached && Date.now() - cached.ts < 300000) return res.json(cached.data);
+  const ttl = getCacheTTL(sportKey);
+  if (cached && Date.now() - cached.ts < ttl) return res.json(cached.data);
 
   if (!API_KEY) {
     return res.json({ games: [], sport, error: 'ODDS_API_KEY not configured', requestsRemaining: null });
@@ -46,6 +126,9 @@ router.get('/games', async (req, res) => {
       { headers: { Accept: 'application/json' } }
     );
     const remaining = r.headers.get('x-requests-remaining');
+    if (remaining) { quotaRemaining = parseInt(remaining); quotaLastChecked = Date.now(); }
+    if (quotaRemaining != null && quotaRemaining < 1000) console.warn(`[Odds] Quota low: ${quotaRemaining} remaining`);
+
     if (!r.ok) {
       const errText = await r.text();
       let errData = {}; try { errData = JSON.parse(errText); } catch {}
@@ -56,35 +139,7 @@ router.get('/games', async (req, res) => {
     }
 
     const data = await r.json();
-    const games = data.map(g => {
-      const getOdds = (market, team) => {
-        for (const b of g.bookmakers || []) {
-          const m = b.markets?.find(x => x.key === market);
-          const o = m?.outcomes?.find(x => x.name === team);
-          if (o) return { price: o.price, point: o.point, book: b.title };
-        }
-        return null;
-      };
-      const homeML = getOdds('h2h', g.home_team);
-      const awayML = getOdds('h2h', g.away_team);
-      const homeSpread = getOdds('spreads', g.home_team);
-      const awaySpread = getOdds('spreads', g.away_team);
-      let over = null, under = null;
-      for (const b of g.bookmakers || []) {
-        const m = b.markets?.find(x => x.key === 'totals');
-        if (m) { over = m.outcomes?.find(x => x.name === 'Over'); under = m.outcomes?.find(x => x.name === 'Under'); if (over) break; }
-      }
-      return {
-        id: g.id, sport, homeTeam: g.home_team, awayTeam: g.away_team,
-        commenceTime: g.commence_time,
-        homeML: homeML?.price, awayML: awayML?.price,
-        homeSpread: homeSpread?.point, homeSpreadOdds: homeSpread?.price,
-        awaySpread: awaySpread?.point, awaySpreadOdds: awaySpread?.price,
-        overTotal: over?.point, overOdds: over?.price, underOdds: under?.price,
-        bookmakers: g.bookmakers?.map(b => b.title),
-        allBookmakers: g.bookmakers || [],
-      };
-    });
+    const games = data.map(g => mapGame(g, sport));
     // Line movement detection — notify Pro users on moves > 3 points
     if (webpush) {
       for (const g of games) {
@@ -217,6 +272,31 @@ router.get('/scores', async (req, res) => {
     }));
     res.json({ scores, sport });
   } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET /api/odds/quota — check remaining API quota
+router.get('/quota', (req, res) => {
+  res.json({ remaining: quotaRemaining, lastChecked: quotaLastChecked, warning: quotaRemaining != null && quotaRemaining < 1000 });
+});
+
+// GET /api/odds/live — fetch only live/in-progress games across priority sports
+router.get('/live', async (req, res) => {
+  const cacheKey = 'odds_live';
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < 60000) return res.json(cached.data);
+
+  const liveGames = [];
+  // Check cache for each priority sport
+  for (const sportKey of PRIORITY_SPORTS) {
+    const sportCache = cache.get(`odds_${sportKey}`);
+    if (sportCache?.data?.games) {
+      liveGames.push(...sportCache.data.games.filter(g => g.isLive));
+    }
+  }
+
+  const result = { games: liveGames, total: liveGames.length };
+  cache.set(cacheKey, { data: result, ts: Date.now() });
+  res.json(result);
 });
 
 module.exports = router;

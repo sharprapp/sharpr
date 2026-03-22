@@ -189,7 +189,10 @@ export default function SportsOdds({ initialSport, tier }) {
             <div style={{ padding: 20 }}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(79,142,247,0.1)', color: '#7aaff8', textTransform: 'uppercase' }}>{SPORT_LABELS[sport] || sport}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(79,142,247,0.1)', color: '#7aaff8', textTransform: 'uppercase' }}>{SPORT_LABELS[sport] || sport}</span>
+                  {game.isLive && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', color: '#ef4444', animation: 'pulse 1.5s infinite' }}>LIVE</span>}
+                </div>
                 <span style={{ fontSize: 11, color: '#4a5a7a' }}>{fmtDate(game.commenceTime)}</span>
               </div>
 
