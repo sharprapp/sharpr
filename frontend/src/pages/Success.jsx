@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
 
 export default function Success() {
   const navigate = useNavigate();
+  const { refreshProfile } = useAuth();
   const [status, setStatus] = useState('verifying');
 
   useEffect(() => {
@@ -15,9 +17,17 @@ export default function Success() {
         if (!session) { navigate('/'); return; }
         let attempts = 0;
         const poll = async () => {
-          const { data: profile } = await supabase.from('profiles').select('tier').eq('id', session.user.id).single();
-          if (profile?.tier === 'pro' || attempts > 5) setStatus('success');
-          else { attempts++; setTimeout(poll, 2000); }
+          const { data: profile } = await supabase.from('profiles').select('tier, plan').eq('id', session.user.id).single();
+          const isPro = profile?.plan === 'pro' || profile?.tier === 'pro';
+          console.log('[Success] poll attempt', attempts, '| profile:', profile);
+          if (isPro || attempts > 5) {
+            // Force refresh the global auth state so Dashboard picks up pro
+            await refreshProfile();
+            setStatus('success');
+          } else {
+            attempts++;
+            setTimeout(poll, 2000);
+          }
         };
         poll();
       } catch { setStatus('success'); }
