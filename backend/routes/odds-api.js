@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const cache = new Map();
+const prevOdds = new Map(); // tracks previous spreads for line movement detection
+const supabase = require('../lib/supabase');
+let webpush; try { webpush = require('web-push'); webpush.setVapidDetails(process.env.VAPID_EMAIL || 'mailto:support@sharprapp.com', process.env.VAPID_PUBLIC_KEY || '', process.env.VAPID_PRIVATE_KEY || ''); } catch {}
+const notifiedMoves = new Set(); // prevent duplicate notifications
 
 const ODDS_BASE = 'https://api.the-odds-api.com/v4';
 const API_KEY = process.env.ODDS_API_KEY;
@@ -81,6 +85,32 @@ router.get('/games', async (req, res) => {
         allBookmakers: g.bookmakers || [],
       };
     });
+    // Line movement detection — notify Pro users on moves > 3 points
+    if (webpush) {
+      for (const g of games) {
+        const key = g.id + '_spread';
+        const prev = prevOdds.get(key);
+        if (prev != null && g.homeSpread != null) {
+          const move = Math.abs(g.homeSpread - prev);
+          if (move >= 3 && !notifiedMoves.has(key + '_' + g.homeSpread)) {
+            notifiedMoves.add(key + '_' + g.homeSpread);
+            const dir = g.homeSpread > prev ? 'up' : 'down';
+            // Fire and forget — don't block response
+            (async () => {
+              try {
+                const { data: subs } = await supabase.from('push_subscriptions').select('subscription');
+                const payload = JSON.stringify({ title: 'Line Movement', body: `${g.homeTeam}: spread moved ${dir} from ${prev} to ${g.homeSpread}`, url: '/dashboard' });
+                for (const sub of subs || []) {
+                  try { await webpush.sendNotification(sub.subscription, payload); } catch {}
+                }
+              } catch {}
+            })();
+          }
+        }
+        if (g.homeSpread != null) prevOdds.set(key, g.homeSpread);
+      }
+    }
+
     const result = { games, sport, total: games.length, requestsRemaining: remaining };
     cache.set(cacheKey, { data: result, ts: Date.now() });
     res.set('Cache-Control', 'public, max-age=30');

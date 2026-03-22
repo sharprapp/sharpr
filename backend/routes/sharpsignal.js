@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const cache = new Map();
+const supabase = require('../lib/supabase');
+let webpush; try { webpush = require('web-push'); webpush.setVapidDetails(process.env.VAPID_EMAIL || 'mailto:support@sharprapp.com', process.env.VAPID_PUBLIC_KEY || '', process.env.VAPID_PRIVATE_KEY || ''); } catch {}
+const notifiedSignals = new Set();
 
 function americanToProb(odds) {
   if (!odds) return null;
@@ -108,6 +111,26 @@ router.get('/signals', async (req, res) => {
     }
 
     signals.sort((a, b) => (Math.abs(b.edge || 0) + (b.confidence === 'HIGH' ? 10 : b.confidence === 'MEDIUM' ? 5 : 0)) - (Math.abs(a.edge || 0) + (a.confidence === 'HIGH' ? 10 : a.confidence === 'MEDIUM' ? 5 : 0)));
+
+    // Notify Pro users on high-edge signals (>10%)
+    if (webpush) {
+      const highEdge = signals.filter(s => s.type === 'sports' && Math.abs(s.edge || 0) > 10 && !notifiedSignals.has(s.id));
+      if (highEdge.length > 0) {
+        (async () => {
+          try {
+            const { data: subs } = await supabase.from('push_subscriptions').select('subscription');
+            for (const sig of highEdge.slice(0, 3)) {
+              notifiedSignals.add(sig.id);
+              const payload = JSON.stringify({ title: 'Sharp Signal', body: `${sig.event} — ${sig.edge > 0 ? '+' : ''}${sig.edge}% edge detected`, url: '/dashboard' });
+              for (const sub of subs || []) {
+                try { await webpush.sendNotification(sub.subscription, payload); } catch {}
+              }
+            }
+          } catch {}
+        })();
+      }
+    }
+
     const result = { signals: signals.slice(0, 50), total: signals.length, sportsSignals: signals.filter(s => s.type === 'sports').length, polySignals: signals.filter(s => s.type === 'polymarket').length, generatedAt: new Date().toISOString() };
     cache.set(cacheKey, { data: result, ts: Date.now() });
     res.json(result);
