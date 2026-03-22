@@ -18,6 +18,9 @@ import UsernameModal from '../components/UsernameModal';
 import OddsBoard from '../components/OddsBoard';
 import { exportBetsCSV, exportTradesCSV, exportBetsPDF, exportTradesPDF } from '../lib/export';
 import OnboardingModal from '../components/OnboardingModal';
+import KeyboardShortcutsModal from '../components/KeyboardShortcutsModal';
+import CommandPalette from '../components/CommandPalette';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import GameDetailModal from '../components/GameDetailModal';
 import NewNewsTab from '../components/NewsTab';
 import {
@@ -89,9 +92,25 @@ export default function Dashboard() {
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showCmdPalette, setShowCmdPalette] = useState(false);
   const [eventsSport, setEventsSport] = useState('NBA');
   const { tier, username, usernameSet, setUsername } = useAuth();
-  console.log('[Dashboard] tier:', tier);
+  const navigate = useNavigate();
+
+  useKeyboardShortcuts(useCallback((action) => {
+    if (action === 'help') setShowShortcuts(s => !s);
+    else if (action === 'command-palette') setShowCmdPalette(s => !s);
+    else if (action === 'escape') { setShowShortcuts(false); setShowCmdPalette(false); setShowUpgrade(false); }
+    else if (action.startsWith('nav:')) {
+      const target = action.replace('nav:', '');
+      if (target === 'settings') navigate('/settings');
+      else switchTab(target);
+      setShowCmdPalette(false);
+    }
+    else if (action === 'new:bet') { switchTab('sb-journal'); setShowCmdPalette(false); }
+    else if (action === 'new:trade') { switchTab('dt-journal'); setShowCmdPalette(false); }
+  }, []));
 
   // Warm up Railway backend immediately
   useEffect(() => {
@@ -175,6 +194,18 @@ export default function Dashboard() {
         </div>
       )}
       {showUpgrade && <UpgradeModal onClose={() => setShowUpgrade(false)} />}
+      {showShortcuts && <KeyboardShortcutsModal onClose={() => setShowShortcuts(false)} />}
+      {showCmdPalette && <CommandPalette onAction={(a) => {
+        if (a === 'help') { setShowCmdPalette(false); setShowShortcuts(true); }
+        else if (a.startsWith('nav:')) { const t = a.replace('nav:', ''); if (t === 'settings') navigate('/settings'); else switchTab(t); setShowCmdPalette(false); }
+        else if (a === 'new:bet') { switchTab('sb-journal'); setShowCmdPalette(false); }
+        else if (a === 'new:trade') { switchTab('dt-journal'); setShowCmdPalette(false); }
+      }} onClose={() => setShowCmdPalette(false)} />}
+      {/* Help button */}
+      <button onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)"
+        style={{ position: 'fixed', bottom: 20, right: 20, width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#4a5a7a', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}>
+        ?
+      </button>
     </div>
   );
 }
