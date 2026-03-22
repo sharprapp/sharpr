@@ -1809,10 +1809,25 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [category, setCategory] = useState('polymarket');
   const scrollRef = useRef(null);
 
+  const CATS = [
+    { key: 'polymarket', label: 'Prediction Market', emoji: '🎯' },
+    { key: 'trading', label: 'Day Trading', emoji: '📈' },
+    { key: 'sports', label: 'Sports Betting', emoji: '🏆' },
+    { key: 'news', label: 'General Research', emoji: '🔍' },
+  ];
+
+  const SUGGESTIONS = {
+    polymarket: ['Will the Fed cut rates before July?', 'Best EV markets on Polymarket', 'Trump approval above 50%?', 'Bitcoin $100k by June?'],
+    trading: ['NQ futures key levels this week', 'BTC price analysis next 30 days', 'Best day trading setups today', 'NVDA earnings play?'],
+    sports: ['NBA sharp money tonight', 'Best underdog bets today', 'Lakers vs Celtics analysis', 'NFL draft prop bets?'],
+    news: ['Latest market-moving news', 'Impact of tariff announcement', 'Fed meeting preview', 'Explain the yield curve'],
+  };
+
   useEffect(() => {
-    if (prefill?.topic) { setInput(prefill.topic); onPrefillConsumed?.(); }
+    if (prefill?.topic) { setInput(prefill.topic); if (prefill.type) setCategory(prefill.type); onPrefillConsumed?.(); }
   }, [prefill]);
 
   useEffect(() => {
@@ -1822,14 +1837,12 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
   async function send() {
     const text = input.trim();
     if (!text || loading) return;
-    const userMsg = { id: Date.now(), role: 'user', content: text, ts: new Date() };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages(prev => [...prev, { id: Date.now(), role: 'user', content: text, ts: new Date() }]);
     setInput('');
     setLoading(true);
     try {
-      // Send last 6 messages for context
-      const history = messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-6).map(m => ({ role: m.role, content: m.content }));
-      const { data } = await api.post('/api/ai/query', { query: text, type: 'polymarket', use_web_search: true, history });
+      const history = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
+      const { data } = await api.post('/api/ai/query', { query: text, type: category, use_web_search: true, history });
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.result || 'No response.', ts: new Date() }]);
     } catch {
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: 'Something went wrong. Please try again.', ts: new Date(), isError: true }]);
@@ -1837,39 +1850,64 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
     setLoading(false);
   }
 
-  function onKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
-  }
-
+  function onKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
   const fmtTime = (d) => new Date(d).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const hasMessages = messages.length > 0 || loading;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)', maxWidth: 780, margin: '0 auto', width: '100%' }}>
-      {/* Top bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ fontSize: 18, fontWeight: 800, color: '#f0f4ff' }}>AI Research</div>
-        <button onClick={() => setMessages([])} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>New Chat</button>
+
+      {/* Header — always visible */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12 }}>
+        {!hasMessages ? (
+          <div style={{ textAlign: 'center', width: '100%', paddingTop: 20 }}>
+            <div style={{ width: 56, height: 56, background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>🔬</div>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: '#f0f4ff', margin: '0 0 6px', letterSpacing: '-0.5px' }}>Sharpr Research</h1>
+            <p style={{ fontSize: 13, color: '#2a3a5a', margin: 0 }}>AI-powered analysis for prediction markets, trading, and sports betting</p>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#f0f4ff' }}>🔬 Sharpr Research</div>
+            <button onClick={() => setMessages([])} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>New Chat</button>
+          </>
+        )}
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {messages.length === 0 && !loading && (
-          <div style={{ textAlign: 'center', marginTop: 60 }}>
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🔬</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#f0f4ff', marginBottom: 6 }}>Ask anything</div>
-            <div style={{ fontSize: 13, color: '#2a3a5a', marginBottom: 20 }}>Markets, trades, bets, news — powered by Claude + web search</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
-              {['Fed rate cut odds?', 'BTC analysis', 'Lakers vs Celtics', 'Best Polymarket plays'].map(s => (
-                <button key={s} onClick={() => setInput(s)} style={{ fontSize: 11, padding: '5px 12px', borderRadius: 100, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: '#4a5a7a', cursor: 'pointer' }}>{s}</button>
-              ))}
-            </div>
+      {/* Category tabs */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, justifyContent: hasMessages ? 'flex-start' : 'center' }}>
+        {CATS.map(c => (
+          <button key={c.key} onClick={() => setCategory(c.key)}
+            style={{
+              padding: hasMessages ? '4px 10px' : '10px 14px', borderRadius: hasMessages ? 8 : 12, fontSize: hasMessages ? 11 : 12, fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.15s',
+              background: category === c.key ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.03)',
+              color: category === c.key ? '#7aaff8' : '#4a5a7a',
+            }}>
+            {hasMessages ? c.label : `${c.emoji} ${c.label}`}
+          </button>
+        ))}
+      </div>
+
+      {/* Messages area */}
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Suggestions — only when empty */}
+        {!hasMessages && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 12 }}>
+            {(SUGGESTIONS[category] || []).map(s => (
+              <button key={s} onClick={() => setInput(s)}
+                style={{ fontSize: 11, padding: '6px 14px', borderRadius: 100, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: '#4a5a7a', cursor: 'pointer', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(79,142,247,0.3)'; e.currentTarget.style.color = '#7aaff8'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = '#4a5a7a'; }}>
+                {s}
+              </button>
+            ))}
           </div>
         )}
 
+        {/* Chat messages */}
         {messages.map(m => (
           <div key={m.id} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
             <div style={{
-              maxWidth: '80%', padding: '12px 16px', borderRadius: 16,
+              maxWidth: '82%', padding: '12px 16px', borderRadius: 16,
               background: m.role === 'user' ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.04)',
               border: `1px solid ${m.role === 'user' ? 'rgba(79,142,247,0.3)' : 'rgba(255,255,255,0.07)'}`,
               borderBottomRightRadius: m.role === 'user' ? 4 : 16,
@@ -1878,11 +1916,10 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
               {m.role === 'user' ? (
                 <div style={{ fontSize: 13, color: '#7aaff8', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{m.content}</div>
               ) : (
-                <div style={{ fontSize: 13, color: m.isError ? '#ef4444' : '#8899bb', lineHeight: 1.7 }} className="ai-markdown">
+                <div style={{ fontSize: 13, color: m.isError ? '#ef4444' : '#8899bb', lineHeight: 1.7 }}>
                   <ReactMarkdown components={{
                     strong: ({ children }) => <strong style={{ color: '#f0f4ff', fontWeight: 700 }}>{children}</strong>,
                     em: ({ children }) => <em style={{ color: '#7aaff8' }}>{children}</em>,
-                    h1: ({ children }) => <div style={{ fontSize: 16, fontWeight: 800, color: '#f0f4ff', margin: '8px 0 4px' }}>{children}</div>,
                     h2: ({ children }) => <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff', margin: '8px 0 4px' }}>{children}</div>,
                     h3: ({ children }) => <div style={{ fontSize: 13, fontWeight: 700, color: '#7aaff8', margin: '6px 0 2px' }}>{children}</div>,
                     ul: ({ children }) => <ul style={{ margin: '4px 0', paddingLeft: 16 }}>{children}</ul>,
@@ -1908,10 +1945,10 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
         )}
       </div>
 
-      {/* Input */}
+      {/* Input bar */}
       <div style={{ padding: '12px 0 0', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey}
-          placeholder="Ask anything..."
+          placeholder={`Ask about ${CATS.find(c => c.key === category)?.label.toLowerCase() || 'anything'}...`}
           rows={1}
           style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '10px 14px', color: '#f0f4ff', fontSize: 14, outline: 'none', resize: 'none', minHeight: 42, maxHeight: 120, lineHeight: 1.4 }} />
         <button onClick={send} disabled={loading || !input.trim()}
