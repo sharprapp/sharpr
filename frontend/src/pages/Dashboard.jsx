@@ -1207,7 +1207,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
 function DayTradingTab({ activeSubTab, tier }) {
   const subTab = activeSubTab || 'journal';
   const [trades, setTrades]   = useState([]);
-  const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', setup:'Breakout', status:'open', notes:'' });
+  const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', setup:'Breakout', status:'open', notes:'' });
   const [loading, setLoading] = useState(false);
   const [view, setView]       = useState('calendar');
 
@@ -1239,7 +1239,7 @@ function DayTradingTab({ activeSubTab, tier }) {
     try {
       const { data } = await api.post('/api/trades', {...form, entry:parseFloat(form.entry), exit:form.exit?parseFloat(form.exit):null, qty:parseFloat(form.qty)});
       setTrades([data, ...trades]);
-      setForm({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', setup:'Breakout', status:'open', notes:'' });
+      setForm({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', setup:'Breakout', status:'open', notes:'' });
     } catch(e) { alert(e.response?.data?.error || 'Failed to add trade'); }
     setLoading(false);
   }
@@ -1350,16 +1350,39 @@ function TradeForm({ form, setForm, loading, onAdd, tier }) {
         <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Quick log</div>
         {saved && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Trade logged ✓</span>}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-        {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['exit','Exit $ (optional)','number']].map(([k,pl,t]) => (
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3">
+        {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['exit','Exit $ (opt)','number']].map(([k,pl,t]) => (
           <div key={k}>
             <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>{pl}</label>
-            <input type={t} placeholder={pl.replace(' (optional)','')} value={form[k]} onChange={e => f(k, e.target.value)}
+            <input type={t} placeholder={pl.replace(' (opt)','')} value={form[k]} onChange={e => f(k, e.target.value)}
               onKeyDown={onEnter}
               className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
               style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
         ))}
+        <div>
+          <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Multiplier</label>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <input type="number" placeholder="1" value={form.multiplier} onChange={e => f('multiplier', e.target.value)}
+              onKeyDown={onEnter}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
+              style={{...inpStyle, flex: 1}} onFocus={inpFocus} onBlur={inpBlur} />
+            <select onChange={e => { const v = e.target.value; if (v) { const [tk, m] = v.split(':'); f('multiplier', m); if (!form.ticker) f('ticker', tk); } }}
+              className={`rounded-xl px-2 py-2.5 text-xs ${inp}`} style={{...inpStyle, width: 'auto', minWidth: 50}}
+              onFocus={inpFocus} onBlur={inpBlur} value="">
+              <option value="">▾</option>
+              <option value="MNQ:2">MNQ ×2</option>
+              <option value="NQ:20">NQ ×20</option>
+              <option value="MES:5">MES ×5</option>
+              <option value="ES:50">ES ×50</option>
+              <option value="YM:5">YM ×5</option>
+              <option value="MYM:0.5">MYM ×0.5</option>
+              <option value="CL:1000">CL ×1000</option>
+              <option value="GC:100">GC ×100</option>
+              <option value=":1">Stock ×1</option>
+            </select>
+          </div>
+        </div>
       </div>
       <button onClick={() => setShowMore(s => !s)} style={{ fontSize: 11, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', marginBottom: showMore ? 12 : 0, padding: 0 }}>
         {showMore ? 'Less details ▴' : 'More details ▾'}

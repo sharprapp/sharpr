@@ -38,14 +38,15 @@ router.post('/', requireAuth, async (req, res) => {
     }
   }
 
-  const { ticker, direction, entry, exit, qty, setup, status, notes } = req.body;
+  const { ticker, direction, entry, exit, qty, setup, status, notes, multiplier } = req.body;
   if (!ticker || !direction || !entry || !qty) {
     return res.status(400).json({ error: 'ticker, direction, entry, qty required' });
   }
 
+  const mult = parseFloat(multiplier) || 1;
   const pnl = (!exit || status === 'open') ? null
-    : direction === 'LONG' ? (parseFloat(exit) - parseFloat(entry)) * parseFloat(qty)
-    : (parseFloat(entry) - parseFloat(exit)) * parseFloat(qty);
+    : direction === 'LONG' ? (parseFloat(exit) - parseFloat(entry)) * parseFloat(qty) * mult
+    : (parseFloat(entry) - parseFloat(exit)) * parseFloat(qty) * mult;
 
   // Auto-detect status from P&L if exit is provided and status is open
   let finalStatus = status || 'open';
@@ -56,7 +57,7 @@ router.post('/', requireAuth, async (req, res) => {
   const insertPayload = {
     user_id: req.user.id,
     ticker: ticker.toUpperCase(),
-    direction, entry: parseFloat(entry), exit: exit ? parseFloat(exit) : null, qty: parseFloat(qty), setup,
+    direction, entry: parseFloat(entry), exit: exit ? parseFloat(exit) : null, qty: parseFloat(qty), multiplier: mult, setup,
     status: finalStatus,
     notes, pnl: pnl != null ? Math.round(pnl * 100) / 100 : null
   };
@@ -86,9 +87,10 @@ router.patch('/:id', requireAuth, async (req, res) => {
 
   const newExit = exit ?? existing.exit;
   const newStatus = status ?? existing.status;
+  const mult = parseFloat(existing.multiplier) || 1;
   const pnl = (!newExit || newStatus === 'open') ? null
-    : existing.direction === 'LONG' ? (parseFloat(newExit) - parseFloat(existing.entry)) * parseFloat(existing.qty)
-    : (parseFloat(existing.entry) - parseFloat(newExit)) * parseFloat(existing.qty);
+    : existing.direction === 'LONG' ? (parseFloat(newExit) - parseFloat(existing.entry)) * parseFloat(existing.qty) * mult
+    : (parseFloat(existing.entry) - parseFloat(newExit)) * parseFloat(existing.qty) * mult;
 
   const { data, error } = await supabase
     .from('trades')
