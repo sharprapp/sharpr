@@ -49,7 +49,8 @@ const NAV_GROUPS_LEFT = [
   ]},
 ];
 const NAV_GROUPS_RIGHT = [
-  { label: 'Social', items: [{ key: 'Community', label: 'Community', emoji: '💬', desc: 'Trading chat' }] },
+  // TODO: Re-enable Social tab when user base grows
+  // { label: 'Social', items: [{ key: 'Community', label: 'Community', emoji: '💬', desc: 'Trading chat' }] },
   { label: 'News', items: [
     { key: 'news-sports', label: 'Sports News', emoji: '🏆', desc: 'ESPN live coverage' },
     { key: 'news-trading', label: 'Trading News', emoji: '📈', desc: 'Markets, crypto & macro' },
@@ -617,7 +618,8 @@ function DashboardNav({ tab, setTab, tier, username }) {
             { label: 'Trade — Journal', key: 'dt-journal' }, { label: 'Trade — Pre-Market', key: 'dt-premarket' },
             { label: 'Bet — Journal', key: 'sb-journal' }, { label: 'Bet — Analytics', key: 'sb-analytics' },
             { label: 'Polymarket', key: 'Polymarket' }, { label: 'EV Calc', key: 'EV Calc' },
-            { label: 'Community', key: 'Community' },
+            // TODO: Re-enable Social tab when user base grows
+            // { label: 'Community', key: 'Community' },
             { label: 'Sports News', key: 'news-sports' }, { label: 'Trading News', key: 'news-trading' },
           ].map(({ label, key }) => (
             <button key={key} onClick={() => { setTab(key); setMobileOpen(false); }}
