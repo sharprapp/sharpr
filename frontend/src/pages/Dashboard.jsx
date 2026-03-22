@@ -964,7 +964,9 @@ function PolymarketTab({ tier }) {
     (!q || m.title.toLowerCase().includes(q.toLowerCase()))
   ), [markets, filt, q]);
 
-  const visible = filtered.slice(0, visibleCount);
+  const isPro = tier === 'pro' || tier === 'elite';
+  const maxFree = 10;
+  const visible = isPro ? filtered.slice(0, visibleCount) : filtered.slice(0, maxFree);
 
   const PM_SUBTABS = [
     { id: 'markets',   label: '📊 Markets' },
@@ -1076,10 +1078,22 @@ function PolymarketTab({ tier }) {
               {visible.map((m) => <MarketCard key={m.id} market={m} onClick={() => setSelectedMarket(m)} />)}
             </div>
 
-            {/* Sentinel div — IntersectionObserver triggers loading more */}
-            <div ref={sentinelRef} style={{height: 1}} />
+            {/* Free tier gate */}
+            {!isPro && filtered.length > maxFree && (
+              <div style={{ position: 'relative', marginTop: -40 }}>
+                <div style={{ height: 120, background: 'linear-gradient(to bottom, transparent, #03030a)', pointerEvents: 'none' }} />
+                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff', marginBottom: 6 }}>See all {filtered.length.toLocaleString()} markets</div>
+                  <div style={{ fontSize: 12, color: '#4a5a7a', marginBottom: 12 }}>Free plan shows {maxFree} markets</div>
+                  <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ background: '#4f8ef7', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>Upgrade to Pro</button>
+                </div>
+              </div>
+            )}
 
-            {visible.length < filtered.length && !loading && (
+            {/* Sentinel div — IntersectionObserver triggers loading more */}
+            {isPro && <div ref={sentinelRef} style={{height: 1}} />}
+
+            {isPro && visible.length < filtered.length && !loading && (
               <div className="text-center text-xs py-2" style={{color: '#475569'}}>
                 Scroll for more · showing {visible.length} of {filtered.length}
               </div>
@@ -1768,203 +1782,99 @@ function EVCalcTab() {
    AI RESEARCH TAB
 ───────────────────────────────────────── */
 function AIResearchTab({ prefill, onPrefillConsumed }) {
-  const [query, setQuery]             = useState('');
-  const [researchType, setResearchType] = useState('polymarket');
-  const [result, setResult]           = useState(null);
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState(null);
-  const [history, setHistory]         = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
-    if (prefill) { setQuery(prefill.topic || ''); setResearchType(prefill.type || 'polymarket'); onPrefillConsumed?.(); }
+    if (prefill?.topic) { setInput(prefill.topic); onPrefillConsumed?.(); }
   }, [prefill]);
 
-  const RESEARCH_TYPES = [
-    { value: 'polymarket', label: 'Prediction Market', emoji: '\u{1F3AF}', desc: 'Analyze market probabilities' },
-    { value: 'trading', label: 'Day Trading', emoji: '\u{1F4C8}', desc: 'Technical & fundamental analysis' },
-    { value: 'sports', label: 'Sports Betting', emoji: '\u{1F3C6}', desc: 'Sharp money & line analysis' },
-    { value: 'news', label: 'General Research', emoji: '\u{1F50D}', desc: 'Any market or topic' },
-  ];
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+  }, [messages, loading]);
 
-  const SUGGESTIONS = [
-    'Will the Fed cut rates before July 2026?',
-    'Lakers vs Celtics — who has the edge?',
-    'BTC price analysis for next 30 days',
-    'NQ futures key levels for this week',
-    'Sharp money on NFL playoffs?',
-    'Best EV markets on Polymarket right now',
-  ];
-
-  async function handleSubmit() {
-    if (!query.trim() || loading) return;
-    setLoading(true); setError(null); setResult(null);
+  async function send() {
+    const text = input.trim();
+    if (!text || loading) return;
+    const userMsg = { id: Date.now(), role: 'user', content: text, ts: new Date() };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setLoading(true);
     try {
-      const { data } = await api.post('/api/ai/query', { query, type: researchType, use_web_search: true });
-      const newEntry = { query, researchType, result: data.result, timestamp: new Date() };
-      setResult(data.result);
-      setHistory(prev => [newEntry, ...prev.slice(0, 4)]);
-    } catch(e) {
-      setError(e.response?.data?.error || e.response?.data?.message || 'Research failed.');
-    } finally {
-      setLoading(false);
+      const { data } = await api.post('/api/ai/query', { query: text, type: 'polymarket', use_web_search: true });
+      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.result || 'No response.', ts: new Date() }]);
+    } catch (e) {
+      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: 'Error: ' + (e.response?.data?.error || 'Request failed'), ts: new Date() }]);
     }
+    setLoading(false);
   }
 
+  function onKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  }
+
+  const fmtTime = (d) => new Date(d).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
   return (
-    <div style={{
-      minHeight: 'calc(100vh - 160px)',
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      justifyContent: result || loading ? 'flex-start' : 'center',
-      padding: '40px 24px', maxWidth: '780px', margin: '0 auto', width: '100%'
-    }}>
-
-      {/* Header - only show when no result */}
-      {!result && !loading && (
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <div style={{
-            width: 64, height: 64,
-            background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)',
-            borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            margin: '0 auto 20px', fontSize: '28px'
-          }}>{'\u{1F52C}'}</div>
-          <h1 style={{ fontSize: '28px', fontWeight: 900, color: '#f0f4ff', letterSpacing: '-0.5px', marginBottom: '8px' }}>
-            Sharpr Research
-          </h1>
-          <p style={{ fontSize: '14px', color: '#2a3a5a', lineHeight: 1.6 }}>
-            AI-powered analysis for prediction markets, trading, and sports betting
-          </p>
-        </div>
-      )}
-
-      {/* Research type selector */}
-      {!result && !loading && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', width: '100%', marginBottom: '20px' }}>
-          {RESEARCH_TYPES.map(t => (
-            <div key={t.value} onClick={() => setResearchType(t.value)}
-              style={{
-                background: researchType === t.value ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${researchType === t.value ? 'rgba(79,142,247,0.4)' : 'rgba(255,255,255,0.07)'}`,
-                borderRadius: '12px', padding: '12px', cursor: 'pointer', transition: 'all 0.2s', textAlign: 'center'
-              }}>
-              <div style={{ fontSize: '20px', marginBottom: '4px' }}>{t.emoji}</div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: researchType === t.value ? '#7aaff8' : '#4a5a7a' }}>{t.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Input box */}
-      <div style={{
-        width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-        borderRadius: '16px', padding: '4px 4px 4px 16px',
-        display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', transition: 'border-color 0.2s'
-      }}>
-        <input value={query} onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          placeholder="Ask anything — markets, trades, bets..."
-          style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#f0f4ff', fontSize: '15px', padding: '12px 0' }} />
-        <button onClick={handleSubmit} disabled={loading || !query.trim()}
-          style={{
-            background: query.trim() ? '#4f8ef7' : 'rgba(79,142,247,0.2)',
-            border: 'none', borderRadius: '12px', width: '40px', height: '40px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: query.trim() ? 'pointer' : 'not-allowed',
-            transition: 'all 0.2s', flexShrink: 0, fontSize: '16px', color: '#fff'
-          }}>
-          {loading ? '\u23F3' : '\u2191'}
-        </button>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)', maxWidth: 780, margin: '0 auto', width: '100%' }}>
+      {/* Top bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ fontSize: 18, fontWeight: 800, color: '#f0f4ff' }}>AI Research</div>
+        <button onClick={() => setMessages([])} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>New Chat</button>
       </div>
 
-      {/* Suggestions - only when no result */}
-      {!result && !loading && (
-        <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginBottom: '32px' }}>
-          {SUGGESTIONS.map(s => (
-            <div key={s} onClick={() => setQuery(s)}
-              style={{
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: '100px', padding: '6px 14px', fontSize: '12px', color: '#4a5a7a',
-                cursor: 'pointer', transition: 'all 0.2s'
-              }}>
-              {s}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Loading state */}
-      {loading && (
-        <div style={{
-          width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: '16px', padding: '32px', textAlign: 'center', marginTop: '16px'
-        }}>
-          <div style={{ fontSize: '24px', marginBottom: '12px' }}>{'\u{1F50D}'}</div>
-          <div style={{ fontSize: '14px', color: '#4a5a7a' }}>Searching the web and analyzing...</div>
-        </div>
-      )}
-
-      {/* Error state */}
-      {error && (
-        <div style={{
-          width: '100%', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-          borderRadius: '12px', padding: '16px', color: '#ef4444', fontSize: '13px', marginTop: '16px'
-        }}>
-          {error}
-        </div>
-      )}
-
-      {/* Result */}
-      {result && !loading && (
-        <div style={{ width: '100%', marginTop: '16px' }}>
-          <div style={{
-            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '16px', padding: '24px', marginBottom: '16px'
-          }}>
-            <div style={{ fontSize: '12px', color: '#2a3a5a', marginBottom: '12px', display: 'flex', justifyContent: 'space-between' }}>
-              <span>{'\u{1F52C}'} {RESEARCH_TYPES.find(t => t.value === researchType)?.label}</span>
-              <span style={{ cursor: 'pointer', color: '#4f8ef7' }} onClick={() => { setResult(null); setQuery(''); }}>{'\u21BA'} New research</span>
-            </div>
-            <div style={{ fontSize: '13px', color: '#8899bb', lineHeight: 1.8 }}>
-              {result.split('\n').map((line, i) => {
-                const trimmed = line.trim();
-                const isVerdict = trimmed.startsWith('VERDICT:');
-                const isConf = trimmed.startsWith('Confidence:');
-                const isSeparator = trimmed === '---';
-                const isBoldHeader = /^\*\*(.+)\*\*$/.test(trimmed);
-                const isEdge = trimmed.startsWith('\u{1F3AF}') || trimmed.startsWith('🎯');
-
-                if (isSeparator) return <div key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', margin: '12px 0' }} />;
-                if (isBoldHeader) {
-                  const text = trimmed.replace(/\*\*/g, '');
-                  const isEdgeHeader = text.toLowerCase().includes('edge');
-                  return <div key={i} style={{ fontSize: 14, fontWeight: 700, color: isEdgeHeader ? '#4f8ef7' : '#f0f4ff', marginTop: 8, marginBottom: 4 }}>{text}</div>;
-                }
-                if (isEdge) return <div key={i} style={{ fontSize: 14, fontWeight: 700, color: '#4f8ef7', marginTop: 8, marginBottom: 4 }}>{trimmed}</div>;
-                if (isVerdict) return (
-                  <div key={i} style={{ background: 'rgba(34,197,94,0.08)', padding: '6px 10px', borderRadius: 8, color: '#22c55e', fontWeight: 700, marginTop: 4 }}>{trimmed}</div>
-                );
-                if (isConf) return <div key={i} style={{ color: '#60a5fa', fontWeight: 700 }}>{trimmed}</div>;
-                return <div key={i} style={{ color: '#8899bb' }}>{trimmed || '\u00A0'}</div>;
-              })}
-            </div>
-          </div>
-
-          {/* History */}
-          {history.length > 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <div style={{ fontSize: '10px', color: '#1a2535', letterSpacing: '2px', textTransform: 'uppercase' }}>Recent</div>
-              {history.slice(1).map((h, i) => (
-                <div key={i} onClick={() => { setQuery(h.query); setResult(h.result); setResearchType(h.researchType); }}
-                  style={{
-                    background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-                    borderRadius: '10px', padding: '10px 14px', cursor: 'pointer', fontSize: '12px', color: '#4a5a7a'
-                  }}>
-                  {h.query}
-                </div>
+      {/* Messages */}
+      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {messages.length === 0 && !loading && (
+          <div style={{ textAlign: 'center', marginTop: 60 }}>
+            <div style={{ fontSize: 32, marginBottom: 12 }}>🔬</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#f0f4ff', marginBottom: 6 }}>Ask anything</div>
+            <div style={{ fontSize: 13, color: '#2a3a5a', marginBottom: 20 }}>Markets, trades, bets, news — powered by Claude + web search</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
+              {['Fed rate cut odds?', 'BTC analysis', 'Lakers vs Celtics', 'Best Polymarket plays'].map(s => (
+                <button key={s} onClick={() => setInput(s)} style={{ fontSize: 11, padding: '5px 12px', borderRadius: 100, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: '#4a5a7a', cursor: 'pointer' }}>{s}</button>
               ))}
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+
+        {messages.map(m => (
+          <div key={m.id} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+            <div style={{
+              maxWidth: '80%', padding: '12px 16px', borderRadius: 16,
+              background: m.role === 'user' ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${m.role === 'user' ? 'rgba(79,142,247,0.3)' : 'rgba(255,255,255,0.07)'}`,
+              borderBottomRightRadius: m.role === 'user' ? 4 : 16,
+              borderBottomLeftRadius: m.role === 'assistant' ? 4 : 16,
+            }}>
+              <div style={{ fontSize: 13, color: m.role === 'user' ? '#7aaff8' : '#8899bb', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+              <div style={{ fontSize: 10, color: '#1a2535', marginTop: 6, textAlign: m.role === 'user' ? 'right' : 'left' }}>{fmtTime(m.ts)}</div>
+            </div>
+          </div>
+        ))}
+
+        {loading && (
+          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <div style={{ padding: '12px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderBottomLeftRadius: 4 }}>
+              <div style={{ display: 'flex', gap: 4 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#4f8ef7', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Input */}
+      <div style={{ padding: '12px 0 0', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey}
+          placeholder="Ask anything..."
+          rows={1}
+          style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '10px 14px', color: '#f0f4ff', fontSize: 14, outline: 'none', resize: 'none', minHeight: 42, maxHeight: 120, lineHeight: 1.4 }} />
+        <button onClick={send} disabled={loading || !input.trim()}
+          style={{ width: 42, height: 42, borderRadius: 12, background: input.trim() ? '#4f8ef7' : 'rgba(79,142,247,0.2)', border: 'none', color: '#fff', fontSize: 16, cursor: input.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          ↑
+        </button>
+      </div>
     </div>
   );
 }

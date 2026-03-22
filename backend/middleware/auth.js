@@ -23,7 +23,7 @@ async function requireAuth(req, res, next) {
 
     req.user = user;
     req.profile = profile || {};
-    req.tier = profile?.tier || 'free';
+    req.tier = profile?.plan || profile?.tier || 'free';
     next();
   } catch (err) {
     return res.status(401).json({ error: 'Auth failed' });
@@ -41,7 +41,7 @@ async function optionalAuth(req, res, next) {
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       req.user = user;
       req.profile = profile || {};
-      req.tier = profile?.tier || 'free';
+      req.tier = profile?.plan || profile?.tier || 'free';
     }
   } catch {}
   next();
