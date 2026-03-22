@@ -546,6 +546,12 @@ function DashboardNav({ tab, setTab, tier, username }) {
 
           <span className="hidden sm:block" style={{ fontSize: 13, color: '#4a5a7a', fontWeight: 600 }}>{username ? `@${username}` : firstName(user?.email)}</span>
 
+          <button onClick={() => navigate('/settings')} className="hide-mobile" title="Settings"
+            style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid transparent', color: '#4a5a7a', cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          </button>
           <button onClick={async () => { await signOut(); navigate('/login'); }} className="glass-btn hide-mobile" style={{ fontSize: 12, padding: '5px 12px', borderRadius: 8 }}>
             Sign out
           </button>
@@ -574,6 +580,10 @@ function DashboardNav({ tab, setTab, tier, username }) {
             </button>
           ))}
           <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+          <button onClick={() => { navigate('/settings'); setMobileOpen(false); }}
+            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: '#4a5a7a' }}>
+            Settings
+          </button>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
             <span style={{ fontSize: 13, color: '#4a5a7a' }}>{username ? `@${username}` : firstName(user?.email)}</span>
             <button onClick={async () => { await signOut(); navigate('/login'); }} style={{ fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>

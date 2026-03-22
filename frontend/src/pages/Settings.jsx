@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import api from '../lib/api';
-import Navbar from '../components/Navbar';
+import Logo from '../components/Logo';
 
 const inp = 'outline-none transition-colors';
 const inpStyle = { background: '#0a0f1e', border: '1px solid #1e2a4a', color: '#F5F5FA', borderRadius: '12px', padding: '10px 14px', fontSize: 14, width: '100%' };
@@ -34,7 +35,8 @@ function Toggle({ value, onChange, label, sub }) {
 }
 
 export default function Settings() {
-  const { user, tier } = useAuth();
+  const { user, tier, username } = useAuth();
+  const [resetSent, setResetSent] = useState(false);
   const [searchParams]          = useSearchParams();
   const [subStatus, setSubStatus] = useState(null);
   const [loading, setLoading]   = useState(false);
@@ -84,7 +86,12 @@ export default function Settings() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#080810', color: '#F5F5FA' }}>
-      <Navbar />
+      <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 24px' }}>
+        <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Logo size="md" />
+          <Link to="/dashboard" style={{ fontSize: 13, color: '#4f8ef7', textDecoration: 'none' }}>Back to Dashboard</Link>
+        </div>
+      </nav>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Banners */}
@@ -103,15 +110,34 @@ export default function Settings() {
 
         {/* ── Profile ── */}
         <div style={CARD}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Profile</div>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Account</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {username && (
+              <div>
+                <label style={LABEL}>Username</label>
+                <div style={{ ...inpStyle, background: '#0a0f1e', color: '#94A3B8' }}>@{username}</div>
+              </div>
+            )}
+            <div>
+              <label style={LABEL}>Email</label>
+              <div style={{ ...inpStyle, background: '#0a0f1e', color: '#64748b' }}>{user?.email}</div>
+            </div>
             <div>
               <label style={LABEL}>Display name</label>
               <input value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder={firstName(user?.email)} className={inp} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
             </div>
             <div>
-              <label style={LABEL}>Email</label>
-              <div style={{ ...inpStyle, background: '#0a0f1e', color: '#64748b' }}>{user?.email}</div>
+              <label style={LABEL}>Password</label>
+              {resetSent ? (
+                <div style={{ fontSize: 13, color: '#22c55e' }}>Password reset email sent — check your inbox</div>
+              ) : (
+                <button onClick={async () => {
+                  await supabase.auth.resetPasswordForEmail(user?.email, { redirectTo: window.location.origin + '/settings' });
+                  setResetSent(true);
+                }} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#94A3B8', cursor: 'pointer' }}>
+                  Change password
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -224,12 +250,25 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* ── Legal ── */}
+        <div style={CARD}>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Legal</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Link to="/terms" style={{ fontSize: 14, color: '#4f8ef7', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Terms of Service</span><span style={{ color: '#2a3a5a' }}>→</span>
+            </Link>
+            <Link to="/privacy" style={{ fontSize: 14, color: '#4f8ef7', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Privacy Policy</span><span style={{ color: '#2a3a5a' }}>→</span>
+            </Link>
+          </div>
+        </div>
+
         {/* ── Danger zone ── */}
         <div style={{ ...CARD, border: '1px solid rgba(239,68,68,0.2)' }}>
           <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#ef4444' }}>Danger zone</div>
           <div style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>Permanently delete your account and all data. This cannot be undone.</div>
           <button
-            onClick={() => { if (window.confirm('This will permanently delete your account. Are you sure?')) alert('Contact support to delete your account.'); }}
+            onClick={() => { if (window.confirm('Are you sure? This cannot be undone.')) alert('Please email support@sharprapp.com to request account deletion. We will process your request within 30 days.'); }}
             style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#ef4444', cursor: 'pointer' }}>
             Delete account
           </button>
