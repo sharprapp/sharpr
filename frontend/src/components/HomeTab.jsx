@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import api from '../lib/api';
 import TradingViewMarketOverview from './TradingViewMarketOverview';
 import { Line } from 'react-chartjs-2';
+import PerformanceInsights from './PerformanceInsights';
 
 function greeting() {
   const h = new Date().getHours();
@@ -410,6 +411,14 @@ export default function HomeTab({ onSwitchTab }) {
             </div>
           </>
         )}
+      </section>
+
+      {/* SECTION 7 — Performance Insights */}
+      <section>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#f0f4ff' }}>Your Edge Insights</h2>
+        </div>
+        <PerformanceInsights />
       </section>
     </div>
   );
