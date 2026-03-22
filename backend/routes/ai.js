@@ -152,18 +152,29 @@ router.post('/query', requireAuth, checkAILimit, async (req, res) => {
   }
 
   try {
-    // Build messages: include history for multi-turn chat
+    // Build messages: include last 6 history messages for context
     const chatMessages = hasHistory
-      ? [...history.slice(-10), { role: 'user', content: query }]
+      ? [...history.slice(-6), { role: 'user', content: query }]
       : [{ role: 'user', content: query }];
 
-    const systemPrompt = hasHistory
-      ? `You are a sharp trading and sports betting analyst called Sharpr. Today is ${new Date().toDateString()}. Give direct, concise, specific analysis. No disclaimers. No repeated warnings. Vary your response format. Use web search when needed for current data.`
-      : (SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket);
+    const chatSystemPrompt = `You are Sharpr, a sharp trading and sports betting analyst. Today is ${new Date().toDateString()}.
+
+RULES:
+- Be direct, specific, and concise. Use emojis throughout.
+- Never say "As an AI" or repeat disclaimers. Vary your format.
+- Use **bold** for key terms, bullet points for lists, and markdown formatting.
+- For sports betting: verdict can be BET YES, BET NO, FADE, PASS, WAIT, SHARP PLAY, or any specific bet recommendation.
+- For Polymarket: always give YES or NO with a probability %.
+- For trading: verdict can be LONG, SHORT, WAIT, AVOID, or any relevant action with entry/target/stop levels.
+- For general questions: just answer directly, no forced verdict.
+- Always include a Confidence: XX% line when giving a verdict.
+- Use web search for any current data, scores, odds, or news.`;
+
+    const systemPrompt = hasHistory ? chatSystemPrompt : (SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket);
 
     const messageParams = {
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
+      max_tokens: 2000,
       system: systemPrompt,
       messages: chatMessages,
     };
@@ -185,7 +196,8 @@ router.post('/query', requireAuth, checkAILimit, async (req, res) => {
       aiCache.set(cacheKey, { result: text, ts: Date.now() });
     }
 
-    await logAIUsage(req.user.id);
+    // Only count first message in a chat session against quota (not follow-ups)
+    if (!hasHistory || history.length <= 1) await logAIUsage(req.user.id);
     res.json({ result: text, model: message.model });
   } catch (err) {
     console.error('AI error:', err.status, err.message, JSON.stringify(err.error));

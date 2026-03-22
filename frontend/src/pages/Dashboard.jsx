@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef, memo, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
@@ -1826,11 +1827,12 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
     setInput('');
     setLoading(true);
     try {
-      const history = messages.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }));
+      // Send last 6 messages for context
+      const history = messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-6).map(m => ({ role: m.role, content: m.content }));
       const { data } = await api.post('/api/ai/query', { query: text, type: 'polymarket', use_web_search: true, history });
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.result || 'No response.', ts: new Date() }]);
-    } catch (e) {
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: 'Error: ' + (e.response?.data?.error || 'Request failed'), ts: new Date() }]);
+    } catch {
+      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: 'Something went wrong. Please try again.', ts: new Date(), isError: true }]);
     }
     setLoading(false);
   }
@@ -1873,7 +1875,25 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
               borderBottomRightRadius: m.role === 'user' ? 4 : 16,
               borderBottomLeftRadius: m.role === 'assistant' ? 4 : 16,
             }}>
-              <div style={{ fontSize: 13, color: m.role === 'user' ? '#7aaff8' : '#8899bb', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+              {m.role === 'user' ? (
+                <div style={{ fontSize: 13, color: '#7aaff8', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+              ) : (
+                <div style={{ fontSize: 13, color: m.isError ? '#ef4444' : '#8899bb', lineHeight: 1.7 }} className="ai-markdown">
+                  <ReactMarkdown components={{
+                    strong: ({ children }) => <strong style={{ color: '#f0f4ff', fontWeight: 700 }}>{children}</strong>,
+                    em: ({ children }) => <em style={{ color: '#7aaff8' }}>{children}</em>,
+                    h1: ({ children }) => <div style={{ fontSize: 16, fontWeight: 800, color: '#f0f4ff', margin: '8px 0 4px' }}>{children}</div>,
+                    h2: ({ children }) => <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff', margin: '8px 0 4px' }}>{children}</div>,
+                    h3: ({ children }) => <div style={{ fontSize: 13, fontWeight: 700, color: '#7aaff8', margin: '6px 0 2px' }}>{children}</div>,
+                    ul: ({ children }) => <ul style={{ margin: '4px 0', paddingLeft: 16 }}>{children}</ul>,
+                    ol: ({ children }) => <ol style={{ margin: '4px 0', paddingLeft: 16 }}>{children}</ol>,
+                    li: ({ children }) => <li style={{ marginBottom: 2 }}>{children}</li>,
+                    p: ({ children }) => <p style={{ margin: '4px 0' }}>{children}</p>,
+                    hr: () => <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', margin: '8px 0' }} />,
+                    code: ({ children }) => <code style={{ background: 'rgba(79,142,247,0.1)', padding: '1px 4px', borderRadius: 4, fontSize: 12, color: '#7aaff8' }}>{children}</code>,
+                  }}>{m.content}</ReactMarkdown>
+                </div>
+              )}
               <div style={{ fontSize: 10, color: '#1a2535', marginTop: 6, textAlign: m.role === 'user' ? 'right' : 'left' }}>{fmtTime(m.ts)}</div>
             </div>
           </div>
