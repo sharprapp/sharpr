@@ -17,6 +17,7 @@ import SharpSignal from '../components/SharpSignal';
 import UsernameModal from '../components/UsernameModal';
 import OddsBoard from '../components/OddsBoard';
 import { exportBetsCSV, exportTradesCSV, exportBetsPDF, exportTradesPDF } from '../lib/export';
+import OnboardingModal from '../components/OnboardingModal';
 import GameDetailModal from '../components/GameDetailModal';
 import NewNewsTab from '../components/NewsTab';
 import {
@@ -87,6 +88,7 @@ export default function Dashboard() {
     return [saved || 'Home'];
   });
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [eventsSport, setEventsSport] = useState('NBA');
   const { tier, username, usernameSet, setUsername } = useAuth();
   console.log('[Dashboard] tier:', tier);
@@ -94,6 +96,18 @@ export default function Dashboard() {
   // Warm up Railway backend immediately
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/api/health`).catch(() => {});
+  }, []);
+
+  // Check onboarding status
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await api.get('/api/auth/me');
+        if (data.profile?.onboarding_completed === false || data.profile?.onboarding_completed == null) {
+          setShowOnboarding(true);
+        }
+      } catch {}
+    })();
   }, []);
 
   useEffect(() => {
@@ -123,6 +137,9 @@ export default function Dashboard() {
     <div className="min-h-screen" style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
       {!usernameSet && (
         <UsernameModal onComplete={(newUsername) => { setUsername(newUsername); }} />
+      )}
+      {usernameSet && showOnboarding && (
+        <OnboardingModal userPlan={tier} onComplete={() => setShowOnboarding(false)} />
       )}
       <DashboardNav tab={tab} setTab={switchTab} tier={tier} username={username} />
       <TradingViewTicker />
