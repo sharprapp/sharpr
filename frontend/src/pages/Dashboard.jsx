@@ -16,6 +16,7 @@ import ErrorBoundary from '../components/ErrorBoundary';
 import SharpSignal from '../components/SharpSignal';
 import UsernameModal from '../components/UsernameModal';
 import OddsBoard from '../components/OddsBoard';
+import { exportBetsCSV, exportTradesCSV, exportBetsPDF, exportTradesPDF } from '../lib/export';
 import GameDetailModal from '../components/GameDetailModal';
 import NewNewsTab from '../components/NewsTab';
 import {
@@ -1199,6 +1200,16 @@ function DayTradingTab({ activeSubTab, tier }) {
           onLimitChange={v => { setDailyLimit(v); localStorage.setItem('dt_daily_limit', v); }}
           onTargetChange={v => { setWrTarget(v);  localStorage.setItem('dt_wr_target',   v); }}
         />
+        {/* Export buttons */}
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button onClick={() => exportTradesCSV(trades)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>Export CSV</button>
+          {(tier === 'pro' || tier === 'elite') ? (
+            <button onClick={() => exportTradesPDF(trades)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>Export PDF</button>
+          ) : (
+            <span style={{ fontSize: 10, color: '#2a3a5a', alignSelf: 'center' }}>PDF — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
+          )}
+        </div>
+
         {/* Hero P&L */}
         <div className="rounded-2xl p-6" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center'}}>
           <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#64748b'}}>Total P&L</div>
@@ -1437,6 +1448,16 @@ function SportsBettingTab({ tier, activeSubTab }) {
         onLimitChange={v => { setDailyLimit(v); localStorage.setItem('bet_daily_limit', v); }}
         onTargetChange={v => { setWrTarget(v);  localStorage.setItem('bet_wr_target',   v); }}
       />
+
+      {/* Export buttons */}
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <button onClick={() => exportBetsCSV(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>Export CSV</button>
+        {(tier === 'pro' || tier === 'elite') ? (
+          <button onClick={() => exportBetsPDF(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>Export PDF</button>
+        ) : (
+          <span style={{ fontSize: 10, color: '#2a3a5a', alignSelf: 'center' }}>PDF export — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
+        )}
+      </div>
 
       {/* All-time stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

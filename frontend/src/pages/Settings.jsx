@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import api from '../lib/api';
 import Logo from '../components/Logo';
 import { requestPermission, subscribeToPush, unsubscribeFromPush } from '../lib/notifications';
+import { exportBetsCSV, exportTradesCSV, exportBetsPDF, exportTradesPDF } from '../lib/export';
 
 const inp = 'outline-none transition-colors';
 const inpStyle = { background: '#0a0f1e', border: '1px solid #1e2a4a', color: '#F5F5FA', borderRadius: '12px', padding: '10px 14px', fontSize: 14, width: '100%' };
@@ -276,6 +277,36 @@ export default function Settings() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+
+        {/* ── Data Export ── */}
+        <div style={CARD}>
+          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Data Export</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div><div style={{ fontSize: 14, color: '#F5F5FA', fontWeight: 500 }}>Betting Journal</div><div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 2 }}>All logged bets</div></div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={async () => { try { const { data } = await api.get('/api/bets'); exportBetsCSV(data); } catch { alert('Could not export'); } }}
+                  style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#94A3B8', cursor: 'pointer' }}>CSV</button>
+                {(tier === 'pro' || tier === 'elite') && (
+                  <button onClick={async () => { try { const { data } = await api.get('/api/bets'); exportBetsPDF(data); } catch { alert('Could not export'); } }}
+                    style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>PDF</button>
+                )}
+              </div>
+            </div>
+            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div><div style={{ fontSize: 14, color: '#F5F5FA', fontWeight: 500 }}>Trading Journal</div><div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 2 }}>All logged trades</div></div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={async () => { try { const { data } = await api.get('/api/trades'); exportTradesCSV(data); } catch { alert('Could not export'); } }}
+                  style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#94A3B8', cursor: 'pointer' }}>CSV</button>
+                {(tier === 'pro' || tier === 'elite') && (
+                  <button onClick={async () => { try { const { data } = await api.get('/api/trades'); exportTradesPDF(data); } catch { alert('Could not export'); } }}
+                    style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>PDF</button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
