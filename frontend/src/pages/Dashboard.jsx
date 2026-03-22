@@ -119,7 +119,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
       {!usernameSet && (
         <UsernameModal onComplete={(newUsername) => { setUsername(newUsername); }} />
       )}
@@ -445,6 +445,7 @@ function DashboardNav({ tab, setTab, tier, username }) {
   const [alerts, setAlerts]     = useState([]);
   const [bellOpen, setBellOpen] = useState(false);
   const [unread, setUnread]     = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const bellRef                 = useRef(null);
 
   function firstName(email = '') {
@@ -483,11 +484,19 @@ function DashboardNav({ tab, setTab, tier, username }) {
           <Logo size="lg" />
         </div>
 
-        {/* Center: Grouped Nav */}
-        <NavGroups tab={tab} setTab={setTab} />
+        {/* Center: Grouped Nav (desktop) */}
+        <div className="desktop-nav">
+          <NavGroups tab={tab} setTab={setTab} />
+        </div>
+
+        {/* Mobile hamburger */}
+        <button className="mobile-menu-btn" onClick={() => setMobileOpen(o => !o)}
+          style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, background: mobileOpen ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94A3B8', cursor: 'pointer', fontSize: 18, marginLeft: 'auto' }}>
+          {mobileOpen ? '✕' : '☰'}
+        </button>
 
         {/* Right: User controls */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
+        <div className="hide-mobile" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
           {tier === 'elite' ? (
             <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24' }}>⚡ Elite</span>
           ) : tier === 'pro' ? (
@@ -537,11 +546,40 @@ function DashboardNav({ tab, setTab, tier, username }) {
 
           <span className="hidden sm:block" style={{ fontSize: 13, color: '#4a5a7a', fontWeight: 600 }}>{username ? `@${username}` : firstName(user?.email)}</span>
 
-          <button onClick={async () => { await signOut(); navigate('/login'); }} className="glass-btn" style={{ fontSize: 12, padding: '5px 12px', borderRadius: 8 }}>
+          <button onClick={async () => { await signOut(); navigate('/login'); }} className="glass-btn hide-mobile" style={{ fontSize: 12, padding: '5px 12px', borderRadius: 8 }}>
             Sign out
           </button>
         </div>
       </div>
+      {/* Mobile nav drawer */}
+      {mobileOpen && (
+        <div className="mobile-nav-drawer" style={{ background: 'rgba(3,3,10,0.97)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {['Home', 'Signals', 'Events', 'AI Research'].map(t => (
+            <button key={t} onClick={() => { setTab(t); setMobileOpen(false); }}
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: tab === t ? 'rgba(79,142,247,0.12)' : 'transparent', color: tab === t ? '#7aaff8' : '#6a7a9a' }}>
+              {t}
+            </button>
+          ))}
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+          {[
+            { label: 'Trade — Journal', key: 'dt-journal' }, { label: 'Trade — Pre-Market', key: 'dt-premarket' },
+            { label: 'Bet — Journal', key: 'sb-journal' }, { label: 'Bet — Analytics', key: 'sb-analytics' },
+            { label: 'Polymarket', key: 'Polymarket' }, { label: 'EV Calc', key: 'EV Calc' },
+            { label: 'Community', key: 'Community' },
+            { label: 'Sports News', key: 'news-sports' }, { label: 'Trading News', key: 'news-trading' },
+          ].map(({ label, key }) => (
+            <button key={key} onClick={() => { setTab(key); setMobileOpen(false); }}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: tab === key ? 'rgba(79,142,247,0.12)' : 'transparent', color: tab === key ? '#7aaff8' : '#4a5a7a' }}>
+              {label}
+            </button>
+          ))}
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px' }}>
+            <span style={{ fontSize: 13, color: '#4a5a7a' }}>{username ? `@${username}` : firstName(user?.email)}</span>
+            <button onClick={async () => { await signOut(); navigate('/login'); }} style={{ fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Sign out</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

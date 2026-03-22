@@ -122,7 +122,7 @@ export default function HomeTab({ onSwitchTab }) {
       </div>
 
       {/* SECTION 2 — Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+      <div className="grid-responsive-4">
         {[
           { label: "Today's P&L", value: fmtPnl(todayPnl), color: pnlColor(todayPnl), loading: tradesLoading },
           { label: 'Bets today', value: todayBets.length, color: '#F5F5FA', loading: betsLoading },
@@ -173,7 +173,7 @@ export default function HomeTab({ onSwitchTab }) {
           <h2 style={{ fontSize: 16, fontWeight: 800, margin: 0, color: '#f0f4ff' }}>Today's Edge</h2>
           <p style={{ fontSize: 12, color: '#2a3a5a', marginTop: 2 }}>Your best opportunities right now</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+        <div className="grid-responsive-3">
 
           {/* Top Market */}
           <div style={{ ...card, borderLeft: '3px solid #4f8ef7', display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -240,11 +240,11 @@ export default function HomeTab({ onSwitchTab }) {
           <button onClick={() => goTab('Polymarket')} style={{ fontSize: 12, color: '#4f8ef7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>View all markets →</button>
         </div>
         {marketsLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          <div className="grid-responsive-4">
             {[1, 2, 3, 4].map(i => <div key={i} style={{ ...card, height: 140, animation: 'pulse 1.5s infinite' }} />)}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+          <div className="grid-responsive-4">
             {markets.slice(0, 4).map((m, i) => {
               const pct = m.yes ?? 50;
               const fill = pct > 60 ? '#22c55e' : pct > 40 ? '#f59e0b' : '#ef4444';
