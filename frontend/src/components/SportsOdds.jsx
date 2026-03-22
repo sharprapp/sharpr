@@ -59,6 +59,7 @@ export default function SportsOdds({ initialSport, tier }) {
   const [selectedGame, setSelectedGame] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [requestsRemaining, setRequestsRemaining] = useState(null);
+  const [sortByEdge, setSortByEdge] = useState(false);
 
   useEffect(() => {
     if (initialSport) {
@@ -143,8 +144,14 @@ export default function SportsOdds({ initialSport, tier }) {
 
       {/* Status bar */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 2px' }}>
-        <div style={{ fontSize: 11, color: '#2a3a5a' }}>
-          {!loading && games.length > 0 && `${games.length} games found`}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 11, color: '#2a3a5a' }}>{!loading && games.length > 0 && `${games.length} games`}</span>
+          {!loading && games.length > 0 && (
+            <button onClick={() => setSortByEdge(s => !s)}
+              style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 100, cursor: 'pointer', border: '1px solid', background: sortByEdge ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.03)', borderColor: sortByEdge ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)', color: sortByEdge ? '#4ade80' : '#4a5a7a' }}>
+              {sortByEdge ? '⚡ Edge sorted' : '⚡ Sort by Edge'}
+            </button>
+          )}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {lastUpdated && <span style={{ fontSize: 10, color: '#1a2535' }}>Updated {timeAgo(lastUpdated)}</span>}
@@ -177,8 +184,9 @@ export default function SportsOdds({ initialSport, tier }) {
       )}
 
       {/* Game cards */}
-      {!loading && games.map(game => {
+      {!loading && [...games].sort((a, b) => sortByEdge ? (b.edgeScore?.score || 0) - (a.edgeScore?.score || 0) : 0).map(game => {
         const hasOdds = game.homeML != null || game.awayML != null;
+        const edge = game.edgeScore;
 
         return (
           <div key={game.id} style={{ ...gc, overflow: 'hidden', cursor: 'pointer' }}
@@ -192,6 +200,11 @@ export default function SportsOdds({ initialSport, tier }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(79,142,247,0.1)', color: '#7aaff8', textTransform: 'uppercase' }}>{SPORT_LABELS[sport] || sport}</span>
                   {game.isLive && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', color: '#ef4444', animation: 'pulse 1.5s infinite' }}>LIVE</span>}
+                  {edge && edge.score > 30 && (
+                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: edge.score >= 81 ? 'rgba(34,197,94,0.15)' : edge.score >= 61 ? 'rgba(245,158,11,0.15)' : 'rgba(251,191,36,0.1)', color: edge.color, border: `1px solid ${edge.color}30` }}>
+                      {edge.score >= 81 ? '⚡ ' : ''}{edge.score} Edge
+                    </span>
+                  )}
                 </div>
                 <span style={{ fontSize: 11, color: '#4a5a7a' }}>{fmtDate(game.commenceTime)}</span>
               </div>

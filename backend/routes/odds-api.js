@@ -6,6 +6,7 @@ const supabase = require('../lib/supabase');
 let webpush; try { webpush = require('web-push'); webpush.setVapidDetails(process.env.VAPID_EMAIL || 'mailto:support@sharprapp.com', process.env.VAPID_PUBLIC_KEY || '', process.env.VAPID_PRIVATE_KEY || ''); } catch {}
 const notifiedMoves = new Set(); // prevent duplicate notifications
 
+const { calcEdgeScore } = require('../lib/edgeScore');
 const ODDS_BASE = 'https://api.the-odds-api.com/v4';
 const API_KEY = process.env.ODDS_API_KEY;
 
@@ -89,7 +90,7 @@ function mapGame(g, sport) {
   const commence = new Date(g.commence_time);
   const isLive = commence < new Date() && !g.completed;
 
-  return {
+  const result = {
     id: g.id, sport, homeTeam: g.home_team, awayTeam: g.away_team,
     commenceTime: g.commence_time, isLive,
     homeML: homeML?.price, awayML: awayML?.price,
@@ -99,6 +100,9 @@ function mapGame(g, sport) {
     bookmakers: g.bookmakers?.map(b => b.title),
     allBookmakers: g.bookmakers || [],
   };
+  const prevSp = prevOdds.get(result.id + '_spread') ?? null;
+  result.edgeScore = calcEdgeScore(result, null, prevSp);
+  return result;
 }
 
 // Start polling on module load
