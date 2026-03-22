@@ -1424,6 +1424,8 @@ function SportsBettingTab({ tier, activeSubTab }) {
   const [bets, setBets]       = useState([]);
   const [form, setForm]       = useState({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' });
   const [imgParsing, setImgParsing] = useState(false);
+  const [showMoreBet, setShowMoreBet] = useState(false);
+  const [betSaved, setBetSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [view, setView]       = useState('calendar');
 
@@ -1473,7 +1475,8 @@ function SportsBettingTab({ tier, activeSubTab }) {
     try {
       const { data } = await api.post('/api/bets', {...form, stake: parseFloat(form.stake)});
       setBets([data, ...bets]);
-      setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'' });
+      setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' });
+      setBetSaved(true); setTimeout(() => setBetSaved(false), 2000);
     } catch(e) { alert(e.response?.data?.error || 'Failed'); }
     setLoading(false);
   }
@@ -1527,67 +1530,69 @@ function SportsBettingTab({ tier, activeSubTab }) {
         <>
           {/* Bet form */}
           <div className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-            <div className="text-xs font-semibold uppercase tracking-wider mb-4" style={{color: '#64748b'}}>Log a bet</div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-              <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sport</label>
-                <select value={form.sport} onChange={e => setForm({...form,sport:e.target.value})}
-                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                  onFocus={inpFocus} onBlur={inpBlur}>
-                  {['NFL','NBA','MLB','Soccer','UFC'].map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sportsbook</label>
-                <select value={form.sportsbook} onChange={e => setForm({...form,sportsbook:e.target.value})}
-                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                  onFocus={inpFocus} onBlur={inpBlur}>
-                  {['DraftKings','FanDuel','BetMGM','Caesars','PointsBet','Bet365','Other'].map(s => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Bet type</label>
-                <select value={form.type} onChange={e => setForm({...form,type:e.target.value})}
-                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                  onFocus={inpFocus} onBlur={inpBlur}>
-                  {['Moneyline','Spread','Over/Under','Prop','Parlay'].map(t => <option key={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Result</label>
-                <select value={form.result} onChange={e => setForm({...form,result:e.target.value})}
-                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                  onFocus={inpFocus} onBlur={inpBlur}>
-                  <option value="pending">Pending</option><option value="win">Win</option><option value="loss">Loss</option><option value="push">Push</option>
-                </select>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Quick log</div>
+              {betSaved && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Bet logged ✓</span>}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
               <div>
                 <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Matchup / bet</label>
                 <input placeholder="e.g. Lakers ML" value={form.match} onChange={e => setForm({...form,match:e.target.value})}
+                  onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
                   onFocus={inpFocus} onBlur={inpBlur} />
               </div>
               <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Odds (American)</label>
+                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Odds</label>
                 <input placeholder="-110" value={form.odds} onChange={e => setForm({...form,odds:e.target.value})}
+                  onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
                   onFocus={inpFocus} onBlur={inpBlur} />
               </div>
               <div>
                 <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Stake ($)</label>
                 <input type="number" placeholder="50" value={form.stake} onChange={e => setForm({...form,stake:e.target.value})}
+                  onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
                   onFocus={inpFocus} onBlur={inpBlur} />
               </div>
             </div>
-            <div className="mb-4">
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
-              <input placeholder="Reasoning, matchup notes…" value={form.notes} onChange={e => setForm({...form,notes:e.target.value})}
-                className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                onFocus={inpFocus} onBlur={inpBlur} />
-            </div>
+            {/* Collapsible details */}
+            <button onClick={() => setShowMoreBet(s => !s)} style={{ fontSize: 11, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', marginBottom: showMoreBet ? 12 : 0, padding: 0 }}>
+              {showMoreBet ? 'Less details ▴' : 'More details ▾'}
+            </button>
+            {showMoreBet && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                <div>
+                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sport</label>
+                  <select value={form.sport} onChange={e => setForm({...form,sport:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                    {['NFL','NBA','MLB','NHL','Soccer','UFC'].map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sportsbook</label>
+                  <select value={form.sportsbook} onChange={e => setForm({...form,sportsbook:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                    {['DraftKings','FanDuel','BetMGM','Caesars','PointsBet','Bet365','Other'].map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Bet type</label>
+                  <select value={form.type} onChange={e => setForm({...form,type:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                    {['Moneyline','Spread','Over/Under','Prop','Parlay'].map(t => <option key={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Result</label>
+                  <select value={form.result} onChange={e => setForm({...form,result:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                    <option value="pending">Pending</option><option value="win">Win</option><option value="loss">Loss</option><option value="push">Push</option>
+                  </select>
+                </div>
+                <div className="col-span-2 sm:col-span-4">
+                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
+                  <input placeholder="Reasoning…" value={form.notes} onChange={e => setForm({...form,notes:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+                </div>
+              </div>
+            )}
             {/* Payout preview */}
             {form.odds && form.stake && (
               <div style={{ fontSize: 13, color: '#22c55e', marginBottom: 8, fontWeight: 600 }}>

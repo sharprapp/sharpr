@@ -9,21 +9,19 @@ export function useAuth() {
   const [usernameSet, setUsernameSet] = useState(true);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async (force = false) => {
+  const fetchProfile = useCallback(async () => {
     // Try backend first
     try {
       const { data } = await api.get('/api/auth/me');
       const t = data.tier || data.plan || 'free';
-      console.log('[useAuth] plan from backend:', t, '| raw:', { tier: data.tier, plan: data.plan });
+      console.log('[useAuth] plan:', t);
       setTier(t);
       setUsername(data.profile?.username || null);
       setUsernameSet(data.profile?.username_set !== false);
       return t;
-    } catch (e) {
-      console.warn('[useAuth] /api/auth/me failed, trying Supabase direct:', e.message);
-    }
+    } catch {}
 
-    // Fallback: query Supabase directly
+    // Fallback: Supabase direct
     try {
       const { data: { user: u } } = await supabase.auth.getUser();
       if (u) {
@@ -33,15 +31,13 @@ export function useAuth() {
           .eq('id', u.id)
           .single();
         const t = profile?.plan || profile?.tier || 'free';
-        console.log('[useAuth] plan from Supabase fallback:', t, '| raw:', profile);
+        console.log('[useAuth] plan (fallback):', t);
         setTier(t);
         setUsername(profile?.username || null);
         setUsernameSet(profile?.username_set !== false);
         return t;
       }
-    } catch (e2) {
-      console.warn('[useAuth] Supabase fallback also failed:', e2.message);
-    }
+    } catch {}
 
     setTier('free');
     return 'free';
@@ -53,26 +49,22 @@ export function useAuth() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile().finally(() => { if (mounted) setLoading(false); });
-      } else {
-        setLoading(false);
-      }
+      if (session?.user) fetchProfile().finally(() => { if (mounted) setLoading(false); });
+      else setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
       setUser(session?.user ?? null);
-      if (session?.user) {
-        // Always re-fetch on auth state change (login, token refresh, etc.)
-        fetchProfile().finally(() => { if (mounted) setLoading(false); });
-      } else {
-        setTier('free');
-        setLoading(false);
-      }
+      if (session?.user) fetchProfile().finally(() => { if (mounted) setLoading(false); });
+      else { setTier('free'); setLoading(false); }
     });
 
-    return () => { mounted = false; subscription.unsubscribe(); };
+    // Re-fetch when app regains focus (e.g. returning from Stripe checkout)
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchProfile(); };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => { mounted = false; subscription.unsubscribe(); document.removeEventListener('visibilitychange', onVisible); };
   }, [fetchProfile]);
 
   async function signIn(email, password) {
