@@ -97,9 +97,6 @@ export default function Navbar() {
 
         <span className="hidden sm:block" style={{fontSize:13, color:'#4a5a7a', fontWeight:500}}>{firstName(user?.email)}</span>
 
-        <button onClick={async () => { await signOut(); navigate('/login'); }} className="glass-btn" style={{fontSize:12, padding:'6px 14px', borderRadius:8}}>
-          Sign out
-        </button>
       </div>
     </nav>
   );

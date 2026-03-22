@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { supabase } from '../lib/supabase';
 import api from '../lib/api';
@@ -35,7 +35,8 @@ function Toggle({ value, onChange, label, sub }) {
 }
 
 export default function Settings() {
-  const { user, tier, username } = useAuth();
+  const { user, tier, username, signOut } = useAuth();
+  const navigate = useNavigate();
   const [resetSent, setResetSent] = useState(false);
   const [searchParams]          = useSearchParams();
   const [subStatus, setSubStatus] = useState(null);
@@ -138,6 +139,12 @@ export default function Settings() {
                   Change password
                 </button>
               )}
+            </div>
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
+              <button onClick={async () => { await signOut(); navigate('/login'); }}
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#ef4444', cursor: 'pointer', fontWeight: 600 }}>
+                Sign out
+              </button>
             </div>
           </div>
         </div>
