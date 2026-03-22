@@ -1325,7 +1325,8 @@ function TradeForm({ form, setForm, loading, onAdd }) {
 function SportsBettingTab({ tier, activeSubTab }) {
   const subTab = activeSubTab || 'journal';
   const [bets, setBets]       = useState([]);
-  const [form, setForm]       = useState({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'' });
+  const [form, setForm]       = useState({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' });
+  const [imgParsing, setImgParsing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [view, setView]       = useState('calendar');
 
@@ -1420,13 +1421,21 @@ function SportsBettingTab({ tier, activeSubTab }) {
           {/* Bet form */}
           <div className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
             <div className="text-xs font-semibold uppercase tracking-wider mb-4" style={{color: '#64748b'}}>Log a bet</div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
               <div>
                 <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sport</label>
                 <select value={form.sport} onChange={e => setForm({...form,sport:e.target.value})}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
                   onFocus={inpFocus} onBlur={inpBlur}>
                   {['NFL','NBA','MLB','Soccer','UFC'].map(s => <option key={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sportsbook</label>
+                <select value={form.sportsbook} onChange={e => setForm({...form,sportsbook:e.target.value})}
+                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
+                  onFocus={inpFocus} onBlur={inpBlur}>
+                  {['DraftKings','FanDuel','BetMGM','Caesars','PointsBet','Bet365','Other'].map(s => <option key={s}>{s}</option>)}
                 </select>
               </div>
               <div>
@@ -1472,13 +1481,43 @@ function SportsBettingTab({ tier, activeSubTab }) {
                 className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
                 onFocus={inpFocus} onBlur={inpBlur} />
             </div>
-            <button onClick={addBet} disabled={loading}
-              className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
-              style={{background: '#2563EB', color: '#fff'}}
-              onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
-              onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
-              {loading ? 'Adding…' : '+ Log bet'}
-            </button>
+            {/* Payout preview */}
+            {form.odds && form.stake && (
+              <div style={{ fontSize: 13, color: '#22c55e', marginBottom: 8, fontWeight: 600 }}>
+                Potential payout: ${(() => { const o=parseFloat(form.odds),s=parseFloat(form.stake); if(!o||!s) return '0.00'; return (s+(o>0?s*(o/100):s*(100/Math.abs(o)))).toFixed(2); })()}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button onClick={addBet} disabled={loading}
+                className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+                style={{background: '#2563EB', color: '#fff'}}
+                onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
+                onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
+                {loading ? 'Adding…' : '+ Log bet'}
+              </button>
+              {(tier === 'pro' || tier === 'elite') ? (
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                  {imgParsing ? 'Analyzing...' : '📷 Upload Screenshot'}
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+                    const file = e.target.files?.[0]; if (!file) return;
+                    setImgParsing(true);
+                    try {
+                      const reader = new FileReader();
+                      reader.onload = async () => {
+                        const base64 = reader.result.split(',')[1];
+                        const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'bet' });
+                        if (data.parsed) setForm(prev => ({ ...prev, ...data.parsed, sportsbook: data.parsed.sportsbook || prev.sportsbook }));
+                      };
+                      reader.readAsDataURL(file);
+                    } catch { alert('Could not read screenshot'); }
+                    finally { setTimeout(() => setImgParsing(false), 1000); }
+                    e.target.value = '';
+                  }} />
+                </label>
+              ) : (
+                <span style={{ fontSize: 11, color: '#2a3a5a' }}>📷 Screenshot upload — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
+              )}
+            </div>
           </div>
 
           <DarkTable

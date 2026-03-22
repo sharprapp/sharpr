@@ -178,4 +178,42 @@ router.post('/query', requireAuth, checkAILimit, async (req, res) => {
   }
 });
 
+// POST /api/ai/parse-image — extract bet/trade data from screenshot
+router.post('/parse-image', requireAuth, async (req, res) => {
+  const { image, type = 'bet' } = req.body;
+  if (!image) return res.status(400).json({ error: 'Image required' });
+
+  // Check pro tier
+  if (req.tier !== 'pro' && req.tier !== 'elite') {
+    return res.status(403).json({ error: 'Pro feature', upgrade: true });
+  }
+
+  const prompt = type === 'trade'
+    ? 'Extract from this trade screenshot: ticker/symbol, action (buy/sell/long/short), quantity, entry price, exit price if shown, total value, date. Return JSON only, no markdown: {"ticker":"","direction":"","qty":"","entry":"","exit":"","notes":""}'
+    : 'Extract from this bet screenshot: sportsbook name, teams/event, bet type (moneyline/spread/over-under/parlay/prop), odds in American format, stake amount. Return JSON only, no markdown: {"sportsbook":"","match":"","type":"","odds":"","stake":"","notes":""}';
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: image.startsWith('/9j/') ? 'image/jpeg' : 'image/png', data: image.replace(/^data:image\/\w+;base64,/, '') } },
+          { type: 'text', text: prompt },
+        ],
+      }],
+    });
+
+    const text = message.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+    await logAIUsage(req.user.id);
+    res.json({ parsed, raw: text });
+  } catch (err) {
+    console.error('Image parse error:', err.message);
+    res.status(500).json({ error: 'Could not read screenshot. Try a clearer image.' });
+  }
+});
+
 module.exports = router;
