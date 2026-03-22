@@ -136,24 +136,36 @@ router.post('/stream', requireAuth, checkAILimit, async (req, res) => {
 
 // Non-streaming endpoint (kept for backward compatibility)
 router.post('/query', requireAuth, checkAILimit, async (req, res) => {
-  const { query, type = 'polymarket', use_web_search = true } = req.body;
+  const { query, type = 'polymarket', use_web_search = true, history } = req.body;
   if (!query) return res.status(400).json({ error: 'Query required' });
 
-  // Check cache
-  const cacheKey = getCacheKey(query, type);
-  const cached = aiCache.get(cacheKey);
-  const ttl = CACHE_TTL[type] || 600000;
-  if (cached && Date.now() - cached.ts < ttl) {
-    await logAIUsage(req.user.id);
-    return res.json({ result: cached.result, cached: true });
+  // Skip cache when conversation history is provided (chat mode)
+  const hasHistory = Array.isArray(history) && history.length > 0;
+  if (!hasHistory) {
+    const cacheKey = getCacheKey(query, type);
+    const cached = aiCache.get(cacheKey);
+    const ttl = CACHE_TTL[type] || 600000;
+    if (cached && Date.now() - cached.ts < ttl) {
+      await logAIUsage(req.user.id);
+      return res.json({ result: cached.result, cached: true });
+    }
   }
 
   try {
+    // Build messages: include history for multi-turn chat
+    const chatMessages = hasHistory
+      ? [...history.slice(-10), { role: 'user', content: query }]
+      : [{ role: 'user', content: query }];
+
+    const systemPrompt = hasHistory
+      ? `You are a sharp trading and sports betting analyst called Sharpr. Today is ${new Date().toDateString()}. Give direct, concise, specific analysis. No disclaimers. No repeated warnings. Vary your response format. Use web search when needed for current data.`
+      : (SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket);
+
     const messageParams = {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 800,
-      system: SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket,
-      messages: [{ role: 'user', content: query }]
+      system: systemPrompt,
+      messages: chatMessages,
     };
 
     if (use_web_search) {
@@ -167,8 +179,11 @@ router.post('/query', requireAuth, checkAILimit, async (req, res) => {
       .map(b => b.text)
       .join('');
 
-    // Cache the response
-    aiCache.set(cacheKey, { result: text, ts: Date.now() });
+    // Only cache single-query responses (not chat)
+    if (!hasHistory) {
+      const cacheKey = getCacheKey(query, type);
+      aiCache.set(cacheKey, { result: text, ts: Date.now() });
+    }
 
     await logAIUsage(req.user.id);
     res.json({ result: text, model: message.model });

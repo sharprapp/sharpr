@@ -1803,7 +1803,8 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
     setInput('');
     setLoading(true);
     try {
-      const { data } = await api.post('/api/ai/query', { query: text, type: 'polymarket', use_web_search: true });
+      const history = messages.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }));
+      const { data } = await api.post('/api/ai/query', { query: text, type: 'polymarket', use_web_search: true, history });
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.result || 'No response.', ts: new Date() }]);
     } catch (e) {
       setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: 'Error: ' + (e.response?.data?.error || 'Request failed'), ts: new Date() }]);
