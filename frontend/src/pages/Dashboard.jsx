@@ -1325,53 +1325,59 @@ function DayTradingTab({ activeSubTab, tier }) {
 function TradeForm({ form, setForm, loading, onAdd, tier }) {
   const f = (k, v) => setForm(p => ({...p, [k]: v}));
   const [imgParsing, setImgParsing] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const canSubmit = form.ticker && form.entry && form.qty;
+  const handleSubmit = () => { onAdd(); setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const onEnter = (e) => { if (e.key === 'Enter' && canSubmit) handleSubmit(); };
   return (
     <div className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-      <div className="text-xs font-semibold uppercase tracking-wider mb-4" style={{color: '#64748b'}}>Log a trade</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Quick log</div>
+        {saved && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Trade logged ✓</span>}
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-        {[['ticker','Ticker','text'],['entry','Entry $','number'],['exit','Exit $','number'],['qty','Qty','number']].map(([k,pl,t]) => (
+        {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['exit','Exit $ (optional)','number']].map(([k,pl,t]) => (
           <div key={k}>
             <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>{pl}</label>
-            <input type={t} placeholder={pl} value={form[k]} onChange={e => f(k, e.target.value)}
+            <input type={t} placeholder={pl.replace(' (optional)','')} value={form[k]} onChange={e => f(k, e.target.value)}
+              onKeyDown={onEnter}
               className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
               style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        <div>
-          <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Direction</label>
-          <select value={form.direction} onChange={e => f('direction', e.target.value)}
-            className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-            onFocus={inpFocus} onBlur={inpBlur}>
-            <option>LONG</option><option>SHORT</option>
-          </select>
+      <button onClick={() => setShowMore(s => !s)} style={{ fontSize: 11, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', marginBottom: showMore ? 12 : 0, padding: 0 }}>
+        {showMore ? 'Less details ▴' : 'More details ▾'}
+      </button>
+      {showMore && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Direction</label>
+            <select value={form.direction} onChange={e => f('direction', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+              <option>LONG</option><option>SHORT</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Setup</label>
+            <select value={form.setup} onChange={e => f('setup', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+              {['Breakout','Pullback','VWAP','Gap & Go','Reversal','Momentum','Other'].map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Status</label>
+            <select value={form.status} onChange={e => f('status', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+              <option value="open">Open</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
+            <input placeholder="Quick note" value={form.notes} onChange={e => f('notes', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
         </div>
-        <div>
-          <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Setup</label>
-          <select value={form.setup} onChange={e => f('setup', e.target.value)}
-            className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-            onFocus={inpFocus} onBlur={inpBlur}>
-            {['Breakout','Pullback','VWAP','Gap & Go','Reversal','Momentum','Other'].map(s => <option key={s}>{s}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Status</label>
-          <select value={form.status} onChange={e => f('status', e.target.value)}
-            className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-            onFocus={inpFocus} onBlur={inpBlur}>
-            <option value="open">Open</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option>
-          </select>
-        </div>
-        <div>
-          <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
-          <input placeholder="Quick note" value={form.notes} onChange={e => f('notes', e.target.value)}
-            className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-            onFocus={inpFocus} onBlur={inpBlur} />
-        </div>
-      </div>
+      )}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button onClick={onAdd} disabled={loading}
+        <button onClick={handleSubmit} disabled={loading || !canSubmit}
           className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
           style={{background: '#2563EB', color: '#fff'}}
           onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}

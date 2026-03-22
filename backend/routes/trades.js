@@ -43,16 +43,22 @@ router.post('/', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'ticker, direction, entry, qty required' });
   }
 
-  const pnl = status === 'open' ? 0
-    : direction === 'LONG' ? (exit - entry) * qty
-    : (entry - exit) * qty;
+  const pnl = (!exit || status === 'open') ? null
+    : direction === 'LONG' ? (parseFloat(exit) - parseFloat(entry)) * parseFloat(qty)
+    : (parseFloat(entry) - parseFloat(exit)) * parseFloat(qty);
+
+  // Auto-detect status from P&L if exit is provided and status is open
+  let finalStatus = status || 'open';
+  if (exit && finalStatus === 'open') {
+    finalStatus = pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be';
+  }
 
   const insertPayload = {
     user_id: req.user.id,
     ticker: ticker.toUpperCase(),
-    direction, entry, exit, qty, setup,
-    status: status || 'open',
-    notes, pnl
+    direction, entry: parseFloat(entry), exit: exit ? parseFloat(exit) : null, qty: parseFloat(qty), setup,
+    status: finalStatus,
+    notes, pnl: pnl != null ? Math.round(pnl * 100) / 100 : null
   };
   console.log('[trades POST] inserting:', insertPayload);
 
@@ -80,9 +86,9 @@ router.patch('/:id', requireAuth, async (req, res) => {
 
   const newExit = exit ?? existing.exit;
   const newStatus = status ?? existing.status;
-  const pnl = newStatus === 'open' ? 0
-    : existing.direction === 'LONG' ? (newExit - existing.entry) * existing.qty
-    : (existing.entry - newExit) * existing.qty;
+  const pnl = (!newExit || newStatus === 'open') ? null
+    : existing.direction === 'LONG' ? (parseFloat(newExit) - parseFloat(existing.entry)) * parseFloat(existing.qty)
+    : (parseFloat(existing.entry) - parseFloat(newExit)) * parseFloat(existing.qty);
 
   const { data, error } = await supabase
     .from('trades')
