@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import api from '../lib/api';
+import { useAIStream } from '../lib/useAIStream';
 
 const CAT_COLORS = {
   Politics: { background: 'rgba(167,139,250,0.15)', color: '#c084fc' },
@@ -14,9 +15,7 @@ const CAT_COLORS = {
 };
 
 export default function MarketDetailModal({ market: m, onClose, userPlan }) {
-  const [aiResult, setAiResult] = useState(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState(null);
+  const { text: aiResult, loading: aiLoading, error: aiError, done: aiDone, stream: startAIStream } = useAIStream();
 
   const pct = m.yes ?? 50;
   const fill = pct > 66 ? '#22c55e' : pct > 40 ? '#f59e0b' : '#ef4444';
@@ -30,17 +29,13 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
     return () => window.removeEventListener('keydown', h);
   }, [onClose]);
 
-  // Auto-load AI analysis for pro users
+  // Auto-load AI analysis for pro users — streaming
   useEffect(() => {
     if (!isPro) return;
-    setAiLoading(true);
-    api.post('/api/ai/query', {
-      query: `Analyze this prediction market: "${m.title}". Current YES probability: ${pct}%. Volume: ${vol}. Give: 1) Key factors driving probability 2) Whether market is fairly priced or has edge 3) Clear verdict: does YES or NO have the edge and why. Be concise and sharp.`,
-      type: 'polymarket',
-      use_web_search: true,
-    }).then(r => setAiResult(r.data.result))
-      .catch(e => setAiError(e.response?.data?.message || 'AI analysis failed'))
-      .finally(() => setAiLoading(false));
+    startAIStream(
+      `Analyze this prediction market: "${m.title}". Current YES probability: ${pct}%. Volume: ${vol}. Give: 1) Key factors driving probability 2) Whether market is fairly priced or has edge 3) Clear verdict: does YES or NO have the edge and why. Be concise and sharp.`,
+      'polymarket', true
+    );
   }, [m.id]);
 
   // Mock probability chart data
@@ -178,7 +173,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
                     Upgrade to Pro
                   </button>
                 </div>
-              ) : aiLoading ? (
+              ) : aiLoading && !aiResult ? (
                 <div style={{ padding: 20, textAlign: 'center' }}>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: 6 }}>
                     {[0, 1, 2].map(i => (
@@ -187,7 +182,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
                   </div>
                   <div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 8 }}>Analyzing with web search...</div>
                 </div>
-              ) : aiError ? (
+              ) : aiError && !aiResult ? (
                 <div style={{ fontSize: 12, color: '#ef4444', background: 'rgba(239,68,68,0.08)', borderRadius: 8, padding: 12 }}>{aiError}</div>
               ) : aiResult ? (
                 <div style={{ fontSize: 12, color: '#6a7a9a', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAIStream } from '../lib/useAIStream';
 import TeamLogo from './TeamLogo';
 
 function formatOdds(n) { return n == null ? '--' : n > 0 ? '+' + n : '' + n; }
@@ -40,8 +41,7 @@ const stColor = s => s === 'Out' ? { bg: 'rgba(239,68,68,0.15)', c: '#ef4444' } 
 
 
 export default function GameDetailModal({ game: g, onClose, userPlan }) {
-  const [aiResult, setAiResult] = useState(null);
-  const [aiLoading, setAiLoading] = useState(false);
+  const { text: aiResult, loading: aiLoading, error: aiStreamError, done: aiDone, stream: startAIStream } = useAIStream();
   const [props, setProps] = useState({});
   const [propsLoading, setPropsLoading] = useState(false);
   const [selectedPick, setSelectedPick] = useState(null);
@@ -64,26 +64,13 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const awayMoneyPct = g.awayML > 0 ? 51 : 44;
   const sharpAlert = Math.abs(awayMoneyPct - awayBetPct) > 12;
 
-  // AI analysis
+  // AI analysis — streaming
   useEffect(() => {
     if (!isPro) return;
-    setAiLoading(true);
-    (async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/query`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
-          body: JSON.stringify({
-            query: `Sharp betting analysis: ${g.awayTeam} vs ${g.homeTeam}. Sport: ${g.sport}. Spread: ${g.awayTeam} ${formatSpread(g.awaySpread)} / ${g.homeTeam} ${formatSpread(g.homeSpread)}. ML: ${formatOdds(g.awayML)} / ${formatOdds(g.homeML)}. Total: ${g.overTotal || 'N/A'}. Give key matchup factors, line value, and a CLEAR best bet with confidence. End with "Best Bet:" on its own line.`,
-            type: 'sports', use_web_search: true,
-          }),
-        });
-        const data = await res.json();
-        setAiResult(data.result || 'Analysis unavailable.');
-      } catch { setAiResult('Analysis unavailable.'); }
-      finally { setAiLoading(false); }
-    })();
+    startAIStream(
+      `Sharp betting analysis: ${g.awayTeam} vs ${g.homeTeam}. Sport: ${g.sport}. Spread: ${g.awayTeam} ${formatSpread(g.awaySpread)} / ${g.homeTeam} ${formatSpread(g.homeSpread)}. ML: ${formatOdds(g.awayML)} / ${formatOdds(g.homeML)}. Total: ${g.overTotal || 'N/A'}. Give key matchup factors, line value, and a CLEAR best bet with confidence. End with "Best Bet:" on its own line.`,
+      'sports', true
+    );
   }, [g.id]);
 
   // Props
@@ -298,15 +285,17 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
                   <div style={{ fontSize: 11, color: '#4a5a7a', marginBottom: 14 }}>Get sharp analysis on every game with Pro</div>
                   <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ background: 'rgba(79,142,247,0.2)', border: '1px solid rgba(79,142,247,0.4)', borderRadius: 10, padding: '9px 18px', fontSize: 12, fontWeight: 700, color: '#7aaff8', cursor: 'pointer', width: '100%' }}>Upgrade to Pro</button>
                 </div>
-              ) : aiLoading ? (
+              ) : aiLoading && !aiResult ? (
                 <div style={{ background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: 12, padding: 20, textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 10 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#4f8ef7', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
                   <div style={{ fontSize: 12, color: '#4a5a7a' }}>Analyzing matchup...</div>
                 </div>
               ) : aiResult ? (
                 <div style={{ background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.12)', borderRadius: 12, padding: 16 }}>
-                  <div style={{ fontSize: 12, color: '#6a7a9a', lineHeight: 1.7, marginBottom: bestBetText ? 12 : 0 }}>{analysisText}</div>
-                  {bestBetText && (
+                  <div style={{ fontSize: 12, color: '#6a7a9a', lineHeight: 1.7, marginBottom: bestBetText ? 12 : 0 }}>
+                    {analysisText}{aiLoading && <span style={{ display: 'inline-block', width: 6, height: 14, background: '#4f8ef7', marginLeft: 2, animation: 'pulse 0.8s infinite', verticalAlign: 'text-bottom' }} />}
+                  </div>
+                  {aiDone && bestBetText && (
                     <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, padding: 10 }}>
                       <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#4ade80', textTransform: 'uppercase', marginBottom: 4 }}>Best Bet</div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f4ff' }}>{bestBetText}</div>

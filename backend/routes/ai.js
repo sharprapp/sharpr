@@ -3,6 +3,15 @@ const router = express.Router();
 const anthropic = require('../lib/anthropic');
 const { requireAuth } = require('../middleware/auth');
 const { checkAILimit, logAIUsage } = require('../middleware/tier');
+const crypto = require('crypto');
+
+// In-memory response cache
+const aiCache = new Map();
+const CACHE_TTL = { sports: 600000, polymarket: 600000, trading: 600000, news: 1800000 }; // 10min / 30min
+
+function getCacheKey(query, type) {
+  return crypto.createHash('md5').update(query + '|' + type).digest('hex');
+}
 
 const SYSTEM_PROMPTS = {
   polymarket: `You are a sharp Polymarket prediction market analyst. Today is ${new Date().toDateString()}.
@@ -57,9 +66,87 @@ RESPOND IN THIS EXACT FORMAT:
 IMPORTANT: Lead with the news analysis. The story is the main event, the edge is the bonus. Do NOT use bullet-point lists or split into separate Polymarket/Sports/Trading sections.`
 };
 
+// SSE streaming endpoint
+router.post('/stream', requireAuth, checkAILimit, async (req, res) => {
+  const { query, type = 'polymarket', use_web_search = true } = req.body;
+  if (!query) return res.status(400).json({ error: 'Query required' });
+
+  // Check cache
+  const cacheKey = getCacheKey(query, type);
+  const cached = aiCache.get(cacheKey);
+  const ttl = CACHE_TTL[type] || 600000;
+  if (cached && Date.now() - cached.ts < ttl) {
+    // Return cached as instant SSE
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.write(`data: ${JSON.stringify({ text: cached.result })}\n\n`);
+    res.write('data: [DONE]\n\n');
+    res.end();
+    await logAIUsage(req.user.id);
+    return;
+  }
+
+  try {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    const messageParams = {
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 800,
+      stream: true,
+      system: SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket,
+      messages: [{ role: 'user', content: query }],
+    };
+
+    if (use_web_search) {
+      messageParams.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+    }
+
+    let fullText = '';
+    const stream = anthropic.messages.stream(messageParams);
+
+    stream.on('text', (text) => {
+      fullText += text;
+      res.write(`data: ${JSON.stringify({ text })}\n\n`);
+    });
+
+    stream.on('end', async () => {
+      res.write('data: [DONE]\n\n');
+      res.end();
+      // Cache the full response
+      aiCache.set(cacheKey, { result: fullText, ts: Date.now() });
+      await logAIUsage(req.user.id);
+    });
+
+    stream.on('error', (err) => {
+      console.error('Stream error:', err.message);
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
+    });
+  } catch (err) {
+    console.error('AI stream error:', err.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: err.message || 'AI query failed' });
+    }
+  }
+});
+
+// Non-streaming endpoint (kept for backward compatibility)
 router.post('/query', requireAuth, checkAILimit, async (req, res) => {
   const { query, type = 'polymarket', use_web_search = true } = req.body;
   if (!query) return res.status(400).json({ error: 'Query required' });
+
+  // Check cache
+  const cacheKey = getCacheKey(query, type);
+  const cached = aiCache.get(cacheKey);
+  const ttl = CACHE_TTL[type] || 600000;
+  if (cached && Date.now() - cached.ts < ttl) {
+    await logAIUsage(req.user.id);
+    return res.json({ result: cached.result, cached: true });
+  }
 
   try {
     const messageParams = {
@@ -79,6 +166,9 @@ router.post('/query', requireAuth, checkAILimit, async (req, res) => {
       .filter(b => b.type === 'text')
       .map(b => b.text)
       .join('');
+
+    // Cache the response
+    aiCache.set(cacheKey, { result: text, ts: Date.now() });
 
     await logAIUsage(req.user.id);
     res.json({ result: text, model: message.model });
