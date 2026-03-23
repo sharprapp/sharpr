@@ -48,6 +48,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const [stake, setStake] = useState('50');
   const [betLogged, setBetLogged] = useState(false);
   const isPro = userPlan === 'pro' || userPlan === 'elite';
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   useEffect(() => {
     const h = (e) => { if (e.key === 'Escape') onClose(); };
@@ -125,36 +126,36 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const st = { fontSize: 10, fontWeight: 700, letterSpacing: '2px', color: '#1a2535', textTransform: 'uppercase', marginBottom: 10 };
 
   return (
-    <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ background: '#070712', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, width: '100%', maxWidth: 1100, maxHeight: '90vh', overflowY: 'auto', position: 'relative' }}>
+    <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 1000, display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 16 }}>
+      <div style={{ background: '#070712', border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)', borderRadius: isMobile ? 0 : 20, width: '100%', maxWidth: isMobile ? '100vw' : 1100, maxHeight: isMobile ? '100vh' : '90vh', overflowY: 'auto', position: 'relative' }}>
 
-        {/* Close */}
-        <div onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#4a5a7a', fontSize: 16, zIndex: 10 }}>✕</div>
+        {/* Close — fixed on mobile */}
+        <div onClick={onClose} style={{ position: isMobile ? 'fixed' : 'absolute', top: 12, right: 12, background: 'rgba(3,3,10,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94A3B8', fontSize: 18, zIndex: 1001 }}>✕</div>
 
         {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <TeamLogo teamName={g.awayTeam} size={52} />
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff' }}>{g.awayTeam}</div>
+        <div style={{ padding: isMobile ? '16px 16px' : '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isMobile ? 16 : 32 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <TeamLogo teamName={g.awayTeam} size={isMobile ? 36 : 52} />
+            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 700, color: '#f0f4ff', textAlign: 'center' }}>{g.awayTeam}</div>
             <div style={{ fontSize: 10, color: '#2a3a5a' }}>{awayStats.record}</div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <div style={{ fontSize: 18, color: '#1a2535', fontWeight: 700 }}>@</div>
-            <div style={{ fontSize: 11, color: '#2a3a5a' }}>{formatTime(g.commenceTime)}</div>
-            <span style={{ background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: 100, padding: '3px 10px', fontSize: 10, fontWeight: 700, color: '#7aaff8' }}>{(g.sport || '').toUpperCase()}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+            <div style={{ fontSize: 14, color: '#1a2535', fontWeight: 700 }}>@</div>
+            <div style={{ fontSize: 10, color: '#2a3a5a' }}>{formatTime(g.commenceTime)}</div>
+            <span style={{ background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: 100, padding: '2px 8px', fontSize: 9, fontWeight: 700, color: '#7aaff8' }}>{(g.sport || '').toUpperCase()}</span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <TeamLogo teamName={g.homeTeam} size={52} />
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff' }}>{g.homeTeam}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+            <TeamLogo teamName={g.homeTeam} size={isMobile ? 36 : 52} />
+            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 700, color: '#f0f4ff', textAlign: 'center' }}>{g.homeTeam}</div>
             <div style={{ fontSize: 10, color: '#2a3a5a' }}>{homeStats.record}</div>
           </div>
         </div>
 
-        {/* Body: left + right */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px' }}>
+        {/* Body */}
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px' }}>
 
-          {/* LEFT */}
-          <div style={{ padding: '20px 24px', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* LEFT / Main */}
+          <div style={{ padding: isMobile ? '16px' : '20px 24px', borderRight: isMobile ? 'none' : '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
             {/* Odds comparison table */}
             <div>
@@ -208,7 +209,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
             {/* Sharp money */}
             <div>
               <div style={st}>Sharp Money</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
                 {[{ label: 'Bet %', away: awayBetPct }, { label: 'Money %', away: awayMoneyPct }].map(({ label, away }) => (
                   <div key={label} style={gc}>
                     <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
@@ -233,7 +234,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
             {/* Team Stats */}
             <div>
               <div style={st}>Team Stats</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
                 {[{ team: g.awayTeam, s: awayStats }, { team: g.homeTeam, s: homeStats }].map(({ team, s: ts }) => (
                   <div key={team} style={gc}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4ff', marginBottom: 8 }}>{team}</div>
@@ -272,8 +273,8 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
             )}
           </div>
 
-          {/* RIGHT */}
-          <div style={{ padding: 20, background: 'rgba(79,142,247,0.02)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* RIGHT / Secondary */}
+          <div style={{ padding: isMobile ? 16 : 20, background: 'rgba(79,142,247,0.02)', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
             {/* AI Analysis */}
             <div>
@@ -340,7 +341,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
             {/* Quick bet */}
             <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 14 }}>
               <div style={st}>Log a Bet</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 6, marginBottom: 10 }}>
                 {picks.map((p, i) => (
                   <div key={i} onClick={() => setSelectedPick(p)}
                     style={{ padding: '8px 6px', borderRadius: 8, fontSize: 10, fontWeight: 700, cursor: 'pointer', textAlign: 'center',
