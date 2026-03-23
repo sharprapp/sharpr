@@ -900,37 +900,14 @@ function PolymarketTab({ tier }) {
   async function fetchMarkets(forceRefresh = true) {
     if (forceRefresh) { setLoading(true); setError(''); setMarkets([]); setTotalLoaded(0); setVisibleCount(20); }
     try {
-      // Fetch first page immediately so user sees data fast
-      const first = await api.get('/api/markets/polymarket?offset=0');
-      const firstMarkets = first.data.markets.map(m => ({ ...m, cat: pmCat(m.title) }));
-      setMarkets(firstMarkets);
-      setTotalLoaded(firstMarkets.length);
+      // Fetch all markets at once (5-min server cache)
+      const { data } = await api.get('/api/markets/polymarket/all');
+      const allMarkets = (data.markets || []).map(m => ({ ...m, cat: pmCat(m.title) }));
+      setMarkets(allMarkets);
+      setTotalLoaded(allMarkets.length);
+      setPMCache(allMarkets);
+      setFetching(false);
       setLoading(false);
-
-      // Fetch remaining pages in background
-      let allMarkets = [...firstMarkets];
-      if (first.data.hasMore) {
-        setFetching(true);
-        let offset = 100;
-        while (true) {
-          try {
-            const page = await api.get(`/api/markets/polymarket?offset=${offset}`);
-            const pageMarkets = page.data.markets.map(m => ({ ...m, cat: pmCat(m.title) }));
-            if (pageMarkets.length === 0) break;
-            allMarkets = [...allMarkets, ...pageMarkets];
-            setMarkets(prev => [...prev, ...pageMarkets]);
-            setTotalLoaded(prev => prev + pageMarkets.length);
-            if (!page.data.hasMore) break;
-            offset += 100;
-          } catch {
-            break;
-          }
-        }
-        setFetching(false);
-        setPMCache(allMarkets); // persist full set to localStorage
-      } else {
-        setPMCache(allMarkets);
-      }
     } catch (e) {
       const cached = getPMCache();
       if (cached && cached.length) {
@@ -938,8 +915,8 @@ function PolymarketTab({ tier }) {
         setTotalLoaded(cached.length);
         setError('Using cached data — refresh to reload.');
       } else {
-        setError('Could not load markets — showing sample data.');
-        setMarkets(SAMPLE_PM);
+        setError('Could not load markets.');
+        setMarkets(SAMPLE_PM || []);
       }
       setLoading(false);
     }
