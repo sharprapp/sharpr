@@ -32,6 +32,7 @@ router.post('/create-checkout', requireAuth, async (req, res) => {
       mode: 'subscription',
       success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/dashboard`,
+      metadata: { supabase_user_id: user.id },
       subscription_data: {
         metadata: { supabase_user_id: user.id }
       }
@@ -79,14 +80,61 @@ router.post('/webhook', async (req, res) => {
   }
 
   const data = event.data.object;
+  console.log('[Stripe webhook]', event.type, '| metadata:', JSON.stringify(data.metadata || {}));
 
   switch (event.type) {
+    case 'checkout.session.completed': {
+      // This fires first — before subscription events. Use customer ID to find user.
+      const customerId = data.customer;
+      const subscriptionId = data.subscription;
+      console.log('[Stripe checkout.session.completed] customer:', customerId, '| subscription:', subscriptionId);
+
+      if (customerId) {
+        const { data: profile, error: findErr } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('stripe_customer_id', customerId)
+          .single();
+
+        if (findErr) console.error('[Stripe] Find user by customer error:', findErr);
+
+        if (profile?.id) {
+          const { error: updateErr } = await supabase
+            .from('profiles')
+            .update({
+              tier: 'pro', plan: 'pro', plan_status: 'active',
+              stripe_subscription_id: subscriptionId, subscription_status: 'active'
+            })
+            .eq('id', profile.id);
+
+          if (updateErr) console.error('[Stripe] Update plan error:', updateErr);
+          else console.log('[Stripe] User', profile.id, 'upgraded to Pro via checkout.session.completed');
+        }
+      }
+      break;
+    }
     case 'customer.subscription.created':
     case 'customer.subscription.updated': {
       const userId = data.metadata?.supabase_user_id;
-      if (!userId) break;
+      console.log('[Stripe sub update] userId from metadata:', userId, '| status:', data.status);
+      if (!userId) {
+        // Fallback: find user by customer ID
+        const customerId = data.customer;
+        const { data: profile } = await supabase.from('profiles').select('id').eq('stripe_customer_id', customerId).single();
+        if (profile?.id) {
+          const isActive = ['active', 'trialing'].includes(data.status);
+          await supabase.from('profiles').update({
+            tier: isActive ? 'pro' : 'free', plan: isActive ? 'pro' : 'free',
+            plan_status: isActive ? 'active' : 'inactive',
+            stripe_subscription_id: data.id, subscription_status: data.status,
+            current_period_end: data.current_period_end ? new Date(data.current_period_end * 1000).toISOString() : null
+          }).eq('id', profile.id);
+          console.log('[Stripe] Updated via customer lookup:', profile.id);
+        }
+        break;
+      }
       const isActive = ['active', 'trialing'].includes(data.status);
-      await supabase
+      const { error: subErr } = await supabase
         .from('profiles')
         .update({
           tier: isActive ? 'pro' : 'free',
@@ -94,9 +142,11 @@ router.post('/webhook', async (req, res) => {
           plan_status: isActive ? 'active' : 'inactive',
           stripe_subscription_id: data.id,
           subscription_status: data.status,
-          current_period_end: new Date(data.current_period_end * 1000).toISOString()
+          current_period_end: data.current_period_end ? new Date(data.current_period_end * 1000).toISOString() : null
         })
         .eq('id', userId);
+      if (subErr) console.error('[Stripe] Sub update error:', subErr);
+      else console.log('[Stripe] Updated user', userId, 'to', isActive ? 'pro' : 'free');
       break;
     }
     case 'customer.subscription.deleted': {
