@@ -10,8 +10,10 @@ const TTL = 60 * 1000; // 60 seconds
 function normalizeMarket(m) {
   let prices = [];
   try { prices = JSON.parse(m.outcomePrices); } catch {}
+  // Use event slug for URL (not market slug) — Polymarket URLs are /event/[event-slug]
+  const eventSlug = m.events?.[0]?.slug || m.slug || null;
   const slug = m.slug || null;
-  const url = slug ? `https://polymarket.com/event/${slug}` : null;
+  const url = eventSlug ? `https://polymarket.com/event/${eventSlug}` : null;
   return {
     id:        m.id,
     title:     m.question,
