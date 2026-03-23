@@ -12,17 +12,33 @@ export default function Success() {
   useEffect(() => {
     (async () => {
       try {
-        await new Promise(r => setTimeout(r, 2000));
+        // Wait for Stripe webhook to process
+        await new Promise(r => setTimeout(r, 3000));
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) { navigate('/'); return; }
+
         let attempts = 0;
         const poll = async () => {
-          const { data: profile } = await supabase.from('profiles').select('tier, plan').eq('id', session.user.id).single();
+          // Query profiles table directly for plan/tier
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('tier, plan')
+            .eq('id', session.user.id)
+            .single();
+
+          console.log('[Success] poll', attempts, '| profile:', profile, '| error:', error);
+
           const isPro = profile?.plan === 'pro' || profile?.tier === 'pro';
-          console.log('[Success] poll attempt', attempts, '| profile:', profile);
-          if (isPro || attempts > 5) {
-            // Force refresh the global auth state so Dashboard picks up pro
+
+          if (isPro || attempts > 8) {
+            // Force refresh JWT session so new requests use updated token
+            await supabase.auth.refreshSession();
+            // Force refresh the global auth state
             await refreshProfile();
+            console.log('[Success] Plan confirmed, redirecting in 1s');
+            // Small delay to ensure state propagation
+            await new Promise(r => setTimeout(r, 1000));
             setStatus('success');
           } else {
             attempts++;
@@ -30,7 +46,10 @@ export default function Success() {
           }
         };
         poll();
-      } catch { setStatus('success'); }
+      } catch (e) {
+        console.error('[Success] Error:', e);
+        setStatus('success');
+      }
     })();
   }, []);
 

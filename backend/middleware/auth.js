@@ -24,8 +24,10 @@ async function requireAuth(req, res, next) {
     req.user = user;
     req.profile = profile || {};
     req.tier = profile?.plan || profile?.tier || 'free';
+    console.log('[auth] user:', user.id?.slice(0, 8), '| plan:', req.tier, '| raw:', { plan: profile?.plan, tier: profile?.tier });
     next();
   } catch (err) {
+    console.error('[auth] failed:', err.message);
     return res.status(401).json({ error: 'Auth failed' });
   }
 }
