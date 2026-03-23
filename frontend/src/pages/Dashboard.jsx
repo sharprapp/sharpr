@@ -886,28 +886,19 @@ function PolymarketTab({ tier }) {
   const [fetching, setFetching] = useState(false);
   const [error, setError]       = useState('');
   const [totalLoaded, setTotalLoaded] = useState(() => getPMCache()?.length || 0);
-  const [visibleCount, setVisibleCount] = useState(50); // show 50 at a time
+  const [visibleCount, setVisibleCount] = useState(20); // show 20 initially
   const sentinelRef = useRef(null);
   const [selectedMarket, setSelectedMarket] = useState(null);
 
-  // IntersectionObserver — load 50 more when user nears the bottom
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) setVisibleCount(n => n + 50);
-    }, { rootMargin: '200px' });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [pmTab]); // re-attach when switching back to markets sub-tab
+  // Removed IntersectionObserver — using "Load more" button instead
 
   // Reset visible count when filter or search changes
-  useEffect(() => { setVisibleCount(50); }, [filt, q]);
+  useEffect(() => { setVisibleCount(20); }, [filt, q]);
 
   useEffect(() => { fetchMarkets(false); }, []);
 
   async function fetchMarkets(forceRefresh = true) {
-    if (forceRefresh) { setLoading(true); setError(''); setMarkets([]); setTotalLoaded(0); setVisibleCount(50); }
+    if (forceRefresh) { setLoading(true); setError(''); setMarkets([]); setTotalLoaded(0); setVisibleCount(20); }
     try {
       // Fetch first page immediately so user sees data fast
       const first = await api.get('/api/markets/polymarket?offset=0');
@@ -1091,12 +1082,13 @@ function PolymarketTab({ tier }) {
               </div>
             )}
 
-            {/* Sentinel div — IntersectionObserver triggers loading more */}
-            {isPro && <div ref={sentinelRef} style={{height: 1}} />}
-
+            {/* Load more button */}
             {isPro && visible.length < filtered.length && !loading && (
-              <div className="text-center text-xs py-2" style={{color: '#475569'}}>
-                Scroll for more · showing {visible.length} of {filtered.length}
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <button onClick={() => setVisibleCount(n => n + 20)}
+                  style={{ fontSize: 13, fontWeight: 600, padding: '10px 28px', borderRadius: 10, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>
+                  Load more ({filtered.length - visible.length} remaining)
+                </button>
               </div>
             )}
           </div>
