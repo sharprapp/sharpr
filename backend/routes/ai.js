@@ -117,6 +117,10 @@ Never say "As an AI" or add generic caveats before answers.`;
 
     const systemPrompt = hasHistory ? chatSystemPrompt : (SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket);
 
+    // Only enable web search for queries that clearly need current data
+    // This avoids the 5-10s delay from search tool on every message
+    const needsSearch = use_web_search && !hasHistory && /today|tonight|current|latest|right now|this week|live|score|odds|price/i.test(query);
+
     const messageParams = {
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2000,
@@ -125,9 +129,12 @@ Never say "As an AI" or add generic caveats before answers.`;
       messages: chatMessages,
     };
 
-    if (use_web_search) {
+    if (needsSearch) {
       messageParams.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
     }
+
+    // Send immediate "thinking" signal so frontend knows stream is alive
+    res.write(`data: ${JSON.stringify({ status: 'streaming' })}\n\n`);
 
     let fullText = '';
     const stream = anthropic.messages.stream(messageParams);
@@ -209,7 +216,9 @@ Never say "As an AI" or add generic caveats before answers.`;
       messages: chatMessages,
     };
 
-    if (use_web_search) {
+    // Only enable web search when query needs current data
+    const needsSearch = use_web_search && !hasHistory && /today|tonight|current|latest|right now|this week|live|score|odds|price/i.test(query);
+    if (needsSearch) {
       messageParams.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
     }
 

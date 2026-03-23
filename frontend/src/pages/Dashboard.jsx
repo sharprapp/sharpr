@@ -1856,7 +1856,9 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           try {
             const parsed = JSON.parse(payload);
             if (parsed.error) { setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: 'Something went wrong. Please try again.', isError: true } : m)); setStreaming(false); setLoading(false); return; }
+            if (parsed.status === 'streaming') { setStreaming(true); continue; }
             if (parsed.text) {
+              if (!streaming) setStreaming(true);
               accumulated += parsed.text;
               setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
             }
