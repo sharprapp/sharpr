@@ -1,8 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, createElement } from 'react';
 import { supabase } from '../lib/supabase';
 import api from '../lib/api';
 
-export function useAuth() {
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [tier, setTier] = useState('free');
   const [username, setUsername] = useState(null);
@@ -10,18 +12,16 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async () => {
-    // Try backend first
     try {
       const { data } = await api.get('/api/auth/me');
       const t = data.plan || data.tier || 'free';
-      console.log('[useAuth] plan:', t);
+      console.log('[useAuth] plan from /me:', t);
       setTier(t);
       setUsername(data.profile?.username || null);
       setUsernameSet(data.profile?.username_set !== false);
       return t;
     } catch {}
 
-    // Fallback: Supabase direct
     try {
       const { data: { user: u } } = await supabase.auth.getUser();
       if (u) {
@@ -31,7 +31,7 @@ export function useAuth() {
           .eq('id', u.id)
           .single();
         const t = profile?.plan || profile?.tier || 'free';
-        console.log('[useAuth] plan (fallback):', t);
+        console.log('[useAuth] plan from Supabase:', t);
         setTier(t);
         setUsername(profile?.username || null);
         setUsernameSet(profile?.username_set !== false);
@@ -42,6 +42,11 @@ export function useAuth() {
     setTier('free');
     return 'free';
   }, []);
+
+  // Log every tier change
+  useEffect(() => {
+    console.log('[useAuth] tier changed to:', tier);
+  }, [tier]);
 
   useEffect(() => {
     let mounted = true;
@@ -55,12 +60,12 @@ export function useAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
+      console.log('[useAuth] onAuthStateChange:', _event);
       setUser(session?.user ?? null);
       if (session?.user) fetchProfile().finally(() => { if (mounted) setLoading(false); });
       else { setTier('free'); setLoading(false); }
     });
 
-    // Re-fetch when app regains focus (e.g. returning from Stripe checkout)
     const onVisible = () => { if (document.visibilityState === 'visible') fetchProfile(); };
     document.addEventListener('visibilitychange', onVisible);
 
@@ -83,9 +88,21 @@ export function useAuth() {
     setTier('free');
   }
 
-  return {
+  const value = {
     user, tier, username, usernameSet, setUsername, loading,
     signIn, signUp, signOut, refreshProfile: fetchProfile,
     isPro: tier === 'pro' || tier === 'elite',
   };
+
+  return createElement(AuthContext.Provider, { value }, children);
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    // Fallback for components not wrapped in AuthProvider (shouldn't happen but prevents crash)
+    console.warn('[useAuth] called outside AuthProvider');
+    return { user: null, tier: 'free', username: null, usernameSet: true, setUsername: () => {}, loading: true, signIn: async () => {}, signUp: async () => {}, signOut: async () => {}, refreshProfile: async () => 'free', isPro: false };
+  }
+  return ctx;
 }
