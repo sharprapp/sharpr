@@ -155,11 +155,6 @@ export default function SportsOdds({ initialSport, tier }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {lastUpdated && <span style={{ fontSize: 10, color: '#1a2535' }}>Updated {timeAgo(lastUpdated)}</span>}
-          {requestsRemaining != null && (
-            <span style={{ fontSize: 10, color: parseInt(requestsRemaining) > 100 ? '#22c55e' : parseInt(requestsRemaining) > 50 ? '#f59e0b' : '#ef4444' }}>
-              {requestsRemaining} API calls left
-            </span>
-          )}
           <button onClick={fetchGames} disabled={loading}
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '4px 10px', fontSize: 10, color: '#4a5a7a', cursor: 'pointer' }}>
             {loading ? '...' : '↻ Refresh'}
@@ -223,7 +218,7 @@ export default function SportsOdds({ initialSport, tier }) {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6, marginBottom: 4 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <TeamLogo teamName={game.awayTeam} size={24} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{game.awayTeam}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', wordBreak: 'break-word' }}>{game.awayTeam}</span>
                     </div>
                     <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
                       {formatSpread(game.awaySpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.awaySpreadOdds)})</span>
@@ -239,7 +234,7 @@ export default function SportsOdds({ initialSport, tier }) {
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <TeamLogo teamName={game.homeTeam} size={24} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{game.homeTeam}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', wordBreak: 'break-word' }}>{game.homeTeam}</span>
                     </div>
                     <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
                       {formatSpread(game.homeSpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.homeSpreadOdds)})</span>

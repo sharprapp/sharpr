@@ -156,8 +156,14 @@ body {
   .grid-responsive-2 { grid-template-columns: 1fr; }
   .desktop-nav { display: none !important; }
   .mobile-menu-btn { display: flex !important; }
-  .tab-content { padding: 16px !important; }
+  .tab-content { padding: 12px !important; }
   .hide-mobile { display: none !important; }
+  /* Game detail modal — full screen on mobile */
+  .game-modal-inner { width: 100vw !important; max-width: 100vw !important; max-height: 100vh !important; border-radius: 0 !important; margin: 0 !important; }
+  .game-modal-inner > div[style*="gridTemplateColumns: '1fr 340px'"] { grid-template-columns: 1fr !important; }
+  /* Odds table mobile */
+  .odds-table-desktop { display: none !important; }
+  .odds-cards-mobile { display: flex !important; }
 }
 
 @media (min-width: 769px) {

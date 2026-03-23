@@ -487,6 +487,57 @@ function NavGroups({ tab, setTab }) {
   );
 }
 
+function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport }) {
+  const [expanded, setExpanded] = useState(null);
+  function firstName(email = '') { const r = (email.split('@')[0].split('.')[0]).replace(/\d+$/, ''); return r.charAt(0).toUpperCase() + r.slice(1); }
+  const go = (key) => setTab(key);
+  const goEvent = (sport) => { setEventsSport(sport); setTab('Events'); };
+  const sections = [
+    { label: 'Home', key: 'Home' },
+    { label: '⚡ Signals', key: 'Signals' },
+    { label: 'Trade', children: [{ l: 'Journal', k: 'dt-journal' }, { l: 'Pre-Market', k: 'dt-premarket' }, { l: 'Risk Calc', k: 'dt-riskcalc' }, { l: 'Reports', k: 'dt-reports' }] },
+    { label: 'Bet', children: [{ l: 'Journal', k: 'sb-journal' }, { l: 'Arbitrage', k: 'sb-arbitrage' }, { l: 'Parlay', k: 'sb-parlay' }, { l: 'Analytics', k: 'sb-analytics' }] },
+    { label: 'Predict', children: [{ l: 'Polymarket', k: 'Polymarket' }, { l: 'EV Calc', k: 'EV Calc' }] },
+    { label: 'AI Research', key: 'AI Research' },
+    { label: 'Events', children: [{ l: 'NBA', k: 'nba' }, { l: 'NFL', k: 'nfl' }, { l: 'MLB', k: 'mlb' }, { l: 'NHL', k: 'nhl' }, { l: 'NCAAB', k: 'ncaab' }, { l: 'NCAAF', k: 'ncaaf' }], isEvent: true },
+    { label: 'News', children: [{ l: 'Sports News', k: 'news-sports' }, { l: 'Trading News', k: 'news-trading' }, { l: 'World News', k: 'news-world' }] },
+  ];
+  const isActive = (key) => tab === key;
+  return (
+    <div className="mobile-nav-drawer" style={{ background: 'rgba(3,3,10,0.97)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '8px 16px 12px', display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '80vh', overflowY: 'auto' }}>
+      {sections.map(s => s.key ? (
+        <button key={s.key} onClick={() => go(s.key)}
+          style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: isActive(s.key) ? 'rgba(79,142,247,0.12)' : 'transparent', color: isActive(s.key) ? '#7aaff8' : '#94A3B8' }}>
+          {s.label}
+        </button>
+      ) : (
+        <div key={s.label}>
+          <button onClick={() => setExpanded(expanded === s.label ? null : s.label)}
+            style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#94A3B8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            {s.label} <span style={{ fontSize: 10, opacity: 0.5 }}>{expanded === s.label ? '▴' : '▾'}</span>
+          </button>
+          {expanded === s.label && (
+            <div style={{ paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {s.children.map(c => (
+                <button key={c.k} onClick={() => s.isEvent ? goEvent(c.k) : go(c.k)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: 'none', textAlign: 'left', fontSize: 13, fontWeight: 500, cursor: 'pointer', minHeight: 40, background: isActive(c.k) ? 'rgba(79,142,247,0.1)' : 'transparent', color: isActive(c.k) ? '#7aaff8' : '#6a7a9a' }}>
+                  {c.l}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+      <button onClick={() => { navigate('/settings'); setTab(tab); }}
+        style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#6a7a9a' }}>
+        Settings
+      </button>
+      <div style={{ padding: '8px 12px', fontSize: 12, color: '#2a3a5a' }}>{username ? `@${username}` : firstName(user?.email)}</div>
+    </div>
+  );
+}
+
 /* ─────────────────────────────────────────
    UNIFIED DASHBOARD NAVBAR
 ───────────────────────────────────────── */
@@ -607,36 +658,7 @@ function DashboardNav({ tab, setTab, tier, username }) {
       </div>
       {/* Mobile nav drawer */}
       {mobileOpen && (
-        <div className="mobile-nav-drawer" style={{ background: 'rgba(3,3,10,0.97)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '12px 20px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {['Home', 'Signals', 'Events', 'AI Research'].map(t => (
-            <button key={t} onClick={() => { setTab(t); setMobileOpen(false); }}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', background: tab === t ? 'rgba(79,142,247,0.12)' : 'transparent', color: tab === t ? '#7aaff8' : '#6a7a9a' }}>
-              {t}
-            </button>
-          ))}
-          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
-          {[
-            { label: 'Trade — Journal', key: 'dt-journal' }, { label: 'Trade — Pre-Market', key: 'dt-premarket' },
-            { label: 'Bet — Journal', key: 'sb-journal' }, { label: 'Bet — Analytics', key: 'sb-analytics' },
-            { label: 'Polymarket', key: 'Polymarket' }, { label: 'EV Calc', key: 'EV Calc' },
-            // TODO: Re-enable Social tab when user base grows
-            // { label: 'Community', key: 'Community' },
-            { label: 'Sports News', key: 'news-sports' }, { label: 'Trading News', key: 'news-trading' },
-          ].map(({ label, key }) => (
-            <button key={key} onClick={() => { setTab(key); setMobileOpen(false); }}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: tab === key ? 'rgba(79,142,247,0.12)' : 'transparent', color: tab === key ? '#7aaff8' : '#4a5a7a' }}>
-              {label}
-            </button>
-          ))}
-          <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
-          <button onClick={() => { navigate('/settings'); setMobileOpen(false); }}
-            style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 13, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: '#4a5a7a' }}>
-            Settings
-          </button>
-          <div style={{ padding: '8px 12px' }}>
-            <span style={{ fontSize: 13, color: '#4a5a7a' }}>{username ? `@${username}` : firstName(user?.email)}</span>
-          </div>
-        </div>
+        <MobileNavDrawer tab={tab} setTab={t => { setTab(t); setMobileOpen(false); }} username={username} user={user} navigate={navigate} setEventsSport={s => window.dispatchEvent(new CustomEvent('events-sport', { detail: s }))} />
       )}
     </div>
   );
