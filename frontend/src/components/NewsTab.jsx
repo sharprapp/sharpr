@@ -77,11 +77,13 @@ export default function NewsTab({ initialType }) {
     }).catch(() => setArticles([])).finally(() => setLoading(false));
   }, [newsType, subCat]);
 
+  const [allEconEvents, setAllEconEvents] = useState([]);
+  const [econFilter, setEconFilter] = useState('all'); // all | high | usd | eur | gbp
   useEffect(() => {
     if (newsType === 'trading') {
       api.get('/api/news/economic').then(r => {
-        const today = new Date().toISOString().split('T')[0];
-        setEconEvents((r.data.events || []).filter(e => e.date?.startsWith(today) && e.impact === 'High'));
+        setAllEconEvents(r.data.events || []);
+        setEconEvents((r.data.events || []).filter(e => e.impact === 'High'));
       }).catch(() => {});
     }
   }, [newsType]);
@@ -122,20 +124,80 @@ export default function NewsTab({ initialType }) {
         ))}
       </div>
 
-      {/* Economic calendar for trading */}
-      {newsType === 'trading' && econEvents.length > 0 && (
-        <div style={{ ...gc, padding: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#ef4444', marginBottom: 10 }}>High-Impact Events Today</div>
-          {econEvents.map((e, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', borderBottom: i < econEvents.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-              <span style={{ fontSize: 11, color: '#6a7a9a', minWidth: 50 }}>{e.time || 'TBD'}</span>
-              <span style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', minWidth: 30 }}>{e.currency}</span>
-              <span style={{ fontSize: 12, color: '#F5F5FA', flex: 1 }}>{e.title}</span>
-              {e.forecast !== '—' && <span style={{ fontSize: 10, color: '#4a5a7a' }}>F: {e.forecast}</span>}
+      {/* Economic Calendar — Forex Factory style */}
+      {newsType === 'trading' && allEconEvents.length > 0 && (() => {
+        const impactColor = { High: '#ef4444', Medium: '#f59e0b', Low: '#22c55e', Holiday: '#64748b' };
+        const impactBg = { High: 'rgba(239,68,68,0.1)', Medium: 'rgba(245,158,11,0.1)', Low: 'rgba(34,197,94,0.1)', Holiday: 'rgba(100,116,139,0.1)' };
+        const impactDot = { High: '🔴', Medium: '🟡', Low: '🟢', Holiday: '⚪' };
+        const currencyFlags = { USD: '🇺🇸', EUR: '🇪🇺', GBP: '🇬🇧', JPY: '🇯🇵', CAD: '🇨🇦', AUD: '🇦🇺', NZD: '🇳🇿', CHF: '🇨🇭', CNY: '🇨🇳' };
+
+        const filtered = allEconEvents.filter(e => {
+          if (econFilter === 'high') return e.impact === 'High';
+          if (econFilter === 'usd') return e.currency === 'USD';
+          if (econFilter === 'eur') return e.currency === 'EUR';
+          if (econFilter === 'gbp') return e.currency === 'GBP';
+          return true;
+        });
+
+        // Group by date
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+        const grouped = {};
+        filtered.forEach(e => {
+          const label = e.date === today ? 'Today' : e.date === tomorrow ? 'Tomorrow' : new Date(e.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+          if (!grouped[label]) grouped[label] = [];
+          grouped[label].push(e);
+        });
+
+        return (
+          <div style={{ ...gc, padding: 0, overflow: 'hidden' }}>
+            {/* Filter bar */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f4ff' }}>Economic Calendar</div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[{ k: 'all', l: 'All' }, { k: 'high', l: '🔴 High' }, { k: 'usd', l: '🇺🇸 USD' }, { k: 'eur', l: '🇪🇺 EUR' }, { k: 'gbp', l: '🇬🇧 GBP' }].map(f => (
+                  <button key={f.k} onClick={() => setEconFilter(f.k)}
+                    style={{ fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 6, cursor: 'pointer', border: 'none', background: econFilter === f.k ? 'rgba(79,142,247,0.15)' : 'transparent', color: econFilter === f.k ? '#7aaff8' : '#4a5a7a' }}>
+                    {f.l}
+                  </button>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      )}
+
+            {/* Table header */}
+            <div style={{ display: 'grid', gridTemplateColumns: '56px 44px 1fr 36px 60px 60px 60px', padding: '6px 16px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', color: '#1a2535', textTransform: 'uppercase' }}>
+              <div>Time</div><div>Ccy</div><div>Event</div><div>Impact</div><div>Forecast</div><div>Previous</div><div>Actual</div>
+            </div>
+
+            {/* Events grouped by date */}
+            {Object.entries(grouped).map(([dateLabel, events]) => (
+              <div key={dateLabel}>
+                <div style={{ padding: '8px 16px', background: 'rgba(79,142,247,0.04)', fontSize: 11, fontWeight: 700, color: '#4f8ef7', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>{dateLabel}</div>
+                {events.map((e, i) => {
+                  const isHigh = e.impact === 'High';
+                  return (
+                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '56px 44px 1fr 36px 60px 60px 60px', padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.03)', background: isHigh ? 'rgba(239,68,68,0.03)' : 'transparent', borderLeft: isHigh ? '2px solid #ef4444' : '2px solid transparent' }}>
+                      <div style={{ fontSize: 11, color: '#6a7a9a' }}>{e.time || 'TBD'}</div>
+                      <div style={{ fontSize: 11 }}>{currencyFlags[e.currency] || ''} <span style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8' }}>{e.currency}</span></div>
+                      <div style={{ fontSize: 12, color: '#F5F5FA', fontWeight: isHigh ? 600 : 400 }}>{e.title}</div>
+                      <div style={{ textAlign: 'center' }}><span style={{ fontSize: 10 }}>{impactDot[e.impact] || '⚪'}</span></div>
+                      <div style={{ fontSize: 11, color: '#4a5a7a', textAlign: 'right' }}>{e.forecast !== '—' ? e.forecast : ''}</div>
+                      <div style={{ fontSize: 11, color: '#4a5a7a', textAlign: 'right' }}>{e.previous !== '—' ? e.previous : ''}</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'right', color: e.actual ? (e.forecast !== '—' && parseFloat(e.actual) > parseFloat(e.forecast) ? '#22c55e' : parseFloat(e.actual) < parseFloat(e.forecast) ? '#ef4444' : '#F5F5FA') : '#1a2535' }}>
+                        {e.actual || '—'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+
+            {filtered.length === 0 && (
+              <div style={{ padding: 24, textAlign: 'center', fontSize: 13, color: '#2a3a5a' }}>No events match this filter</div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Loading */}
       {loading && (
