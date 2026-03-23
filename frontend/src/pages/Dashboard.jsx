@@ -1834,18 +1834,66 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, loading]);
 
+  const [streaming, setStreaming] = useState(false);
+
   async function send() {
     const text = input.trim();
     if (!text || loading) return;
+    const aiMsgId = Date.now() + 1;
     setMessages(prev => [...prev, { id: Date.now(), role: 'user', content: text, ts: new Date() }]);
     setInput('');
     setLoading(true);
+    setStreaming(false);
+
     try {
+      const { data: { session } } = await (await import('../lib/supabase')).supabase.auth.getSession();
       const history = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
-      const { data } = await api.post('/api/ai/query', { query: text, type: category, use_web_search: true, history });
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.result || 'No response.', ts: new Date() }]);
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ query: text, type: category, use_web_search: true, history }),
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+
+      // Add empty AI message and stream into it
+      setMessages(prev => [...prev, { id: aiMsgId, role: 'assistant', content: '', ts: new Date() }]);
+      setStreaming(true);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let accumulated = '';
+
+      while (true) {
+        const { done: readerDone, value } = await reader.read();
+        if (readerDone) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const payload = line.slice(6).trim();
+          if (payload === '[DONE]') { setStreaming(false); setLoading(false); return; }
+          try {
+            const parsed = JSON.parse(payload);
+            if (parsed.error) { setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: 'Something went wrong. Please try again.', isError: true } : m)); setStreaming(false); setLoading(false); return; }
+            if (parsed.text) {
+              accumulated += parsed.text;
+              setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
+            }
+          } catch {}
+        }
+      }
+      setStreaming(false);
     } catch {
-      setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: 'Something went wrong. Please try again.', ts: new Date(), isError: true }]);
+      setMessages(prev => {
+        const hasAi = prev.some(m => m.id === aiMsgId);
+        if (hasAi) return prev.map(m => m.id === aiMsgId ? { ...m, content: 'Something went wrong. Please try again.', isError: true } : m);
+        return [...prev, { id: aiMsgId, role: 'assistant', content: 'Something went wrong. Please try again.', ts: new Date(), isError: true }];
+      });
+      setStreaming(false);
     }
     setLoading(false);
   }
@@ -1929,6 +1977,9 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
                     hr: () => <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', margin: '8px 0' }} />,
                     code: ({ children }) => <code style={{ background: 'rgba(79,142,247,0.1)', padding: '1px 4px', borderRadius: 4, fontSize: 12, color: '#7aaff8' }}>{children}</code>,
                   }}>{m.content}</ReactMarkdown>
+                  {streaming && m.id === messages[messages.length - 1]?.id && (
+                    <span style={{ display: 'inline-block', width: 6, height: 14, background: '#4f8ef7', marginLeft: 2, animation: 'pulse 0.8s infinite', verticalAlign: 'text-bottom' }} />
+                  )}
                 </div>
               )}
               <div style={{ fontSize: 10, color: '#1a2535', marginTop: 6, textAlign: m.role === 'user' ? 'right' : 'left' }}>{fmtTime(m.ts)}</div>
@@ -1936,10 +1987,13 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           </div>
         ))}
 
-        {loading && (
+        {loading && !streaming && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div style={{ padding: '12px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderBottomLeftRadius: 4 }}>
-              <div style={{ display: 'flex', gap: 4 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#4f8ef7', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ display: 'flex', gap: 4 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#4f8ef7', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
+                <span style={{ fontSize: 11, color: '#2a3a5a' }}>Searching...</span>
+              </div>
             </div>
           </div>
         )}

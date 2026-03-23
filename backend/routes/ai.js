@@ -66,25 +66,28 @@ RESPOND IN THIS EXACT FORMAT:
 IMPORTANT: Lead with the news analysis. The story is the main event, the edge is the bonus. Do NOT use bullet-point lists or split into separate Polymarket/Sports/Trading sections.`
 };
 
-// SSE streaming endpoint
+// SSE streaming endpoint — supports conversation history
 router.post('/stream', requireAuth, checkAILimit, async (req, res) => {
-  const { query, type = 'polymarket', use_web_search = true } = req.body;
+  const { query, type = 'polymarket', use_web_search = true, history } = req.body;
   if (!query) return res.status(400).json({ error: 'Query required' });
 
-  // Check cache
-  const cacheKey = getCacheKey(query, type);
-  const cached = aiCache.get(cacheKey);
-  const ttl = CACHE_TTL[type] || 600000;
-  if (cached && Date.now() - cached.ts < ttl) {
-    // Return cached as instant SSE
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.write(`data: ${JSON.stringify({ text: cached.result })}\n\n`);
-    res.write('data: [DONE]\n\n');
-    res.end();
-    await logAIUsage(req.user.id);
-    return;
+  const hasHistory = Array.isArray(history) && history.length > 0;
+
+  // Check cache (only for single queries, not conversations)
+  if (!hasHistory) {
+    const cacheKey = getCacheKey(query, type);
+    const cached = aiCache.get(cacheKey);
+    const ttl = CACHE_TTL[type] || 600000;
+    if (cached && Date.now() - cached.ts < ttl) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.write(`data: ${JSON.stringify({ text: cached.result })}\n\n`);
+      res.write('data: [DONE]\n\n');
+      res.end();
+      if (!hasHistory || history.length <= 1) await logAIUsage(req.user.id);
+      return;
+    }
   }
 
   try {
@@ -92,12 +95,33 @@ router.post('/stream', requireAuth, checkAILimit, async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    const chatMessages = hasHistory
+      ? [...history.slice(-6), { role: 'user', content: query }]
+      : [{ role: 'user', content: query }];
+
+    const chatSystemPrompt = `You are a sharp analyst for trading, sports betting, and prediction markets. Today is ${new Date().toDateString()}. Give direct, specific, confident analysis. Use emojis and clear formatting. Keep language simple and easy to understand — no jargon.
+
+VERDICT rules:
+- Sports betting: use simple verdicts like BET THIS, SKIP THIS, WAIT, STRONG PLAY, RISKY BET
+- Polymarket: always give YES or NO with a probability %
+- Trading: use BUY, SELL, HOLD, WAIT, AVOID
+- General questions: no verdict needed
+
+DISCLAIMER rule:
+Whenever your response includes any betting, trading, or investment recommendation, always add this exact line at the very end:
+⚠️ *This is for informational purposes only. Not financial or betting advice. Sharpr is not liable for any losses. Bet and trade responsibly.*
+
+Do not add the disclaimer for general knowledge questions or explanations.
+Never say "As an AI" or add generic caveats before answers.`;
+
+    const systemPrompt = hasHistory ? chatSystemPrompt : (SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket);
+
     const messageParams = {
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 800,
+      max_tokens: 2000,
       stream: true,
-      system: SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket,
-      messages: [{ role: 'user', content: query }],
+      system: systemPrompt,
+      messages: chatMessages,
     };
 
     if (use_web_search) {
@@ -115,9 +139,11 @@ router.post('/stream', requireAuth, checkAILimit, async (req, res) => {
     stream.on('end', async () => {
       res.write('data: [DONE]\n\n');
       res.end();
-      // Cache the full response
-      aiCache.set(cacheKey, { result: fullText, ts: Date.now() });
-      await logAIUsage(req.user.id);
+      if (!hasHistory) {
+        const cacheKey = getCacheKey(query, type);
+        aiCache.set(cacheKey, { result: fullText, ts: Date.now() });
+      }
+      if (!hasHistory || history.length <= 1) await logAIUsage(req.user.id);
     });
 
     stream.on('error', (err) => {
