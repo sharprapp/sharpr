@@ -1820,10 +1820,10 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
   ];
 
   const SUGGESTIONS = {
-    polymarket: ['Will the Fed cut rates before July?', 'Best EV markets on Polymarket', 'Trump approval above 50%?', 'Bitcoin $100k by June?'],
-    trading: ['NQ futures key levels this week', 'BTC price analysis next 30 days', 'Best day trading setups today', 'NVDA earnings play?'],
-    sports: ['NBA sharp money tonight', 'Best underdog bets today', 'Lakers vs Celtics analysis', 'NFL draft prop bets?'],
-    news: ['Latest market-moving news', 'Impact of tariff announcement', 'Fed meeting preview', 'Explain the yield curve'],
+    polymarket: ['Best value markets right now', 'Fed rate cut odds?', 'Top movers today', 'Highest edge markets'],
+    trading: ['Best setup for tomorrow', 'Market open strategy', 'BTC price analysis', 'Top momentum stocks'],
+    sports: ['Best bets tonight', 'Sharp money report', 'Best underdog play today', 'Injury impacts tonight'],
+    news: ['Market news summary', 'Macro outlook this week', 'Crypto market update', 'What should I watch today'],
   };
 
   useEffect(() => {
