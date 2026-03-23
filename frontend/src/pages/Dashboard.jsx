@@ -1875,7 +1875,15 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           const payload = line.slice(6).trim();
-          if (payload === '[DONE]') { setStreaming(false); setLoading(false); return; }
+          if (payload === '[DONE]') {
+            // Fallback: append disclaimer if response has a recommendation but is missing it
+            const recKeywords = /\bBET\b|\bLONG\b|\bSHORT\b|\bBUY\b|\bSELL\b|\bSTRONG PLAY\b|\bSHARP PLAY\b|\bFADE\b/i;
+            if (recKeywords.test(accumulated) && !accumulated.includes('not liable')) {
+              accumulated += '\n\n⚠️ *This is for informational purposes only. Not financial or betting advice. Sharpr is not liable for any losses. Bet and trade responsibly.*';
+              setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
+            }
+            setStreaming(false); setLoading(false); return;
+          }
           try {
             const parsed = JSON.parse(payload);
             if (parsed.error) { setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: 'Something went wrong. Please try again.', isError: true } : m)); setStreaming(false); setLoading(false); return; }

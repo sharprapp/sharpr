@@ -107,11 +107,12 @@ VERDICT rules:
 - Trading: use BUY, SELL, HOLD, WAIT, AVOID
 - General questions: no verdict needed
 
-DISCLAIMER rule:
-Whenever your response includes any betting, trading, or investment recommendation, always add this exact line at the very end:
+MANDATORY RULE — You MUST follow this without exception:
+Any response that contains a betting pick, trade recommendation, investment suggestion, market play, or any actionable advice MUST end with this exact text on its own line:
+
 ⚠️ *This is for informational purposes only. Not financial or betting advice. Sharpr is not liable for any losses. Bet and trade responsibly.*
 
-Do not add the disclaimer for general knowledge questions or explanations.
+This is non-negotiable. If you recommend a bet, trade, or market play — the disclaimer MUST appear as the last line. No exceptions. Only skip for purely factual/educational answers with no actionable recommendation.
 Never say "As an AI" or add generic caveats before answers.`;
 
     const systemPrompt = hasHistory ? chatSystemPrompt : (SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.polymarket);
