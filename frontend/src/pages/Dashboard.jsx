@@ -494,13 +494,13 @@ function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport
   const goEvent = (sport) => { setEventsSport(sport); setTab('Events'); };
   const sections = [
     { label: 'Home', key: 'Home' },
-    { label: '⚡ Signals', key: 'Signals' },
-    { label: 'Trade', children: [{ l: 'Journal', k: 'dt-journal' }, { l: 'Pre-Market', k: 'dt-premarket' }, { l: 'Risk Calc', k: 'dt-riskcalc' }, { l: 'Reports', k: 'dt-reports' }] },
-    { label: 'Bet', children: [{ l: 'Journal', k: 'sb-journal' }, { l: 'Arbitrage', k: 'sb-arbitrage' }, { l: 'Parlay', k: 'sb-parlay' }, { l: 'Analytics', k: 'sb-analytics' }] },
+    { label: '\u26A1 Signals', key: 'Signals' },
+    { label: 'Trade', children: [{ l: 'Journal', k: 'dt-journal' }, { l: 'Pre-Market', k: 'dt-premarket' }] },
+    { label: 'Bet', children: [{ l: 'Journal', k: 'sb-journal' }, { l: 'Analytics', k: 'sb-analytics' }] },
     { label: 'Predict', children: [{ l: 'Polymarket', k: 'Polymarket' }, { l: 'EV Calc', k: 'EV Calc' }] },
     { label: 'AI Research', key: 'AI Research' },
     { label: 'Events', children: [{ l: 'NBA', k: 'nba' }, { l: 'NFL', k: 'nfl' }, { l: 'MLB', k: 'mlb' }, { l: 'NHL', k: 'nhl' }, { l: 'NCAAB', k: 'ncaab' }, { l: 'NCAAF', k: 'ncaaf' }], isEvent: true },
-    { label: 'News', children: [{ l: 'Sports News', k: 'news-sports' }, { l: 'Trading News', k: 'news-trading' }, { l: 'World News', k: 'news-world' }] },
+    { label: 'News', children: [{ l: 'Sports News', k: 'news-sports' }, { l: 'Trading News', k: 'news-trading' }] },
   ];
   const isActive = (key) => tab === key;
   return (
@@ -514,7 +514,7 @@ function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport
         <div key={s.label}>
           <button onClick={() => setExpanded(expanded === s.label ? null : s.label)}
             style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#94A3B8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {s.label} <span style={{ fontSize: 10, opacity: 0.5 }}>{expanded === s.label ? '▴' : '▾'}</span>
+            {s.label} <span style={{ fontSize: 9, opacity: 0.5, marginLeft: 4 }}>{expanded === s.label ? '\u25B2' : '\u25BC'}</span>
           </button>
           {expanded === s.label && (
             <div style={{ paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 2 }}>
