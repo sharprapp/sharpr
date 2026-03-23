@@ -172,8 +172,9 @@ router.post('/webhook', async (req, res) => {
 router.get('/status', requireAuth, async (req, res) => {
   const p = req.profile;
   res.json({
+    plan: req.tier,
     tier: req.tier,
-    status: p?.subscription_status || 'none',
+    status: p?.subscription_status || p?.plan_status || 'none',
     current_period_end: p?.current_period_end || null
   });
 });

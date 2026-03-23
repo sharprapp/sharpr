@@ -31,8 +31,8 @@ router.get('/me', requireAuth, async (req, res) => {
   res.json({
     id: req.user.id,
     email: req.user.email,
-    tier: p.tier || p.plan || 'free',
     plan: p.plan || p.tier || 'free',
+    tier: p.plan || p.tier || 'free',
     plan_status: p.plan_status || p.subscription_status || 'inactive',
     profile: p
   });

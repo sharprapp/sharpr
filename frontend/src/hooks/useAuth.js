@@ -13,7 +13,7 @@ export function useAuth() {
     // Try backend first
     try {
       const { data } = await api.get('/api/auth/me');
-      const t = data.tier || data.plan || 'free';
+      const t = data.plan || data.tier || 'free';
       console.log('[useAuth] plan:', t);
       setTier(t);
       setUsername(data.profile?.username || null);
