@@ -1177,7 +1177,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
 function DayTradingTab({ activeSubTab, tier }) {
   const subTab = activeSubTab || 'journal';
   const [trades, setTrades]   = useState([]);
-  const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', setup:'Breakout', status:'open', notes:'' });
+  const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', pnl:'', setup:'Breakout', status:'open', notes:'' });
   const [loading, setLoading] = useState(false);
   const [view, setView]       = useState('calendar');
 
@@ -1209,7 +1209,7 @@ function DayTradingTab({ activeSubTab, tier }) {
     try {
       const { data } = await api.post('/api/trades', {...form, entry:parseFloat(form.entry), exit:form.exit?parseFloat(form.exit):null, qty:parseFloat(form.qty)});
       setTrades([data, ...trades]);
-      setForm({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', setup:'Breakout', status:'open', notes:'' });
+      setForm({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', pnl:'', setup:'Breakout', status:'open', notes:'' });
     } catch(e) { alert(e.response?.data?.error || 'Failed to add trade'); }
     setLoading(false);
   }
@@ -1320,8 +1320,8 @@ function TradeForm({ form, setForm, loading, onAdd, tier }) {
         <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Quick log</div>
         {saved && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Trade logged ✓</span>}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3">
-        {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['exit','Exit $ (opt)','number']].map(([k,pl,t]) => (
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-3">
+        {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['exit','Exit $ (opt)','number'],['pnl','P&L $','number']].map(([k,pl,t]) => (
           <div key={k}>
             <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>{pl}</label>
             <input type={t} placeholder={pl.replace(' (opt)','')} value={form[k]} onChange={e => f(k, e.target.value)}

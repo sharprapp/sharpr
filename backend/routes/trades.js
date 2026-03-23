@@ -38,26 +38,19 @@ router.post('/', requireAuth, async (req, res) => {
     }
   }
 
-  const { ticker, direction, entry, exit, qty, setup, status, notes, multiplier } = req.body;
+  const { ticker, direction, entry, exit, qty, setup, status, notes, multiplier, pnl: rawPnl } = req.body;
   if (!ticker || !direction || !entry || !qty) {
     return res.status(400).json({ error: 'ticker, direction, entry, qty required' });
   }
 
-  const mult = parseFloat(multiplier) || 1;
-  const pnl = (!exit || status === 'open') ? null
-    : direction === 'LONG' ? (parseFloat(exit) - parseFloat(entry)) * parseFloat(qty) * mult
-    : (parseFloat(entry) - parseFloat(exit)) * parseFloat(qty) * mult;
-
-  // Auto-detect status from P&L if exit is provided and status is open
-  let finalStatus = status || 'open';
-  if (exit && finalStatus === 'open') {
-    finalStatus = pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be';
-  }
+  // P&L is manually entered by user — no auto-calculation
+  const pnl = rawPnl != null && rawPnl !== '' ? parseFloat(rawPnl) : null;
+  const finalStatus = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status || 'open');
 
   const insertPayload = {
     user_id: req.user.id,
     ticker: ticker.toUpperCase(),
-    direction, entry: parseFloat(entry), exit: exit ? parseFloat(exit) : null, qty: parseFloat(qty), multiplier: mult, setup,
+    direction, entry: parseFloat(entry), exit: exit ? parseFloat(exit) : null, qty: parseFloat(qty), multiplier: parseFloat(multiplier) || 1, setup,
     status: finalStatus,
     notes, pnl: pnl != null ? Math.round(pnl * 100) / 100 : null
   };
@@ -85,12 +78,11 @@ router.patch('/:id', requireAuth, async (req, res) => {
     .from('trades').select('*').eq('id', req.params.id).eq('user_id', req.user.id).single();
   if (!existing) return res.status(404).json({ error: 'Trade not found' });
 
+  const { pnl: rawPnl } = req.body;
   const newExit = exit ?? existing.exit;
-  const newStatus = status ?? existing.status;
-  const mult = parseFloat(existing.multiplier) || 1;
-  const pnl = (!newExit || newStatus === 'open') ? null
-    : existing.direction === 'LONG' ? (parseFloat(newExit) - parseFloat(existing.entry)) * parseFloat(existing.qty) * mult
-    : (parseFloat(existing.entry) - parseFloat(newExit)) * parseFloat(existing.qty) * mult;
+  // P&L is manually entered — no auto-calculation
+  const pnl = rawPnl != null && rawPnl !== '' ? Math.round(parseFloat(rawPnl) * 100) / 100 : (rawPnl === '' ? null : existing.pnl);
+  const newStatus = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status ?? existing.status);
 
   const { data, error } = await supabase
     .from('trades')
