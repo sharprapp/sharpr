@@ -116,37 +116,37 @@ router.post('/webhook', async (req, res) => {
     case 'customer.subscription.created':
     case 'customer.subscription.updated': {
       const userId = data.metadata?.supabase_user_id;
-      console.log('[Stripe sub update] userId from metadata:', userId, '| status:', data.status);
-      if (!userId) {
-        // Fallback: find user by customer ID
-        const customerId = data.customer;
-        const { data: profile } = await supabase.from('profiles').select('id').eq('stripe_customer_id', customerId).single();
-        if (profile?.id) {
-          const isActive = ['active', 'trialing'].includes(data.status);
-          await supabase.from('profiles').update({
-            tier: isActive ? 'pro' : 'free', plan: isActive ? 'pro' : 'free',
-            plan_status: isActive ? 'active' : 'inactive',
-            stripe_subscription_id: data.id, subscription_status: data.status,
-            current_period_end: data.current_period_end ? new Date(data.current_period_end * 1000).toISOString() : null
-          }).eq('id', profile.id);
-          console.log('[Stripe] Updated via customer lookup:', profile.id);
-        }
-        break;
+      const subStatus = data.status;
+      console.log('[Stripe sub update] userId:', userId, '| status:', subStatus, '| customer:', data.customer);
+
+      // Only upgrade on active/trialing. Only downgrade on canceled/unpaid — NOT on past_due/incomplete
+      const isActive = ['active', 'trialing'].includes(subStatus);
+      const isCanceled = ['canceled', 'unpaid'].includes(subStatus);
+      // For intermediate statuses (past_due, incomplete), only update subscription_status — don't change plan
+      const planUpdate = isActive ? { tier: 'pro', plan: 'pro', plan_status: 'active' }
+        : isCanceled ? { tier: 'free', plan: 'free', plan_status: 'cancelled' }
+        : { plan_status: subStatus }; // past_due, incomplete — keep current plan, just log status
+
+      const updatePayload = {
+        ...planUpdate,
+        stripe_subscription_id: data.id,
+        subscription_status: subStatus,
+        current_period_end: data.current_period_end ? new Date(data.current_period_end * 1000).toISOString() : null,
+      };
+
+      // Find user by metadata or customer ID
+      let targetUserId = userId;
+      if (!targetUserId) {
+        const { data: profile } = await supabase.from('profiles').select('id').eq('stripe_customer_id', data.customer).single();
+        targetUserId = profile?.id;
       }
-      const isActive = ['active', 'trialing'].includes(data.status);
-      const { error: subErr } = await supabase
-        .from('profiles')
-        .update({
-          tier: isActive ? 'pro' : 'free',
-          plan: isActive ? 'pro' : 'free',
-          plan_status: isActive ? 'active' : 'inactive',
-          stripe_subscription_id: data.id,
-          subscription_status: data.status,
-          current_period_end: data.current_period_end ? new Date(data.current_period_end * 1000).toISOString() : null
-        })
-        .eq('id', userId);
-      if (subErr) console.error('[Stripe] Sub update error:', subErr);
-      else console.log('[Stripe] Updated user', userId, 'to', isActive ? 'pro' : 'free');
+      if (targetUserId) {
+        const { error: subErr } = await supabase.from('profiles').update(updatePayload).eq('id', targetUserId);
+        if (subErr) console.error('[Stripe] Sub update error:', subErr);
+        else console.log('[Stripe] Updated user', targetUserId, '| plan:', planUpdate.plan || '(unchanged)', '| sub_status:', subStatus);
+      } else {
+        console.warn('[Stripe] Could not find user for sub update | customer:', data.customer);
+      }
       break;
     }
     case 'customer.subscription.deleted': {
