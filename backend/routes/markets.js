@@ -10,6 +10,8 @@ const TTL = 60 * 1000; // 60 seconds
 function normalizeMarket(m) {
   let prices = [];
   try { prices = JSON.parse(m.outcomePrices); } catch {}
+  const slug = m.slug || null;
+  const url = slug ? `https://polymarket.com/event/${slug}` : null;
   return {
     id:        m.id,
     title:     m.question,
@@ -18,7 +20,8 @@ function normalizeMarket(m) {
     volume:    m.volume    ? parseFloat(m.volume)    : 0,
     liquidity: m.liquidity ? parseFloat(m.liquidity) : 0,
     endDate:   m.endDate   || null,
-    slug:      m.slug      || null,
+    slug,
+    url,
   };
 }
 

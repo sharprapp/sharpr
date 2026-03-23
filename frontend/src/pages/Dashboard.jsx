@@ -957,8 +957,8 @@ function PolymarketTab({ tier }) {
   ), [markets, filt, q]);
 
   const isPro = tier === 'pro' || tier === 'elite';
-  const maxFree = 10;
-  const visible = isPro ? filtered.slice(0, visibleCount) : filtered.slice(0, maxFree);
+  const maxFree = 1000;
+  const visible = isPro ? filtered.slice(0, visibleCount) : filtered.slice(0, Math.min(visibleCount, maxFree));
 
   const PM_SUBTABS = [
     { id: 'markets',   label: '📊 Markets' },
