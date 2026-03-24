@@ -46,7 +46,7 @@ router.get('/insights', requireAuth, async (req, res) => {
     if ((req.tier === 'pro' || req.tier === 'elite') && insights.length >= 2) {
       try {
         const anthropic = require('../lib/anthropic');
-        const prompt = `Based on these betting/trading patterns:\n${insights.map(i => `- ${i.message}`).join('\n')}\n\nGive 3 specific, actionable recommendations to improve profitability. Be direct and specific, not generic. Max 2 sentences each. Return as JSON array: ["rec1","rec2","rec3"]`;
+        const prompt = `Based on these betting/trading patterns:\n${insights.map(i => `- ${i.message}`).join('\n')}\n\nIdentify 3 specific data-driven observations about these patterns — what the data shows, areas of strength, and areas where the numbers suggest room for improvement. Be specific to the data, not generic. Max 2 sentences each. Return as JSON array: ["observation1","observation2","observation3"]`;
         const msg = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514', max_tokens: 300,
           messages: [{ role: 'user', content: prompt }],

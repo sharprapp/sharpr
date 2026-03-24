@@ -25,7 +25,14 @@ export default function SharpSignal({ userPlan }) {
     finally { setLoading(false); }
   }
 
-  const filtered = signals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? s.confidence === 'HIGH' : true);
+  // Quality filter: min $25K volume, min 7% edge, exclude junk categories
+  const JUNK_SIGNAL_RE = /weather|temperature|rain|snow|hurricane|entertainment|local.*election|mayor|city.*council/i;
+  const qualitySignals = signals.filter(s =>
+    (s.volume || 0) >= 25000 &&
+    Math.abs(s.edge || 0) >= 7 &&
+    !JUNK_SIGNAL_RE.test(s.event || '') && !JUNK_SIGNAL_RE.test(s.title || '')
+  );
+  const filtered = qualitySignals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? s.confidence === 'HIGH' : true);
   const fmtOdds = n => n == null ? '--' : n > 0 ? '+' + n : '' + n;
   const timeAgo = d => { if (!d) return ''; const s = Math.floor((Date.now() - d.getTime()) / 1000); return s < 60 ? s + 's ago' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; };
   const confStyle = c => c === 'HIGH' ? { bg: 'rgba(34,197,94,0.15)', color: '#4ade80', border: 'rgba(34,197,94,0.3)' } : c === 'MEDIUM' ? { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' } : { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', border: 'rgba(148,163,184,0.2)' };
@@ -93,7 +100,7 @@ export default function SharpSignal({ userPlan }) {
       {/* Signals */}
       {isPro && loading && <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1, 2, 3, 4].map(i => <div key={i} style={{ ...gc, height: 140, animation: 'pulse 1.5s infinite' }} />)}</div>}
       {isPro && !loading && error && <div style={{ ...gc, padding: 32, textAlign: 'center', color: '#ef4444', fontSize: 13 }}>{error} — <button onClick={fetchSignals} style={{ color: '#7aaff8', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>retry</button></div>}
-      {isPro && !loading && !error && filtered.length === 0 && <div style={{ ...gc, padding: 40, textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 12 }}>📡</div><div style={{ fontSize: 16, fontWeight: 700, color: '#f0f4ff', marginBottom: 8 }}>No signals right now</div><div style={{ fontSize: 13, color: '#4a5a7a' }}>Markets are fairly priced. Check back soon.</div></div>}
+      {isPro && !loading && !error && filtered.length === 0 && <div style={{ ...gc, padding: 40, textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 12 }}>📡</div><div style={{ fontSize: 16, fontWeight: 700, color: '#f0f4ff', marginBottom: 8 }}>No actionable signals right now</div><div style={{ fontSize: 13, color: '#4a5a7a' }}>Signals update every 15 minutes. Only showing divergences over 7% with $25K+ volume.</div></div>}
 
       {isPro && !loading && filtered.map(sig => {
         const cs = confStyle(sig.confidence);

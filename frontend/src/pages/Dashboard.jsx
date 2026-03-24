@@ -2016,9 +2016,8 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           const payload = line.slice(6).trim();
           if (payload === '[DONE]') {
             // Fallback: append disclaimer if response has a recommendation but is missing it
-            const recKeywords = /\bBET\b|\bVERDICT\b|\bLONG\b|\bSHORT\b|\bBUY\b|\bSELL\b|\bSTRONG PLAY\b|\bSKIP\b|\bAVOID\b|\bWAIT\b|\bCONFIDENCE\b/i;
-            if (recKeywords.test(accumulated) && !accumulated.includes('not liable')) {
-              accumulated += '\n\n⚠️ *This is for informational purposes only. Not financial or betting advice. Sharpr is not liable for any losses. Bet and trade responsibly.*';
+            if (accumulated && !accumulated.includes('data analysis only') && !accumulated.includes('not liable')) {
+              accumulated += '\n\n⚠️ *This is data analysis only, not financial or betting advice. Always do your own research.*';
               setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
             }
             setStreaming(false); setLoading(false); return;
@@ -2036,8 +2035,8 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
         }
       }
       // Fallback disclaimer for stream that ended without [DONE]
-      if (accumulated && /\bBET\b|\bVERDICT\b|\bLONG\b|\bSHORT\b|\bBUY\b|\bSELL\b|\bSTRONG PLAY\b|\bSKIP\b|\bAVOID\b|\bWAIT\b|\bCONFIDENCE\b/i.test(accumulated) && !accumulated.includes('not liable')) {
-        accumulated += '\n\n⚠️ *This is for informational purposes only. Not financial or betting advice. Sharpr is not liable for any losses. Bet and trade responsibly.*';
+      if (accumulated && !accumulated.includes('data analysis only') && !accumulated.includes('not liable')) {
+        accumulated += '\n\n⚠️ *This is data analysis only, not financial or betting advice. Always do your own research.*';
         setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
       }
       setStreaming(false);
@@ -2895,6 +2894,36 @@ function ArbitragePanel() {
   const [odds1, setOdds1] = useState('');
   const [odds2, setOdds2] = useState('');
   const [stake, setStake] = useState(1000);
+  const [games, setGames] = useState([]);
+  const [selectedGame, setSelectedGame] = useState('');
+  const [gamesLoading, setGamesLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/api/odds/games?sport=nba').then(r => {
+      const g = r.data?.games || [];
+      setGames(g);
+    }).catch(() => {}).finally(() => setGamesLoading(false));
+  }, []);
+
+  // Auto-populate odds when a game is selected
+  function selectGame(gameId) {
+    setSelectedGame(gameId);
+    if (!gameId) { setOdds1(''); setOdds2(''); return; }
+    const game = games.find(g => g.id === gameId);
+    if (!game?.bookmakers?.length) return;
+    // Find best home ML from all books, best away ML from all books
+    let bestHome = null, bestAway = null;
+    for (const bk of game.bookmakers) {
+      const ml = bk.markets?.find(m => m.key === 'h2h');
+      if (!ml?.outcomes) continue;
+      const home = ml.outcomes.find(o => o.name === game.homeTeam);
+      const away = ml.outcomes.find(o => o.name === game.awayTeam);
+      if (home && (!bestHome || home.price > bestHome)) bestHome = home.price;
+      if (away && (!bestAway || away.price > bestAway)) bestAway = away.price;
+    }
+    if (bestHome) setOdds1(String(bestHome));
+    if (bestAway) setOdds2(String(bestAway));
+  }
 
   function toDecimal(odds) {
     const n = parseFloat(odds);
@@ -2919,15 +2948,28 @@ function ArbitragePanel() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520 }}>
       <div style={card}>
         <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 4 }}>⚖️ Arbitrage Finder</div>
-        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Enter two odds for the same event from different books to check for an arb opportunity.</div>
+        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Select a game to auto-populate odds, or enter manually from different books.</div>
+
+        {/* Game selector */}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Select game (auto-populates best odds)</div>
+          <select value={selectedGame} onChange={e => selectGame(e.target.value)}
+            className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur}>
+            <option value="">— Manual entry —</option>
+            {gamesLoading ? <option disabled>Loading games...</option> : games.map(g => (
+              <option key={g.id} value={g.id}>{g.awayTeam} @ {g.homeTeam}</option>
+            ))}
+          </select>
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Book 1 odds (American)</div>
+            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>{selectedGame ? 'Best home ML' : 'Book 1 odds (American)'}</div>
             <input value={odds1} onChange={e => setOdds1(e.target.value)} placeholder="-110"
               className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Book 2 odds (American)</div>
+            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>{selectedGame ? 'Best away ML' : 'Book 2 odds (American)'}</div>
             <input value={odds2} onChange={e => setOdds2(e.target.value)} placeholder="+130"
               className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
@@ -3087,16 +3129,50 @@ function BettingAnalyticsPanel({ bets }) {
   const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
 
   if (settled.length === 0) {
+    const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
     return (
-      <div className="glass-card" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <svg width="64" height="44" viewBox="0 0 64 44" fill="none">
-          <rect x="0"  y="30" width="13" height="14" rx="2" fill="rgba(79,142,247,0.3)"/>
-          <rect x="17" y="20" width="13" height="24" rx="2" fill="rgba(79,142,247,0.3)"/>
-          <rect x="34" y="11" width="13" height="33" rx="2" fill="rgba(79,142,247,0.3)"/>
-          <rect x="51" y="4"  width="13" height="40" rx="2" fill="rgba(79,142,247,0.3)"/>
-        </svg>
-        <h3 style={{ fontSize: 16, fontWeight: 600, color: '#4a5a7a', margin: 0 }}>Betting analytics will appear here</h3>
-        <p style={{ fontSize: 13, color: '#2a3a5a', margin: 0 }}>Log and settle bets to unlock sport breakdown, win rate analysis, and P&L charts</p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Onboarding card */}
+        <div className="glass-card" style={{ padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
+          <div style={{ fontSize: 40 }}>📊</div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#F5F5FA', margin: 0 }}>Log your first bet to start tracking performance</h3>
+          <p style={{ fontSize: 13, color: '#4a5a7a', margin: 0, maxWidth: 400 }}>Use Quick Log below or upload a screenshot. Once you settle bets, you'll see win rate, P&L breakdowns, and performance trends here.</p>
+          <button onClick={() => { const el = document.querySelector('[data-bet-form]'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
+            style={{ background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 4 }}>
+            Log your first bet ↓
+          </button>
+        </div>
+        {/* Demo stat cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, opacity: 0.35, pointerEvents: 'none' }}>
+          <div style={card}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>Win Rate by Sport</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {['NBA', 'NFL', 'MLB'].map(s => (
+                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: '#64748b', width: 30 }}>{s}</span>
+                  <div style={{ flex: 1, height: 12, background: '#1e2a4a', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ width: '55%', height: '100%', background: 'rgba(34,197,94,0.4)', borderRadius: 4 }} />
+                  </div>
+                  <span style={{ fontSize: 11, color: '#64748b' }}>55%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={card}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>P&L by Sport ($)</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[['NBA', '+$120'], ['NFL', '-$45'], ['MLB', '+$80']].map(([s, v]) => (
+                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 11, color: '#64748b', width: 30 }}>{s}</span>
+                  <div style={{ flex: 1, height: 12, background: '#1e2a4a', borderRadius: 4, overflow: 'hidden' }}>
+                    <div style={{ width: v.startsWith('+') ? '60%' : '30%', height: '100%', background: v.startsWith('+') ? 'rgba(37,99,235,0.4)' : 'rgba(239,68,68,0.3)', borderRadius: 4 }} />
+                  </div>
+                  <span style={{ fontSize: 11, color: '#64748b' }}>{v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

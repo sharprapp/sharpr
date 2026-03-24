@@ -81,15 +81,21 @@ export default function HomeTab({ onSwitchTab }) {
   const scoreColor = sharprScore == null ? '#2a3a5a' : sharprScore >= 75 ? '#22c55e' : sharprScore >= 50 ? '#f59e0b' : '#ef4444';
   const scoreLabel = sharprScore == null ? '' : sharprScore >= 75 ? 'Sharp edge' : sharprScore >= 50 ? 'Building consistency' : 'Focus on discipline';
 
-  // Pick most interesting market (not 0% or 100%, closest to 50% with volume)
+  // Exclude junk markets (weather, obscure, low volume)
+  const JUNK_RE = /weather|temperature|rain|snow|hurricane|tornado|celsius|fahrenheit/i;
+  const qualityMarkets = useMemo(() =>
+    markets.filter(m => (m.volume || 0) >= 10000 && !JUNK_RE.test(m.title || ''))
+      .sort((a, b) => (b.volume || 0) - (a.volume || 0)),
+  [markets]);
+
+  // Pick top market: min $50K volume, Sports or Finance preferred
   const topMarket = useMemo(() => {
-    if (!markets.length) return null;
-    return [...markets].sort((a, b) => {
-      const aInterest = Math.abs(50 - (a.yes || 50)) + (a.volume > 100000 ? 0 : 20);
-      const bInterest = Math.abs(50 - (b.yes || 50)) + (b.volume > 100000 ? 0 : 20);
-      return aInterest - bInterest;
-    })[0];
-  }, [markets]);
+    const premium = qualityMarkets.filter(m => (m.volume || 0) >= 50000);
+    if (!premium.length) return null;
+    // Prefer Sports/Finance, then sort by volume
+    const preferred = premium.filter(m => /sports|finance|economics|crypto/i.test(m.cat || ''));
+    return (preferred.length ? preferred : premium)[0];
+  }, [qualityMarkets]);
 
   // Pick best value underdog (+150 to +600)
   const valuePick = useMemo(() => {
@@ -232,7 +238,7 @@ export default function HomeTab({ onSwitchTab }) {
                 </div>
                 <button onClick={() => goTab('Polymarket')} style={{ background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 8, padding: '5px 12px', fontSize: 11, color: '#7aaff8', cursor: 'pointer', fontWeight: 600 }}>View market →</button>
               </>
-            ) : <p style={{ fontSize: 12, color: '#2a3a5a' }}>No markets loaded</p>}
+            ) : <p style={{ fontSize: 12, color: '#2a3a5a' }}>No high-value markets right now — check back soon</p>}
           </div>
 
           {/* Trading Setup */}
@@ -288,7 +294,7 @@ export default function HomeTab({ onSwitchTab }) {
           </div>
         ) : (
           <div className="grid-responsive-4">
-            {markets.slice(0, 4).map((m, i) => {
+            {qualityMarkets.filter(m => (m.volume || 0) >= 50000).slice(0, 4).map((m, i) => {
               const pct = m.yes ?? 50;
               const fill = pct > 60 ? '#22c55e' : pct > 40 ? '#f59e0b' : '#ef4444';
               return (
