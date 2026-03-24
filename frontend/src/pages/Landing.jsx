@@ -156,7 +156,7 @@ export default function Landing() {
           </h1>
 
           <p className="text-lg sm:text-xl mb-10 max-w-2xl mx-auto" style={{ color: '#94A3B8', lineHeight: 1.7 }}>
-            Whether you trade, bet, or predict — your edge lives here
+            The all-in-one platform for serious traders, bettors, and predictors — your edge lives here
           </p>
 
           <div className="flex items-center justify-center gap-4 flex-wrap">
@@ -293,39 +293,6 @@ export default function Landing() {
                 <p className="text-sm leading-relaxed" style={{ color: '#94A3B8' }}>{f.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── SOCIAL PROOF ── */}
-      <section className="py-20 px-4 sm:px-6" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-12">
-            {[
-              ['—', 'sharp players'],
-              ['$—', 'tracked in P&L'],
-              ['—', 'signals found'],
-            ].map(([num, label]) => (
-              <div key={label} className="rounded-2xl p-6 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div className="text-3xl font-bold mb-1" style={{ color: '#4f8ef7' }}>{num}</div>
-                <div className="text-sm" style={{ color: '#64748b' }}>{label}</div>
-              </div>
-            ))}
-          </div>
-          {/* Testimonial placeholder */}
-          <div className="rounded-2xl p-6 sm:p-8 max-w-2xl mx-auto" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="text-sm leading-relaxed mb-4" style={{ color: '#94A3B8', fontStyle: 'italic' }}>
-              "I used to have my bets in one spreadsheet, trades in another, and Polymarket open in a separate tab.
-              Sharpr puts it all in one place with AI analysis that actually helps me find edges. The Sharp Signals
-              feature alone has paid for my Pro subscription multiple times over."
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ background: 'rgba(79,142,247,0.2)', color: '#7aaff8' }}>E</div>
-              <div>
-                <div className="text-sm font-semibold" style={{ color: '#F5F5FA' }}>Early user</div>
-                <div className="text-xs" style={{ color: '#4a5a7a' }}>Sports bettor & prediction markets</div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

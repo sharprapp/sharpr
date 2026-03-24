@@ -22,7 +22,7 @@ RESPOND IN THIS EXACT FORMAT (max 150 words total, no paragraphs):
 • 🗓️ [upcoming catalyst or deadline]
 
 Confidence: XX%
-VERDICT: BET YES 🎯 | BET NO 📉 | FADE 🔥 | PASS ⚠️
+VERDICT: BET YES 🎯 | BET NO 📉 | PASS ⚠️
 
 Use emojis throughout. Bullets only — no paragraphs. Be direct and actionable.`,
 

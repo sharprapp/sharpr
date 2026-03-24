@@ -82,7 +82,7 @@ router.get('/signals', async (req, res) => {
           bookHomeML: bestHomeML, bookAwayML: bestAwayML,
           edge: Math.round(edge * 10) / 10,
           direction: edge > 0 ? 'POLY_HIGHER' : 'BOOK_HIGHER',
-          signal: edge > 0 ? 'Polymarket overvaluing — fade or bet sportsbook' : 'Sportsbook overvaluing — consider Polymarket YES',
+          signal: edge > 0 ? 'Polymarket overvaluing — bet NO or take sportsbook side' : 'Sportsbook overvaluing — bet YES on Polymarket',
           confidence: Math.abs(edge) > 15 ? 'HIGH' : Math.abs(edge) > 8 ? 'MEDIUM' : 'LOW',
           volume: parseFloat(poly.volume || 0),
         });

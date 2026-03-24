@@ -1916,7 +1916,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           const payload = line.slice(6).trim();
           if (payload === '[DONE]') {
             // Fallback: append disclaimer if response has a recommendation but is missing it
-            const recKeywords = /\bBET\b|\bVERDICT\b|\bLONG\b|\bSHORT\b|\bBUY\b|\bSELL\b|\bSTRONG PLAY\b|\bSKIP\b|\bAVOID\b|\bWAIT\b|\bSHARP PLAY\b|\bCONFIDENCE\b|\bFADE\b/i;
+            const recKeywords = /\bBET\b|\bVERDICT\b|\bLONG\b|\bSHORT\b|\bBUY\b|\bSELL\b|\bSTRONG PLAY\b|\bSKIP\b|\bAVOID\b|\bWAIT\b|\bCONFIDENCE\b/i;
             if (recKeywords.test(accumulated) && !accumulated.includes('not liable')) {
               accumulated += '\n\n⚠️ *This is for informational purposes only. Not financial or betting advice. Sharpr is not liable for any losses. Bet and trade responsibly.*';
               setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
@@ -1936,7 +1936,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
         }
       }
       // Fallback disclaimer for stream that ended without [DONE]
-      if (accumulated && /\bBET\b|\bVERDICT\b|\bLONG\b|\bSHORT\b|\bBUY\b|\bSELL\b|\bSTRONG PLAY\b|\bSKIP\b|\bAVOID\b|\bWAIT\b|\bSHARP PLAY\b|\bCONFIDENCE\b|\bFADE\b/i.test(accumulated) && !accumulated.includes('not liable')) {
+      if (accumulated && /\bBET\b|\bVERDICT\b|\bLONG\b|\bSHORT\b|\bBUY\b|\bSELL\b|\bSTRONG PLAY\b|\bSKIP\b|\bAVOID\b|\bWAIT\b|\bCONFIDENCE\b/i.test(accumulated) && !accumulated.includes('not liable')) {
         accumulated += '\n\n⚠️ *This is for informational purposes only. Not financial or betting advice. Sharpr is not liable for any losses. Bet and trade responsibly.*';
         setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
       }
