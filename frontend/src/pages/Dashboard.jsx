@@ -493,14 +493,14 @@ function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport
   const go = (key) => setTab(key);
   const goEvent = (sport) => { setEventsSport(sport); setTab('Events'); };
   const sections = [
-    { label: 'Home', key: 'Home' },
-    { label: '\u26A1 Signals', key: 'Signals' },
-    { label: 'Trade', children: [{ l: 'Journal', k: 'dt-journal' }, { l: 'Pre-Market', k: 'dt-premarket' }] },
-    { label: 'Bet', children: [{ l: 'Journal', k: 'sb-journal' }, { l: 'Analytics', k: 'sb-analytics' }] },
-    { label: 'Predict', children: [{ l: 'Polymarket', k: 'Polymarket' }, { l: 'EV Calc', k: 'EV Calc' }] },
-    { label: 'AI Research', key: 'AI Research' },
-    { label: 'Events', children: [{ l: 'NBA', k: 'nba' }, { l: 'NFL', k: 'nfl' }, { l: 'MLB', k: 'mlb' }, { l: 'NHL', k: 'nhl' }, { l: 'NCAAB', k: 'ncaab' }, { l: 'NCAAF', k: 'ncaaf' }], isEvent: true },
-    { label: 'News', children: [{ l: 'Sports News', k: 'news-sports' }, { l: 'Trading News', k: 'news-trading' }] },
+    { label: '🏠 Home', key: 'Home' },
+    { label: '⚡ Signals', key: 'Signals' },
+    { label: '📈 Trade', children: [{ l: '📓 Journal', k: 'dt-journal' }, { l: '🌅 Pre-Market', k: 'dt-premarket' }] },
+    { label: '🎰 Bet', children: [{ l: '📓 Journal', k: 'sb-journal' }, { l: '📊 Analytics', k: 'sb-analytics' }] },
+    { label: '🔮 Predict', children: [{ l: '📊 Polymarket', k: 'Polymarket' }, { l: '🧮 EV Calc', k: 'EV Calc' }] },
+    { label: '🤖 AI Research', key: 'AI Research' },
+    { label: '🏆 Events', children: [{ l: 'NBA', k: 'nba' }, { l: 'NFL', k: 'nfl' }, { l: 'MLB', k: 'mlb' }, { l: 'NHL', k: 'nhl' }, { l: 'NCAAB', k: 'ncaab' }, { l: 'NCAAF', k: 'ncaaf' }], isEvent: true },
+    { label: '📰 News', children: [{ l: '🏅 Sports News', k: 'news-sports' }, { l: '💹 Trading News', k: 'news-trading' }] },
   ];
   const isActive = (key) => tab === key;
   return (
@@ -531,7 +531,7 @@ function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport
       <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
       <button onClick={() => { navigate('/settings'); setTab(tab); }}
         style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#6a7a9a' }}>
-        Settings
+        ⚙️ Settings
       </button>
       <div style={{ padding: '8px 12px', fontSize: 12, color: '#2a3a5a' }}>{username ? `@${username}` : firstName(user?.email)}</div>
     </div>
@@ -1199,7 +1199,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
 function DayTradingTab({ activeSubTab, tier }) {
   const subTab = activeSubTab || 'journal';
   const [trades, setTrades]   = useState([]);
-  const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', pnl:'', setup:'Breakout', status:'open', notes:'' });
+  const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', qty:'', pnl:'', setup:'Breakout', status:'open', notes:'', pre_market_notes:'', post_market_notes:'', confidence:'Medium', duration:'Day Trade' });
   const [loading, setLoading] = useState(false);
   const [view, setView]       = useState('calendar');
 
@@ -1229,9 +1229,9 @@ function DayTradingTab({ activeSubTab, tier }) {
     if (!form.ticker || !form.entry || !form.qty) return alert('Fill in ticker, entry, and qty.');
     setLoading(true);
     try {
-      const { data } = await api.post('/api/trades', {...form, entry:parseFloat(form.entry), exit:form.exit?parseFloat(form.exit):null, qty:parseFloat(form.qty)});
+      const { data } = await api.post('/api/trades', {...form, entry:parseFloat(form.entry), qty:parseFloat(form.qty), pnl:form.pnl?parseFloat(form.pnl):null});
       setTrades([data, ...trades]);
-      setForm({ ticker:'', direction:'LONG', entry:'', exit:'', qty:'', multiplier:'1', pnl:'', setup:'Breakout', status:'open', notes:'' });
+      setForm({ ticker:'', direction:'LONG', entry:'', qty:'', pnl:'', setup:'Breakout', status:'open', notes:'', pre_market_notes:'', post_market_notes:'', confidence:'Medium', duration:'Day Trade' });
     } catch(e) { alert(e.response?.data?.error || 'Failed to add trade'); }
     setLoading(false);
   }
@@ -1290,10 +1290,11 @@ function DayTradingTab({ activeSubTab, tier }) {
           <>
             <TradeForm form={form} setForm={setForm} loading={loading} onAdd={addTrade} tier={tier} />
             <DarkTable
-              headers={['Ticker','Dir','Setup','Entry','Exit','P&L','Status','']}
+              headers={['Ticker','Direction','Entry','P&L','Confidence','Duration','Status','']}
               empty="No trades yet. Log your first trade above.">
               {trades.map(t => {
                 const cls = t.status==='win'?'text-green-500':t.status==='loss'?'text-red-500':'text-slate-500';
+                const confColor = t.confidence === 'Max' ? '#ef4444' : t.confidence === 'High' ? '#22c55e' : t.confidence === 'Medium' ? '#7aaff8' : '#64748b';
                 return (
                   <tr key={t.id} className="transition-colors" style={{borderBottom: '1px solid #1e2a4a'}}
                     onMouseEnter={e => e.currentTarget.style.background='rgba(30,42,74,0.4)'}
@@ -1302,10 +1303,10 @@ function DayTradingTab({ activeSubTab, tier }) {
                     <td className="px-5 py-3.5">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${t.direction==='LONG'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{t.direction}</span>
                     </td>
-                    <td className="px-5 py-3.5 text-slate-400">{t.setup}</td>
                     <td className="px-5 py-3.5 text-slate-300">${parseFloat(t.entry).toFixed(2)}</td>
-                    <td className="px-5 py-3.5 text-slate-300">{t.exit?'$'+parseFloat(t.exit).toFixed(2):'—'}</td>
-                    <td className={`px-5 py-3.5 font-semibold ${cls}`}>{t.status==='open'?'Open':(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2)}</td>
+                    <td className={`px-5 py-3.5 font-semibold ${cls}`}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
+                    <td className="px-5 py-3.5"><span style={{ fontSize: 11, fontWeight: 600, color: confColor }}>{t.confidence || '—'}</span></td>
+                    <td className="px-5 py-3.5 text-slate-400" style={{ fontSize: 12 }}>{t.duration || '—'}</td>
                     <td className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>{t.status}</td>
                     <td className="px-5 py-3.5">
                       <button onClick={() => deleteTrade(t.id)} className="text-slate-600 hover:text-red-400 text-base transition-colors">✕</button>
@@ -1342,66 +1343,81 @@ function TradeForm({ form, setForm, loading, onAdd, tier }) {
         <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Quick log</div>
         {saved && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Trade logged ✓</span>}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-3">
-        {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['exit','Exit $ (opt)','number'],['pnl','P&L $','number']].map(([k,pl,t]) => (
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+        {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['pnl','P&L $','number']].map(([k,pl,t]) => (
           <div key={k}>
             <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>{pl}</label>
-            <input type={t} placeholder={pl.replace(' (opt)','')} value={form[k]} onChange={e => f(k, e.target.value)}
+            <input type={t} placeholder={pl} value={form[k]} onChange={e => f(k, e.target.value)}
               onKeyDown={onEnter}
               className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
               style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
         ))}
-        <div>
-          <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Multiplier</label>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <input type="number" placeholder="1" value={form.multiplier} onChange={e => f('multiplier', e.target.value)}
-              onKeyDown={onEnter}
-              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
-              style={{...inpStyle, flex: 1}} onFocus={inpFocus} onBlur={inpBlur} />
-            <select onChange={e => { const v = e.target.value; if (v) { const [tk, m] = v.split(':'); f('multiplier', m); if (!form.ticker) f('ticker', tk); } }}
-              className={`rounded-xl px-2 py-2.5 text-xs ${inp}`} style={{...inpStyle, width: 'auto', minWidth: 50}}
-              onFocus={inpFocus} onBlur={inpBlur} value="">
-              <option value="">▾</option>
-              <option value="MNQ:2">MNQ ×2</option>
-              <option value="NQ:20">NQ ×20</option>
-              <option value="MES:5">MES ×5</option>
-              <option value="ES:50">ES ×50</option>
-              <option value="YM:5">YM ×5</option>
-              <option value="MYM:0.5">MYM ×0.5</option>
-              <option value="CL:1000">CL ×1000</option>
-              <option value="GC:100">GC ×100</option>
-              <option value=":1">Stock ×1</option>
-            </select>
-          </div>
-        </div>
       </div>
       <button onClick={() => setShowMore(s => !s)} style={{ fontSize: 11, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', marginBottom: showMore ? 12 : 0, padding: 0 }}>
         {showMore ? 'Less details ▴' : 'More details ▾'}
       </button>
       {showMore && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Direction</label>
-            <select value={form.direction} onChange={e => f('direction', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-              <option>LONG</option><option>SHORT</option>
-            </select>
+        <div className="flex flex-col gap-3 mb-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Direction</label>
+              <select value={form.direction} onChange={e => f('direction', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                <option>LONG</option><option>SHORT</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Setup</label>
+              <select value={form.setup} onChange={e => f('setup', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                {['Breakout','Pullback','VWAP','Gap & Go','Reversal','Momentum','Other'].map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Confidence</label>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {['Low','Medium','High','Max'].map(c => (
+                  <button key={c} type="button" onClick={() => f('confidence', c)}
+                    style={{ flex: 1, padding: '7px 0', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease',
+                      background: form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.2)' : c === 'High' ? 'rgba(34,197,94,0.2)' : c === 'Medium' ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.06)') : 'rgba(255,255,255,0.04)',
+                      border: `1px solid ${form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.4)' : c === 'High' ? 'rgba(34,197,94,0.4)' : c === 'Medium' ? 'rgba(79,142,247,0.4)' : 'rgba(255,255,255,0.15)') : 'rgba(255,255,255,0.08)'}`,
+                      color: form.confidence === c ? (c === 'Max' ? '#ef4444' : c === 'High' ? '#22c55e' : c === 'Medium' ? '#7aaff8' : '#94a3b8') : '#4a5a7a',
+                    }}>{c}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Duration</label>
+              <select value={form.duration} onChange={e => f('duration', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                <option value="Scalp">Scalp (&lt; 5min)</option>
+                <option value="Day Trade">Day Trade</option>
+                <option value="Swing">Swing</option>
+                <option value="Position">Position</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Setup</label>
-            <select value={form.setup} onChange={e => f('setup', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-              {['Breakout','Pullback','VWAP','Gap & Go','Reversal','Momentum','Other'].map(s => <option key={s}>{s}</option>)}
-            </select>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Status</label>
+              <select value={form.status} onChange={e => f('status', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+                <option value="open">Open</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
+              <input placeholder="Quick note" value={form.notes} onChange={e => f('notes', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+            </div>
           </div>
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Status</label>
-            <select value={form.status} onChange={e => f('status', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-              <option value="open">Open</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
-            <input placeholder="Quick note" value={form.notes} onChange={e => f('notes', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Pre-Market Notes</label>
+              <textarea placeholder="Pre-market thesis, key levels, plan..." value={form.pre_market_notes} onChange={e => f('pre_market_notes', e.target.value)}
+                rows={2} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={{...inpStyle, resize: 'vertical'}} onFocus={inpFocus} onBlur={inpBlur} />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Post-Market Notes</label>
+              <textarea placeholder="What happened, what you learned..." value={form.post_market_notes} onChange={e => f('post_market_notes', e.target.value)}
+                rows={2} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={{...inpStyle, resize: 'vertical'}} onFocus={inpFocus} onBlur={inpBlur} />
+            </div>
           </div>
         </div>
       )}
@@ -1420,26 +1436,33 @@ function TradeForm({ form, setForm, loading, onAdd, tier }) {
               const file = e.target.files?.[0]; if (!file) return;
               setImgParsing(true);
               try {
-                const reader = new FileReader();
-                reader.onload = async () => {
-                  const base64 = reader.result.split(',')[1];
-                  const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'trade' });
-                  if (data.parsed) {
-                    const p = data.parsed;
-                    setForm(prev => ({
-                      ...prev,
-                      ticker: p.ticker || prev.ticker,
-                      direction: p.direction?.toUpperCase() === 'SHORT' ? 'SHORT' : p.direction?.toUpperCase() === 'LONG' ? 'LONG' : prev.direction,
-                      entry: p.entry || p.price || prev.entry,
-                      exit: p.exit || prev.exit,
-                      qty: p.qty || p.quantity || prev.qty,
-                      notes: p.notes || prev.notes,
-                    }));
-                  }
-                };
-                reader.readAsDataURL(file);
-              } catch { alert('Could not read screenshot'); }
-              finally { setTimeout(() => setImgParsing(false), 1000); }
+                const base64 = await new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(reader.result.split(',')[1]);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(file);
+                });
+                console.log('[TradeUpload] base64 length:', base64.length);
+                const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'trade' });
+                console.log('[TradeUpload] API response:', data);
+                if (data.parsed) {
+                  const p = data.parsed;
+                  setForm(prev => ({
+                    ...prev,
+                    ticker: p.ticker || prev.ticker,
+                    direction: p.direction?.toUpperCase() === 'SHORT' ? 'SHORT' : p.direction?.toUpperCase() === 'LONG' ? 'LONG' : prev.direction,
+                    entry: p.entry || p.price || prev.entry,
+                    qty: p.qty || p.quantity || prev.qty,
+                    pnl: p.pnl || p.profit || prev.pnl,
+                    notes: p.notes || prev.notes,
+                  }));
+                }
+              } catch (err) {
+                console.error('[TradeUpload] Error:', err);
+                alert('Could not read screenshot. Try a clearer image.');
+              } finally {
+                setImgParsing(false);
+              }
               e.target.value = '';
             }} />
           </label>
@@ -1629,11 +1652,16 @@ function SportsBettingTab({ tier, activeSubTab }) {
               </div>
             )}
             {/* Payout preview */}
-            {form.odds && form.stake && (
-              <div style={{ fontSize: 13, color: '#22c55e', marginBottom: 8, fontWeight: 600 }}>
-                Potential payout: ${(() => { const o=parseFloat(form.odds),s=parseFloat(form.stake); if(!o||!s) return '0.00'; return (s+(o>0?s*(o/100):s*(100/Math.abs(o)))).toFixed(2); })()}
-              </div>
-            )}
+            {form.odds && form.stake && (() => {
+              const o = parseFloat(form.odds), s = parseFloat(form.stake);
+              if (!o || !s) return null;
+              const profit = o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100);
+              return (
+                <div style={{ fontSize: 13, color: '#22c55e', marginBottom: 8, fontWeight: 600 }}>
+                  Potential payout: ${(s + profit).toFixed(2)} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 400 }}>(profit: ${profit.toFixed(2)})</span>
+                </div>
+              );
+            })()}
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button onClick={addBet} disabled={loading}
                 className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
@@ -1649,15 +1677,35 @@ function SportsBettingTab({ tier, activeSubTab }) {
                     const file = e.target.files?.[0]; if (!file) return;
                     setImgParsing(true);
                     try {
-                      const reader = new FileReader();
-                      reader.onload = async () => {
-                        const base64 = reader.result.split(',')[1];
-                        const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'bet' });
-                        if (data.parsed) setForm(prev => ({ ...prev, ...data.parsed, sportsbook: data.parsed.sportsbook || prev.sportsbook }));
-                      };
-                      reader.readAsDataURL(file);
-                    } catch { alert('Could not read screenshot'); }
-                    finally { setTimeout(() => setImgParsing(false), 1000); }
+                      const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                      });
+                      console.log('[BetUpload] base64 length:', base64.length);
+                      const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'bet' });
+                      console.log('[BetUpload] API response:', data);
+                      if (data.parsed) {
+                        const p = data.parsed;
+                        console.log('[BetUpload] Parsed fields:', p);
+                        setForm(prev => ({
+                          ...prev,
+                          match: p.match || prev.match,
+                          odds: p.odds || prev.odds,
+                          stake: p.stake ? String(p.stake).replace(/[$,]/g, '') : prev.stake,
+                          type: p.type || prev.type,
+                          sport: p.sport || prev.sport,
+                          sportsbook: p.sportsbook || prev.sportsbook,
+                          notes: p.notes || prev.notes,
+                        }));
+                      }
+                    } catch (err) {
+                      console.error('[BetUpload] Error:', err);
+                      alert('Could not read screenshot. Try a clearer image.');
+                    } finally {
+                      setImgParsing(false);
+                    }
                     e.target.value = '';
                   }} />
                 </label>

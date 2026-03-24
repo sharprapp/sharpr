@@ -255,7 +255,7 @@ router.post('/parse-image', requireAuth, async (req, res) => {
   }
 
   const prompt = type === 'trade'
-    ? 'Extract from this trade screenshot: ticker/symbol, action (buy/sell/long/short), quantity, entry price, exit price if shown, total value, date. Return JSON only, no markdown: {"ticker":"","direction":"","qty":"","entry":"","exit":"","notes":""}'
+    ? 'Extract from this trade screenshot: ticker/symbol, action (buy/sell/long/short), quantity, entry price, P&L/profit if shown, date. Return JSON only, no markdown: {"ticker":"","direction":"","qty":"","entry":"","pnl":"","notes":""}'
     : 'Extract from this bet screenshot: sportsbook name, teams/event, bet type (moneyline/spread/over-under/parlay/prop), odds in American format, stake amount. Return JSON only, no markdown: {"sportsbook":"","match":"","type":"","odds":"","stake":"","notes":""}';
 
   try {
