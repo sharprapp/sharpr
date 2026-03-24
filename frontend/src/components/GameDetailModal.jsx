@@ -24,18 +24,8 @@ function genStats(name) {
   return { record: w + '-' + l, last10, ats: (22 + seed % 20) + '-' + (30 + seed % 10), ou: (20 + seed % 20) + '-' + (30 + seed % 10), ppg: (108 + seed % 20).toFixed(1), opp: (106 + (seed + 3) % 20).toFixed(1) };
 }
 
-const INJURIES = {
-  'Los Angeles Lakers': [{ player: 'Anthony Davis', pos: 'C/PF', inj: 'Foot soreness', status: 'Questionable' }],
-  'Boston Celtics': [{ player: 'Kristaps Porzingis', pos: 'C', inj: 'Illness', status: 'Out' }],
-  'Golden State Warriors': [{ player: 'Stephen Curry', pos: 'PG', inj: 'Ankle', status: 'Probable' }],
-  'Milwaukee Bucks': [{ player: 'Giannis Antetokounmpo', pos: 'PF', inj: 'Knee', status: 'Questionable' }],
-  'Dallas Cowboys': [{ player: 'Dak Prescott', pos: 'QB', inj: 'Shoulder', status: 'Questionable' }],
-  'Kansas City Chiefs': [{ player: 'Travis Kelce', pos: 'TE', inj: 'Knee', status: 'Probable' }],
-  'San Francisco 49ers': [{ player: 'Christian McCaffrey', pos: 'RB', inj: 'Hamstring', status: 'Doubtful' }],
-  'Philadelphia 76ers': [{ player: 'Joel Embiid', pos: 'C', inj: 'Knee management', status: 'Out' }],
-  'Denver Nuggets': [{ player: 'Jamal Murray', pos: 'PG', inj: 'Hamstring', status: 'Questionable' }],
-  'New York Yankees': [{ player: 'Gerrit Cole', pos: 'SP', inj: 'Elbow', status: 'Out' }],
-};
+// Injuries removed — was hardcoded mock data that never updated
+const INJURIES = {};
 
 const stColor = s => s === 'Out' ? { bg: 'rgba(239,68,68,0.15)', c: '#ef4444' } : s === 'Questionable' ? { bg: 'rgba(245,158,11,0.15)', c: '#f59e0b' } : s === 'Probable' ? { bg: 'rgba(34,197,94,0.15)', c: '#22c55e' } : s === 'Doubtful' ? { bg: 'rgba(251,146,60,0.15)', c: '#fb923c' } : { bg: 'rgba(148,163,184,0.15)', c: '#94a3b8' };
 
@@ -252,6 +242,14 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
             </div>
 
             {/* Injuries */}
+            {injuries.length === 0 && (
+              <div>
+                <div style={st}>Injuries</div>
+                <div style={{ ...gc, padding: 16, textAlign: 'center' }}>
+                  <div style={{ fontSize: 12, color: '#4a5a7a' }}>Injury data unavailable for this matchup</div>
+                </div>
+              </div>
+            )}
             {injuries.length > 0 && (
               <div>
                 <div style={st}>Key Injuries</div>

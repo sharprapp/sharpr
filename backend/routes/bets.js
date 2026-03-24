@@ -30,6 +30,7 @@ router.post('/', requireAuth, async (req, res) => {
 
   const { sport, type, match, odds, stake, result, notes } = req.body;
   if (!match || !odds || !stake) return res.status(400).json({ error: 'match, odds, stake required' });
+  if (isNaN(parseFloat(stake))) return res.status(400).json({ error: 'stake must be a valid number' });
 
   const to_win = parseFloat(americanPayout(odds, stake).toFixed(2));
   const pnl = result === 'win' ? to_win : result === 'loss' ? -parseFloat(stake) : result === 'push' ? 0 : null;

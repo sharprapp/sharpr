@@ -115,22 +115,8 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
       ) : aiResult ? (
         <div style={{ fontSize: 12, color: '#6a7a9a', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
           {aiResult.split('\n').map((line, i) => {
-            const isVerdict = line.startsWith('VERDICT:');
-            const isConf = line.startsWith('Confidence:');
-            if (isVerdict) {
-              const isYes = /YES|LONG|BET YES/i.test(line);
-              return (
-                <div key={i} style={{
-                  background: isYes ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
-                  border: `1px solid ${isYes ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
-                  borderRadius: 8, padding: '8px 12px', marginTop: 8,
-                }}>
-                  <div style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 4 }}>Sharpr Verdict</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: isYes ? '#4ade80' : '#f87171' }}>{line.replace('VERDICT:', '').trim()}</div>
-                </div>
-              );
-            }
-            return <div key={i} style={{ color: isConf ? '#60a5fa' : '#6a7a9a', fontWeight: isConf ? 700 : 400 }}>{line || '\u00A0'}</div>;
+            const isKeyFactors = /^key factors/i.test(line.trim());
+            return <div key={i} style={{ color: isKeyFactors ? '#60a5fa' : '#6a7a9a', fontWeight: isKeyFactors ? 700 : 400 }}>{line || '\u00A0'}</div>;
           })}
         </div>
       ) : null}
@@ -201,11 +187,11 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
             {/* Buy YES / Buy NO buttons */}
             <div style={{ display: 'flex', gap: 8 }}>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy YES @ {pct}c
               </a>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy NO @ {m.no ?? 100 - pct}c
               </a>
@@ -299,11 +285,11 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: 8 }}>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy YES @ {pct}c
               </a>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy NO @ {m.no ?? 100 - pct}c
               </a>

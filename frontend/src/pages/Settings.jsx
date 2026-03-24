@@ -73,12 +73,14 @@ export default function Settings() {
   }
 
   function savePrefs() {
-    localStorage.setItem('pref_name',    displayName);
-    localStorage.setItem('pref_sport',   defaultSport);
-    localStorage.setItem('pref_odds',    oddsFormat);
-    localStorage.setItem('pref_tz',      timezone);
-    localStorage.setItem('pref_public',  String(journalPublic));
-    localStorage.setItem('pref_alerts',  String(alertsOn));
+    try {
+      localStorage.setItem('pref_name',    displayName);
+      localStorage.setItem('pref_sport',   defaultSport);
+      localStorage.setItem('pref_odds',    oddsFormat);
+      localStorage.setItem('pref_tz',      timezone);
+      localStorage.setItem('pref_public',  String(journalPublic));
+      localStorage.setItem('pref_alerts',  String(alertsOn));
+    } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }

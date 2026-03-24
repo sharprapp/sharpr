@@ -97,9 +97,9 @@ export default function HomeTab({ onSwitchTab }) {
     return (preferred.length ? preferred : premium)[0];
   }, [qualityMarkets]);
 
-  // Pick best value underdog (+150 to +600)
+  // Pick best value underdog (+150 to +600, fallback to any underdog)
   const valuePick = useMemo(() => {
-    const underdogs = games.filter(g => {
+    let underdogs = games.filter(g => {
       const ml = Math.max(g.awayML || 0, g.homeML || 0);
       return ml >= 150 && ml <= 600;
     }).sort((a, b) => {
@@ -107,6 +107,10 @@ export default function HomeTab({ onSwitchTab }) {
       const bML = Math.max(b.awayML || 0, b.homeML || 0);
       return bML - aML;
     });
+    // Fallback: any game with a positive ML
+    if (!underdogs.length) {
+      underdogs = games.filter(g => Math.max(g.awayML || 0, g.homeML || 0) > 100).sort((a, b) => Math.max(b.awayML || 0, b.homeML || 0) - Math.max(a.awayML || 0, a.homeML || 0));
+    }
     if (!underdogs.length) return null;
     const g = underdogs[0];
     const isAway = (g.awayML || 0) > (g.homeML || 0);

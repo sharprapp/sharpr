@@ -124,7 +124,7 @@ Never say "As an AI" or add generic caveats before answers.`;
 
     // Only enable web search for queries that clearly need current data
     // This avoids the 5-10s delay from search tool on every message
-    const needsSearch = use_web_search && !hasHistory && /today|tonight|current|latest|right now|this week|live|score|odds|price/i.test(query);
+    const needsSearch = use_web_search && !hasHistory && /today|tonight|tonite|current|latest|right now|this week|live|score|odds|price|now|recent|upcoming|next game|standings/i.test(query);
 
     const messageParams = {
       model: 'claude-sonnet-4-20250514',
@@ -222,7 +222,7 @@ Never say "As an AI" or add generic caveats before answers.`;
     };
 
     // Only enable web search when query needs current data
-    const needsSearch = use_web_search && !hasHistory && /today|tonight|current|latest|right now|this week|live|score|odds|price/i.test(query);
+    const needsSearch = use_web_search && !hasHistory && /today|tonight|tonite|current|latest|right now|this week|live|score|odds|price|now|recent|upcoming|next game|standings/i.test(query);
     if (needsSearch) {
       messageParams.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
     }

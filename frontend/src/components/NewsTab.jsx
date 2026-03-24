@@ -53,6 +53,7 @@ export default function NewsTab({ initialType }) {
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [econEvents, setEconEvents] = useState([]);
+  const [newsError, setNewsError] = useState(null);
 
   useEffect(() => {
     setSubCat(SUB_CATS[newsType]?.[0]?.key || '');
@@ -74,7 +75,8 @@ export default function NewsTab({ initialType }) {
 
     api.get(endpoint).then(r => {
       setArticles(r.data.items || []);
-    }).catch(() => setArticles([])).finally(() => setLoading(false));
+      setNewsError(null);
+    }).catch(() => { setArticles([]); setNewsError('News unavailable right now — try again later'); }).finally(() => setLoading(false));
   }, [newsType, subCat]);
 
   const [allEconEvents, setAllEconEvents] = useState([]);
@@ -215,9 +217,10 @@ export default function NewsTab({ initialType }) {
       {/* Articles */}
       {!loading && articles.length === 0 && (
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 40, textAlign: 'center' }}>
-          <div style={{ fontSize: 28, marginBottom: 8 }}>📰</div>
-          <div style={{ fontSize: 14, fontWeight: 600, color: '#6a7a9a' }}>No {newsType === 'sports' ? subCat : newsType} headlines right now</div>
-          <div style={{ fontSize: 12, color: '#2a3a5a', marginTop: 4 }}>Check back soon for the latest updates</div>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>{newsError ? '⚠️' : '📰'}</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: newsError ? '#ef4444' : '#6a7a9a' }}>{newsError || `No ${newsType === 'sports' ? subCat : newsType} headlines right now`}</div>
+          <div style={{ fontSize: 12, color: '#2a3a5a', marginTop: 4 }}>{newsError ? '' : 'Check back soon for the latest updates'}</div>
+          {newsError && <button onClick={() => { setNewsError(null); setLoading(true); api.get(newsType === 'sports' ? `/api/news/sports?sport=${subCat}` : `/api/news/trading?category=${subCat}`).then(r => setArticles(r.data.items || [])).catch(() => setNewsError('Still unavailable')).finally(() => setLoading(false)); }} style={{ marginTop: 12, padding: '6px 16px', borderRadius: 8, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Retry</button>}
         </div>
       )}
 

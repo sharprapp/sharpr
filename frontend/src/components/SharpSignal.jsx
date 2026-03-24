@@ -171,6 +171,7 @@ function HedgeModal({ signal, onClose }) {
   const [result, setResult] = useState(null);
 
   useEffect(() => {
+    if (signal.bookHomeML == null || signal.polyYesProb == null) return;
     fetch(`${import.meta.env.VITE_API_URL}/api/sharpsignal/hedge-calc?polyProb=${signal.polyYesProb}&bookOdds=${signal.bookHomeML}&stake=${stake}`)
       .then(r => r.json()).then(setResult).catch(() => {});
   }, [stake]);

@@ -11,6 +11,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const weakPw = password.length >= 8 && (!/\d/.test(password) || !/[^a-zA-Z0-9]/.test(password));
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -55,6 +56,7 @@ export default function Register() {
               onBlur={e => e.target.style.borderColor = '#1e2a4a'}
               required
             />
+            {weakPw && <div className="text-xs" style={{ color: '#f59e0b' }}>Tip: add a number and special character for a stronger password</div>}
             {error && <div className="text-sm text-red-400">{error}</div>}
             <button
               type="submit" disabled={loading}

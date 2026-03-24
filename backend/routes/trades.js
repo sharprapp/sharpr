@@ -83,9 +83,13 @@ router.patch('/:id', requireAuth, async (req, res) => {
 
   const { pnl: rawPnl } = req.body;
   const newExit = exit ?? existing.exit;
-  // P&L is manually entered — no auto-calculation
+  // P&L validation — reject NaN
+  if (rawPnl != null && rawPnl !== '' && isNaN(parseFloat(rawPnl))) {
+    return res.status(400).json({ error: 'P&L must be a valid number' });
+  }
   const pnl = rawPnl != null && rawPnl !== '' ? Math.round(parseFloat(rawPnl) * 100) / 100 : (rawPnl === '' ? null : existing.pnl);
-  const newStatus = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status ?? existing.status);
+  // Manual status takes priority; only auto-detect from P&L if status not explicitly set
+  const newStatus = (status && status !== existing.status) ? status : pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status ?? existing.status);
 
   const { data, error } = await supabase
     .from('trades')

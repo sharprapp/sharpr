@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
@@ -9,19 +9,21 @@ export default function Success() {
   const navigate = useNavigate();
   const { refreshProfile } = useAuth();
   const [status, setStatus] = useState('verifying');
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     (async () => {
       try {
-        // Wait for Stripe webhook to process
         await new Promise(r => setTimeout(r, 3000));
+        if (!mountedRef.current) return;
 
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { navigate('/'); return; }
+        if (!session) { if (mountedRef.current) navigate('/'); return; }
 
         let attempts = 0;
         const poll = async () => {
-          // Query profiles table directly for plan/tier
+          if (!mountedRef.current) return;
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('tier, plan')
@@ -33,15 +35,12 @@ export default function Success() {
           const isPro = profile?.plan === 'pro' || profile?.tier === 'pro';
 
           if (isPro || attempts > 8) {
-            // Force refresh JWT session so new requests use updated token
             await supabase.auth.refreshSession();
-            // Force refresh the global auth state
             await refreshProfile();
             console.log('[Success] Plan confirmed, redirecting in 1s');
             posthog.capture('pro_upgraded', { plan: 'pro' });
-            // Small delay to ensure state propagation
             await new Promise(r => setTimeout(r, 1000));
-            setStatus('success');
+            if (mountedRef.current) setStatus('success');
           } else {
             attempts++;
             setTimeout(poll, 2000);
@@ -50,9 +49,10 @@ export default function Success() {
         poll();
       } catch (e) {
         console.error('[Success] Error:', e);
-        setStatus('success');
+        if (mountedRef.current) setStatus('success');
       }
     })();
+    return () => { mountedRef.current = false; };
   }, []);
 
   return (

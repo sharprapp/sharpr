@@ -30,8 +30,11 @@ export function AuthProvider({ children }) {
         setUsername(data.profile?.username || null);
         setUsernameSet(data.profile?.username_set !== false);
         hasFetchedRef.current = true;
+        try { localStorage.setItem('sharpr_last_tier', result); } catch {}
       }
-    } catch {}
+    } catch (e) {
+      console.error('[useAuth] backend /me failed:', e.message);
+    }
 
     // Fallback: Supabase direct
     if (!result) {
@@ -50,15 +53,24 @@ export function AuthProvider({ children }) {
             setUsername(profile?.username || null);
             setUsernameSet(profile?.username_set !== false);
             hasFetchedRef.current = true;
+            try { localStorage.setItem('sharpr_last_tier', result); } catch {}
           }
         }
-      } catch {}
+      } catch (e) {
+        console.error('[useAuth] Supabase fallback failed:', e.message);
+      }
     }
 
     // Only set free if we've never successfully fetched before
-    // This prevents overwriting pro with free on transient failures
+    // Preserve last known tier from localStorage instead of defaulting to free
     if (!result && !hasFetchedRef.current) {
-      setTier('free');
+      const cached = localStorage.getItem('sharpr_last_tier');
+      if (cached && cached !== 'free') {
+        console.warn('[useAuth] Both sources failed — using cached tier:', cached);
+        setTier(cached);
+      } else {
+        setTier('free');
+      }
     }
 
     fetchingRef.current = false;

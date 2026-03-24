@@ -60,6 +60,7 @@ export default function SportsOdds({ initialSport, tier }) {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [requestsRemaining, setRequestsRemaining] = useState(null);
   const [sortByEdge, setSortByEdge] = useState(false);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   useEffect(() => {
     if (initialSport) {
@@ -68,7 +69,7 @@ export default function SportsOdds({ initialSport, tier }) {
     }
   }, [initialSport]);
 
-  useEffect(() => { fetchGames(); }, [sport]);
+  useEffect(() => { if (!quotaExceeded) fetchGames(); }, [sport]);
 
   useEffect(() => {
     const interval = setInterval(() => fetchGames(), 60000);
@@ -91,6 +92,7 @@ export default function SportsOdds({ initialSport, tier }) {
       const { data } = await api.get(`/api/odds/games?sport=${oddsKey}`);
       if (data.quotaExceeded) {
         setError('Live odds temporarily unavailable — quota refreshes daily');
+        setQuotaExceeded(true);
         setGames([]);
       } else if (data.error && !data.games?.length) {
         setError(data.message || 'Could not load odds right now');
