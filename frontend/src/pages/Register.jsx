@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
+import posthog from 'posthog-js';
 
 export default function Register() {
   const { signUp } = useAuth();
@@ -17,6 +18,7 @@ export default function Register() {
     setError(''); setLoading(true);
     try {
       await signUp(email, password);
+      posthog.capture('account_created', { tier: 'free' });
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Registration failed');

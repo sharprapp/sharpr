@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
 import api from '../lib/api';
 import { useAIStream } from '../lib/useAIStream';
+import posthog from 'posthog-js';
 
 const CAT_COLORS = {
   Politics: { background: 'rgba(167,139,250,0.15)', color: '#c084fc' },
@@ -76,6 +77,10 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
   function goDeepResearch() {
     window.dispatchEvent(new CustomEvent('ai-prefill', { detail: { topic: m.title, type: 'polymarket' } }));
     onClose();
+  }
+
+  function trackReferral() {
+    posthog.capture('polymarket_referral', { market_id: m.id, title: m.title });
   }
 
   // --- AI Analysis block (shared between desktop and mobile) ---
@@ -196,11 +201,11 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
             {/* Buy YES / Buy NO buttons */}
             <div style={{ display: 'flex', gap: 8 }}>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer"
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy YES @ {pct}c
               </a>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer"
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy NO @ {m.no ?? 100 - pct}c
               </a>
@@ -294,11 +299,11 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: 8 }}>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer"
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#4ade80', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy YES @ {pct}c
               </a>
-              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer"
+              <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : 'https://polymarket.com')} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
                 style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171', fontSize: 13, fontWeight: 600, textDecoration: 'none', cursor: 'pointer' }}>
                 Buy NO @ {m.no ?? 100 - pct}c
               </a>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
+import posthog from 'posthog-js';
 
 export default function Success() {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ export default function Success() {
             // Force refresh the global auth state
             await refreshProfile();
             console.log('[Success] Plan confirmed, redirecting in 1s');
+            posthog.capture('pro_upgraded', { plan: 'pro' });
             // Small delay to ensure state propagation
             await new Promise(r => setTimeout(r, 1000));
             setStatus('success');

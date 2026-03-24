@@ -6,6 +6,7 @@ import Logo from '../components/Logo';
 import TradingViewTicker from '../components/TradingViewTicker';
 import api from '../lib/api';
 import { useAIStream } from '../lib/useAIStream';
+import posthog from 'posthog-js';
 import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
 import SportsOdds from '../components/SportsOdds';
@@ -151,9 +152,31 @@ export default function Dashboard() {
     return () => window.removeEventListener('events-sport', handler);
   }, []);
 
+  // PostHog: identify user
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { session } } = await (await import('../lib/supabase')).supabase.auth.getSession();
+        if (session?.user) {
+          posthog.identify(session.user.id, {
+            email: session.user.email,
+            tier: tier,
+            created_at: session.user.created_at,
+          });
+        }
+      } catch {}
+    })();
+  }, [tier]);
+
+  // PostHog: track upgrade modal open
+  useEffect(() => {
+    if (showUpgrade) posthog.capture('upgrade_clicked', { source: 'dashboard' });
+  }, [showUpgrade]);
+
   function switchTab(t) {
     setTab(t);
     setVisitedTabs(prev => [...new Set([...prev, t])]);
+    if (t === 'Signals') posthog.capture('signals_viewed');
   }
 
   return (
@@ -1068,7 +1091,7 @@ function PolymarketTab({ tier }) {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {visible.map((m) => <MarketCard key={m.id} market={m} onClick={() => setSelectedMarket(m)} />)}
+              {visible.map((m) => <MarketCard key={m.id} market={m} onClick={() => { setSelectedMarket(m); posthog.capture('market_viewed', { market_id: m.id, title: m.title }); }} />)}
             </div>
 
             {/* Free tier gate */}
@@ -1233,6 +1256,7 @@ function DayTradingTab({ activeSubTab, tier }) {
     try {
       const { data } = await api.post('/api/trades', {...form, entry:parseFloat(form.entry), qty:parseFloat(form.qty), pnl:form.pnl?parseFloat(form.pnl):null});
       setTrades([data, ...trades]);
+      posthog.capture('trade_logged', { setup: form.setup, direction: form.direction, ticker: form.ticker });
       setForm({ ticker:'', direction:'LONG', entry:'', qty:'', pnl:'', setup:'Breakout', status:'open', notes:'', pre_market_notes:'', post_market_notes:'', confidence:'Medium', duration:'Day Trade' });
     } catch(e) { alert(e.response?.data?.error || 'Failed to add trade'); }
     setLoading(false);
@@ -1633,6 +1657,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
     try {
       const { data } = await api.post('/api/bets', {...form, stake: parseFloat(form.stake)});
       setBets([data, ...bets]);
+      posthog.capture('bet_logged', { sport: form.sport, type: form.type });
       setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' });
       setBetSaved(true); setTimeout(() => setBetSaved(false), 2000);
     } catch(e) { alert(e.response?.data?.error || 'Failed'); }
@@ -1978,6 +2003,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
   async function send() {
     const text = input.trim();
     if (!text || loading) return;
+    posthog.capture('ai_research_run', { type: category });
     const aiMsgId = Date.now() + 1;
     setMessages(prev => [...prev, { id: Date.now(), role: 'user', content: text, ts: new Date() }]);
     setInput('');
