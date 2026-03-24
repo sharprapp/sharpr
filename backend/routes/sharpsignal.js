@@ -293,6 +293,36 @@ router.get('/signals', async (req, res) => {
       }
     }
 
+    // ── Auto-log new signals to signal_outcomes table ──
+    if (signals.length > 0) {
+      (async () => {
+        try {
+          const signalIds = signals.slice(0, 50).map(s => s.id);
+          const { data: existing } = await supabase.from('signal_outcomes').select('signal_id').in('signal_id', signalIds);
+          const existingIds = new Set((existing || []).map(r => r.signal_id));
+          const newSignals = signals.slice(0, 50).filter(s => !existingIds.has(s.id));
+          if (newSignals.length > 0) {
+            const rows = newSignals.map(s => ({
+              signal_id: s.id,
+              market_title: s.title || s.event,
+              signal_type: s.signal_type || s.direction,
+              polymarket_prob: s.polymarket_prob || s.polyYesProb,
+              book_prob: s.book_prob || null,
+              edge: s.edge,
+              volume: s.volume,
+              quality_score: s.quality_score,
+              category: s.category,
+              closes_at: s.closes_at || null,
+            }));
+            await supabase.from('signal_outcomes').insert(rows);
+            console.log(`[SharpSignals] Logged ${rows.length} new signals to signal_outcomes`);
+          }
+        } catch (e) {
+          console.warn('[SharpSignals] Failed to log outcomes:', e.message);
+        }
+      })();
+    }
+
     const result = {
       signals: signals.slice(0, 50),
       total: signals.length,
@@ -316,6 +346,92 @@ router.get('/hedge-calc', (req, res) => {
   const payout = odds > 0 ? s * (odds / 100) : s * (100 / Math.abs(odds));
   const hedge = (prob * s * (1 + payout / s)) / (1 + bp);
   res.json({ polyStake: s, hedgeStake: Math.round(hedge * 100) / 100, lockedProfit: Math.round((prob * payout - (1 - prob) * hedge) * 100) / 100, roiIfYes: Math.round(((payout - hedge) / s) * 1000) / 10, roiIfNo: Math.round(((hedge * (100 / Math.abs(odds)) - s) / s) * 1000) / 10 });
+});
+
+// ── Signal outcomes admin endpoints ──
+
+// GET /api/sharpsignal/outcomes — list all signal outcomes
+router.get('/outcomes', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 100;
+    const offset = parseInt(req.query.offset) || 0;
+    const outcome = req.query.outcome; // optional filter: correct, incorrect, push, pending
+    let query = supabase.from('signal_outcomes').select('*').order('fired_at', { ascending: false }).range(offset, offset + limit - 1);
+    if (outcome) query = query.eq('outcome', outcome);
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json({ outcomes: data || [], count: (data || []).length });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PATCH /api/sharpsignal/outcomes/:id — update outcome
+router.patch('/outcomes/:id', async (req, res) => {
+  try {
+    const { outcome, notes } = req.body;
+    if (!['correct', 'incorrect', 'push', 'pending'].includes(outcome)) {
+      return res.status(400).json({ error: 'outcome must be: correct, incorrect, push, or pending' });
+    }
+    const update = { outcome };
+    if (outcome !== 'pending') update.resolved_at = new Date().toISOString();
+    else update.resolved_at = null;
+    if (notes !== undefined) update.notes = notes;
+    const { data, error } = await supabase.from('signal_outcomes').update(update).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/sharpsignal/accuracy — accuracy stats
+router.get('/accuracy', async (req, res) => {
+  try {
+    const { data: all, error } = await supabase.from('signal_outcomes').select('*').neq('outcome', 'pending');
+    if (error) throw error;
+    const resolved = all || [];
+    const correct = resolved.filter(r => r.outcome === 'correct');
+    const incorrect = resolved.filter(r => r.outcome === 'incorrect');
+    const total = correct.length + incorrect.length;
+
+    // By category
+    const categories = [...new Set(resolved.map(r => r.category).filter(Boolean))];
+    const byCategory = categories.map(cat => {
+      const c = resolved.filter(r => r.category === cat);
+      const cCorrect = c.filter(r => r.outcome === 'correct').length;
+      const cIncorrect = c.filter(r => r.outcome === 'incorrect').length;
+      const cTotal = cCorrect + cIncorrect;
+      return { category: cat, total: cTotal, correct: cCorrect, incorrect: cIncorrect, accuracy: cTotal ? Math.round(cCorrect / cTotal * 100) : 0 };
+    });
+
+    // By signal type
+    const types = [...new Set(resolved.map(r => r.signal_type).filter(Boolean))];
+    const bySignalType = types.map(t => {
+      const s = resolved.filter(r => r.signal_type === t);
+      const sCorrect = s.filter(r => r.outcome === 'correct').length;
+      const sIncorrect = s.filter(r => r.outcome === 'incorrect').length;
+      const sTotal = sCorrect + sIncorrect;
+      return { signal_type: t, total: sTotal, correct: sCorrect, incorrect: sIncorrect, accuracy: sTotal ? Math.round(sCorrect / sTotal * 100) : 0 };
+    });
+
+    // Average edge
+    const avgEdge = (arr) => { const edges = arr.filter(r => r.edge != null).map(r => Math.abs(parseFloat(r.edge))); return edges.length ? Math.round(edges.reduce((s, e) => s + e, 0) / edges.length * 10) / 10 : null; };
+
+    res.json({
+      total_signals: resolved.length,
+      correct: correct.length,
+      incorrect: incorrect.length,
+      push: resolved.filter(r => r.outcome === 'push').length,
+      accuracy_rate: total ? Math.round(correct.length / total * 100) : 0,
+      by_category: byCategory,
+      by_signal_type: bySignalType,
+      avg_edge_correct: avgEdge(correct),
+      avg_edge_incorrect: avgEdge(incorrect),
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 module.exports = router;
