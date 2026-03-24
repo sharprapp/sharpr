@@ -5,6 +5,29 @@ const supabase = require('../lib/supabase');
 let webpush; try { webpush = require('web-push'); webpush.setVapidDetails(process.env.VAPID_EMAIL || 'mailto:support@sharprapp.com', process.env.VAPID_PUBLIC_KEY || '', process.env.VAPID_PRIVATE_KEY || ''); } catch {}
 const notifiedSignals = new Set();
 
+/* ── Thresholds ── */
+const MIN_EDGE = 8;            // minimum edge % for sports signals
+const MIN_POLY_VOL = 75000;    // minimum Polymarket volume for sports cross-ref
+const MIN_POLY_ONLY_VOL = 100000; // minimum volume for poly-only signals
+const PUSH_THRESHOLD = 15;     // edge % to trigger push notification
+const MAX_DAYS_SPORTS = 14;    // max days to close for sports signals
+const MAX_DAYS_POLY_ONLY = 7;  // max days to close for poly-only signals
+
+/* ── Junk market filters ── */
+const JUNK_RE = /weather|temperature|rainfall|degrees|celsius|fahrenheit|wind speed|tornado|hurricane|snow.*inches/i;
+const PERSONAL_LEGAL_RE = /trial|sentenced|convicted|arrested|indicted|plea deal|lawsuit.*vs/i;
+const ENTERTAINMENT_RE = /oscar|grammy|emmy|bachelor|reality tv|box office|album|movie|netflix/i;
+const LOCAL_POLITICS_RE = /mayor|city council|county|school board|sheriff|state legislature|alderman/i;
+
+function isJunkMarket(title, volume, category) {
+  if (JUNK_RE.test(title)) return true;
+  if (ENTERTAINMENT_RE.test(title) && volume < 50000) return true;
+  if (PERSONAL_LEGAL_RE.test(title) && volume < 200000) return true;
+  if (LOCAL_POLITICS_RE.test(title) && volume < 100000) return true;
+  return false;
+}
+
+/* ── Odds conversion ── */
 function americanToProb(odds) {
   if (!odds) return null;
   return odds > 0 ? 100 / (odds + 100) : Math.abs(odds) / (Math.abs(odds) + 100);
@@ -15,16 +38,79 @@ function probToAmerican(prob) {
   return prob >= 0.5 ? Math.round(-(prob / (1 - prob)) * 100) : Math.round(((1 - prob) / prob) * 100);
 }
 
-function normalize(str) {
-  return (str || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+/* ── Improved team name matching ── */
+const TEAM_NOISE = /\b(fc|sc|cf|ac|afc|united|city|town|county|state|university|college|the)\b/gi;
+
+function normalizeTeam(str) {
+  return (str || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(TEAM_NOISE, '').replace(/\s+/g, ' ').trim();
 }
 
-function eventsMatch(polyTitle, t1, t2) {
-  const p = normalize(polyTitle);
-  const match = (team) => normalize(team).split(' ').some(w => w.length > 3 && p.includes(w));
-  return match(t1) && match(t2);
+function wordSimilarity(a, b) {
+  const wa = new Set(a.split(' ').filter(w => w.length > 2));
+  const wb = new Set(b.split(' ').filter(w => w.length > 2));
+  if (!wa.size || !wb.size) return 0;
+  let matches = 0;
+  for (const w of wa) { if (wb.has(w)) matches++; }
+  return matches / Math.max(wa.size, wb.size);
 }
 
+function eventsMatch(polyTitle, homeTeam, awayTeam, gameTime) {
+  const p = normalizeTeam(polyTitle);
+  const h = normalizeTeam(homeTeam);
+  const a = normalizeTeam(awayTeam);
+
+  // Check both teams appear with >80% word similarity
+  const hSim = wordSimilarity(h, p);
+  const aSim = wordSimilarity(a, p);
+
+  // At least one team must match strongly and the other partially
+  const homeMatch = hSim >= 0.5 || h.split(' ').some(w => w.length > 3 && p.includes(w));
+  const awayMatch = aSim >= 0.5 || a.split(' ').some(w => w.length > 3 && p.includes(w));
+
+  if (!homeMatch || !awayMatch) return false;
+
+  // Combined similarity must be above 80%
+  const combined = (hSim + aSim) / 2;
+  if (combined < 0.3 && !(homeMatch && awayMatch)) return false;
+
+  return true;
+}
+
+/* ── Quality score (1-10) ── */
+function calcQualityScore(signal) {
+  let score = 0;
+  const vol = signal.volume || 0;
+  const edge = Math.abs(signal.edge || 0);
+  const days = signal.daysToClose || 999;
+
+  // Volume component (max 5)
+  if (vol >= 500000) score += 5;
+  else if (vol >= 200000) score += 4;
+  else if (vol >= 75000) score += 2;
+
+  // Edge component (max 4)
+  if (edge >= 18) score += 4;
+  else if (edge >= 12) score += 3;
+  else if (edge >= 8) score += 2;
+
+  // Urgency bonus (max 1)
+  if (days <= 3 && days > 0) score += 1;
+
+  return Math.min(10, Math.max(1, score));
+}
+
+/* ── Detect category from title ── */
+function detectCategory(title) {
+  const t = (title || '').toLowerCase();
+  if (/nba|nfl|mlb|nhl|soccer|premier league|champions league|ufc|mma|tennis|golf|ncaa/i.test(t)) return 'Sports';
+  if (/bitcoin|btc|eth|crypto|solana|defi|token/i.test(t)) return 'Crypto';
+  if (/president|congress|senate|election|governor|federal|democrat|republican|trump|biden/i.test(t)) return 'US Politics';
+  if (/stock|s&p|nasdaq|fed|rate|gdp|inflation|earnings/i.test(t)) return 'Finance';
+  if (ENTERTAINMENT_RE.test(t)) return 'Entertainment';
+  return 'Other';
+}
+
+/* ── Routes ── */
 router.get('/signals', async (req, res) => {
   try {
     const cacheKey = 'sharp_signals';
@@ -50,8 +136,16 @@ router.get('/signals', async (req, res) => {
       }));
     }
 
+    // ── Sports cross-reference signals ──
+    let unmatchedGames = 0;
     for (const game of allGames) {
-      const matching = polyMarkets.filter(m => eventsMatch(m.question || m.title || '', game.home_team, game.away_team));
+      const matching = polyMarkets.filter(m => {
+        const title = m.question || m.title || '';
+        return eventsMatch(title, game.home_team, game.away_team, game.commence_time);
+      });
+
+      if (!matching.length) { unmatchedGames++; continue; }
+
       let bestHomeML = null, bestAwayML = null;
       for (const bk of game.bookmakers || []) {
         const h2h = bk.markets?.find(m => m.key === 'h2h');
@@ -68,60 +162,128 @@ router.get('/signals', async (req, res) => {
         let prices = []; try { prices = JSON.parse(poly.outcomePrices || '[]'); } catch {}
         const polyYes = prices[0] ? parseFloat(prices[0]) : null;
         if (!polyYes || polyYes < 0.05 || polyYes > 0.95) continue;
+
+        const vol = parseFloat(poly.volume || 0);
+        if (vol < MIN_POLY_VOL) continue;
+
+        const title = poly.question || poly.title || '';
+        if (isJunkMarket(title, vol)) continue;
+
+        const close = new Date(poly.endDate || poly.closeTime);
+        const days = (close - Date.now()) / 86400000;
+        if (days < 0 || days > MAX_DAYS_SPORTS) continue;
+
         const hEdge = ((polyYes - bookHP) / bookHP) * 100;
         const aEdge = ((polyYes - bookAP) / bookAP) * 100;
         const edge = Math.abs(hEdge) > Math.abs(aEdge) ? hEdge : aEdge;
-        if (Math.abs(edge) < 5) continue;
-        signals.push({
+        if (Math.abs(edge) < MIN_EDGE) continue;
+
+        const category = detectCategory(title);
+        const sig = {
           id: `${game.id}-${poly.id}`, type: 'sports',
           sport: game.sport?.replace(/basketball_|americanfootball_|baseball_|icehockey_/g, '').toUpperCase(),
-          event: `${game.away_team} @ ${game.home_team}`, awayTeam: game.away_team, homeTeam: game.home_team,
-          commenceTime: game.commence_time, polyMarket: poly.question || poly.title,
+          event: `${game.away_team} @ ${game.home_team}`,
+          title: title,
+          awayTeam: game.away_team, homeTeam: game.home_team,
+          commenceTime: game.commence_time,
+          polyMarket: title,
           polyUrl: `https://polymarket.com/event/${poly.slug}`,
-          polyYesProb: Math.round(polyYes * 100), bookHomeProb: Math.round(bookHP * 100), bookAwayProb: Math.round(bookAP * 100),
+          polymarket_prob: Math.round(polyYes * 100),
+          book_prob: Math.round((Math.abs(hEdge) > Math.abs(aEdge) ? bookHP : bookAP) * 100),
+          polyYesProb: Math.round(polyYes * 100),
+          bookHomeProb: Math.round(bookHP * 100), bookAwayProb: Math.round(bookAP * 100),
           bookHomeML: bestHomeML, bookAwayML: bestAwayML,
           edge: Math.round(edge * 10) / 10,
+          signal_type: edge > 0 ? 'POLY_HIGHER' : 'BOOK_HIGHER',
           direction: edge > 0 ? 'POLY_HIGHER' : 'BOOK_HIGHER',
-          signal: edge > 0 ? 'Polymarket overvaluing — bet NO or take sportsbook side' : 'Sportsbook overvaluing — bet YES on Polymarket',
-          confidence: Math.abs(edge) > 15 ? 'HIGH' : Math.abs(edge) > 8 ? 'MEDIUM' : 'LOW',
-          volume: parseFloat(poly.volume || 0),
-        });
+          signal: edge > 0
+            ? `Polymarket pricing ${Math.round(polyYes*100)}% vs sportsbook implied ${Math.round((Math.abs(hEdge)>Math.abs(aEdge)?bookHP:bookAP)*100)}% — ${Math.abs(edge).toFixed(1)} point divergence`
+            : `Sportsbook implied ${Math.round((Math.abs(hEdge)>Math.abs(aEdge)?bookHP:bookAP)*100)}% vs Polymarket ${Math.round(polyYes*100)}% — ${Math.abs(edge).toFixed(1)} point divergence`,
+          confidence: Math.abs(edge) > 18 ? 'HIGH' : Math.abs(edge) > 12 ? 'MEDIUM' : 'LOW',
+          volume: vol,
+          category,
+          closes_at: close.toISOString(),
+          daysToClose: Math.round(days * 10) / 10,
+          sharp_money: false,
+          quality_score: 0,
+        };
+        sig.quality_score = calcQualityScore(sig);
+        signals.push(sig);
       }
     }
 
-    // Pure Polymarket signals
-    for (const m of polyMarkets.slice(0, 100)) {
+    if (unmatchedGames > 0) {
+      console.log(`[SharpSignals] ${unmatchedGames}/${allGames.length} games had no Polymarket match`);
+    }
+
+    // ── Pure Polymarket signals ──
+    const POLY_ONLY_CATS = ['Sports', 'Crypto', 'US Politics'];
+    for (const m of polyMarkets.slice(0, 200)) {
       let prices = []; try { prices = JSON.parse(m.outcomePrices || '[]'); } catch {}
       const prob = prices[0] ? parseFloat(prices[0]) : null;
       if (!prob || prob < 0.05 || prob > 0.95) continue;
+
       const vol = parseFloat(m.volume || 0);
-      if (vol < 10000) continue;
+      if (vol < MIN_POLY_ONLY_VOL) continue;
+
+      const title = m.question || m.title || '';
+      if (isJunkMarket(title, vol)) continue;
+
       const close = new Date(m.endDate || m.closeTime);
       const days = (close - Date.now()) / 86400000;
-      if (days < 0 || days > 30) continue;
-      signals.push({
-        id: `poly-${m.id}`, type: 'polymarket', sport: 'POLITICS',
-        event: m.question || m.title, polyMarket: m.question || m.title,
+      if (days < 0 || days > MAX_DAYS_POLY_ONLY) continue;
+
+      const category = detectCategory(title);
+      if (!POLY_ONLY_CATS.includes(category)) continue;
+
+      // Skip if already matched as a sports signal
+      if (signals.some(s => s.polyMarket === title)) continue;
+
+      const sig = {
+        id: `poly-${m.id}`, type: 'polymarket',
+        sport: category === 'Sports' ? 'MULTI' : category.toUpperCase().replace(' ', '_'),
+        event: title, title: title,
+        polyMarket: title,
         polyUrl: `https://polymarket.com/event/${m.slug}`,
-        polyYesProb: Math.round(prob * 100), edge: null, direction: 'POLY_ONLY',
-        signal: vol > 100000 ? 'High volume — sharp money active' : 'Active market near close',
-        confidence: vol > 500000 ? 'HIGH' : vol > 100000 ? 'MEDIUM' : 'LOW',
-        volume: vol, daysToClose: Math.round(days * 10) / 10,
-      });
+        polymarket_prob: Math.round(prob * 100),
+        book_prob: null,
+        polyYesProb: Math.round(prob * 100),
+        edge: null,
+        signal_type: 'POLY_ONLY',
+        direction: 'POLY_ONLY',
+        signal: `High-volume market at ${Math.round(prob*100)}% — $${(vol/1000).toFixed(0)}K volume, closing in ${Math.round(days)} days`,
+        confidence: vol > 500000 ? 'HIGH' : vol > 200000 ? 'MEDIUM' : 'LOW',
+        volume: vol,
+        category,
+        closes_at: close.toISOString(),
+        daysToClose: Math.round(days * 10) / 10,
+        sharp_money: false, // Polymarket API doesn't expose 24h volume delta
+        quality_score: 0,
+      };
+      sig.quality_score = calcQualityScore(sig);
+      signals.push(sig);
     }
 
-    signals.sort((a, b) => (Math.abs(b.edge || 0) + (b.confidence === 'HIGH' ? 10 : b.confidence === 'MEDIUM' ? 5 : 0)) - (Math.abs(a.edge || 0) + (a.confidence === 'HIGH' ? 10 : a.confidence === 'MEDIUM' ? 5 : 0)));
+    // Sort by quality score descending, then edge
+    signals.sort((a, b) => {
+      if (b.quality_score !== a.quality_score) return b.quality_score - a.quality_score;
+      return Math.abs(b.edge || 0) - Math.abs(a.edge || 0);
+    });
 
-    // Notify Pro users on high-edge signals (>10%)
+    // ── Push notifications for high-edge signals (>15%) ──
     if (webpush) {
-      const highEdge = signals.filter(s => s.type === 'sports' && Math.abs(s.edge || 0) > 10 && !notifiedSignals.has(s.id));
+      const highEdge = signals.filter(s => s.type === 'sports' && Math.abs(s.edge || 0) > PUSH_THRESHOLD && !notifiedSignals.has(s.id));
       if (highEdge.length > 0) {
         (async () => {
           try {
             const { data: subs } = await supabase.from('push_subscriptions').select('subscription');
             for (const sig of highEdge.slice(0, 3)) {
               notifiedSignals.add(sig.id);
-              const payload = JSON.stringify({ title: 'Sharp Signal', body: `${sig.event} — ${sig.edge > 0 ? '+' : ''}${sig.edge}% edge detected`, url: '/dashboard' });
+              const payload = JSON.stringify({
+                title: 'Sharp Signal',
+                body: `${sig.event} — ${Math.abs(sig.edge).toFixed(1)}% divergence detected (quality ${sig.quality_score}/10)`,
+                url: '/dashboard'
+              });
               for (const sub of subs || []) {
                 try { await webpush.sendNotification(sub.subscription, payload); } catch {}
               }
@@ -131,7 +293,13 @@ router.get('/signals', async (req, res) => {
       }
     }
 
-    const result = { signals: signals.slice(0, 50), total: signals.length, sportsSignals: signals.filter(s => s.type === 'sports').length, polySignals: signals.filter(s => s.type === 'polymarket').length, generatedAt: new Date().toISOString() };
+    const result = {
+      signals: signals.slice(0, 50),
+      total: signals.length,
+      sportsSignals: signals.filter(s => s.type === 'sports').length,
+      polySignals: signals.filter(s => s.type === 'polymarket').length,
+      generatedAt: new Date().toISOString(),
+    };
     cache.set(cacheKey, { data: result, ts: Date.now() });
     res.json(result);
   } catch (e) {
