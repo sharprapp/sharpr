@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
 import TradingViewTicker from '../components/TradingViewTicker';
 import api from '../lib/api';
+import { useAIStream } from '../lib/useAIStream';
 import BettingCalendar from '../components/BettingCalendar';
 import TradingCalendar from '../components/TradingCalendar';
 import SportsOdds from '../components/SportsOdds';
@@ -37,6 +38,7 @@ const NAV_GROUPS_LEFT = [
     { key: 'dt-premarket', label: 'Pre-Market', emoji: '🌅', desc: 'Morning prep & levels' },
     { key: 'dt-riskcalc', label: 'Risk Calc', emoji: '🎯', desc: 'Position sizing & R:R' },
     { key: 'dt-reports', label: 'Reports', emoji: '📊', desc: 'Performance analytics' },
+    { key: 'dt-strategy', label: 'Strategy AI', emoji: '🧠', desc: 'AI strategy analyzer' },
   ]},
   { label: 'Bet', items: [
     { key: 'sb-journal', label: 'Journal', emoji: '📓', desc: 'Bet log & calendar' },
@@ -495,7 +497,7 @@ function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport
   const sections = [
     { label: '🏠 Home', key: 'Home' },
     { label: '⚡ Signals', key: 'Signals' },
-    { label: '📈 Trade', children: [{ l: '📓 Journal', k: 'dt-journal' }, { l: '🌅 Pre-Market', k: 'dt-premarket' }] },
+    { label: '📈 Trade', children: [{ l: '📓 Journal', k: 'dt-journal' }, { l: '🌅 Pre-Market', k: 'dt-premarket' }, { l: '🧠 Strategy AI', k: 'dt-strategy' }] },
     { label: '🎰 Bet', children: [{ l: '📓 Journal', k: 'sb-journal' }, { l: '📊 Analytics', k: 'sb-analytics' }] },
     { label: '🔮 Predict', children: [{ l: '📊 Polymarket', k: 'Polymarket' }, { l: '🧮 EV Calc', k: 'EV Calc' }] },
     { label: '🤖 AI Research', key: 'AI Research' },
@@ -1241,12 +1243,32 @@ function DayTradingTab({ activeSubTab, tier }) {
     setTrades(trades.filter(t => t.id !== id));
   }
 
+  async function uploadScreenshot(tradeId, file) {
+    try {
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'trade' });
+      // Store screenshot as base64 data URL on the trade
+      const dataUrl = `data:image/${file.type.includes('png') ? 'png' : 'jpeg'};base64,${base64}`;
+      await api.patch(`/api/trades/${tradeId}`, { screenshot_url: dataUrl });
+      setTrades(prev => prev.map(t => t.id === tradeId ? { ...t, screenshot_url: dataUrl } : t));
+    } catch (err) {
+      console.error('Screenshot upload failed:', err);
+      alert('Could not upload screenshot.');
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6">
 
       {subTab === 'premarket' && <PreMarketPanel />}
       {subTab === 'riskcalc'  && <RiskCalcPanel />}
       {subTab === 'reports'   && <ReportsPanel trades={trades} />}
+      {subTab === 'strategy'  && <AIStrategyAnalyzer tier={tier} />}
 
       {subTab === 'journal' && (<>
         <MonthlyTracker
@@ -1288,9 +1310,9 @@ function DayTradingTab({ activeSubTab, tier }) {
           <TradingCalendar trades={trades} />
         ) : (
           <>
-            <TradeForm form={form} setForm={setForm} loading={loading} onAdd={addTrade} tier={tier} />
+            <TradeForm form={form} setForm={setForm} loading={loading} onAdd={addTrade} />
             <DarkTable
-              headers={['Ticker','Direction','Entry','P&L','Confidence','Duration','Status','']}
+              headers={['Ticker','Direction','Entry','P&L','Confidence','Duration','Status','','']}
               empty="No trades yet. Log your first trade above.">
               {trades.map(t => {
                 const cls = t.status==='win'?'text-green-500':t.status==='loss'?'text-red-500':'text-slate-500';
@@ -1299,7 +1321,12 @@ function DayTradingTab({ activeSubTab, tier }) {
                   <tr key={t.id} className="transition-colors" style={{borderBottom: '1px solid #1e2a4a'}}
                     onMouseEnter={e => e.currentTarget.style.background='rgba(30,42,74,0.4)'}
                     onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                    <td className="px-5 py-3.5 font-semibold" style={{color: '#F5F5FA'}}>{t.ticker}</td>
+                    <td className="px-5 py-3.5 font-semibold" style={{color: '#F5F5FA'}}>
+                      <div className="flex items-center gap-2">
+                        {t.ticker}
+                        {t.screenshot_url && <span title="Has chart screenshot" style={{ fontSize: 10, color: '#4f8ef7' }}>📸</span>}
+                      </div>
+                    </td>
                     <td className="px-5 py-3.5">
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${t.direction==='LONG'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{t.direction}</span>
                     </td>
@@ -1308,6 +1335,17 @@ function DayTradingTab({ activeSubTab, tier }) {
                     <td className="px-5 py-3.5"><span style={{ fontSize: 11, fontWeight: 600, color: confColor }}>{t.confidence || '—'}</span></td>
                     <td className="px-5 py-3.5 text-slate-400" style={{ fontSize: 12 }}>{t.duration || '—'}</td>
                     <td className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>{t.status}</td>
+                    <td className="px-5 py-3.5">
+                      <label title="Attach chart screenshot" style={{ cursor: 'pointer', fontSize: 14, color: t.screenshot_url ? '#4f8ef7' : '#2a3a5a' }}
+                        className="hover:text-blue-400 transition-colors">
+                        📷
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadScreenshot(t.id, file);
+                          e.target.value = '';
+                        }} />
+                      </label>
+                    </td>
                     <td className="px-5 py-3.5">
                       <button onClick={() => deleteTrade(t.id)} className="text-slate-600 hover:text-red-400 text-base transition-colors">✕</button>
                     </td>
@@ -1329,9 +1367,8 @@ function DayTradingTab({ activeSubTab, tier }) {
   );
 }
 
-function TradeForm({ form, setForm, loading, onAdd, tier }) {
+function TradeForm({ form, setForm, loading, onAdd }) {
   const f = (k, v) => setForm(p => ({...p, [k]: v}));
-  const [imgParsing, setImgParsing] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [saved, setSaved] = useState(false);
   const canSubmit = form.ticker && form.entry && form.qty;
@@ -1421,55 +1458,118 @@ function TradeForm({ form, setForm, loading, onAdd, tier }) {
           </div>
         </div>
       )}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button onClick={handleSubmit} disabled={loading || !canSubmit}
-          className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
-          style={{background: '#2563EB', color: '#fff'}}
-          onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
-          onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
-          {loading ? 'Adding…' : '+ Add trade'}
+      <button onClick={handleSubmit} disabled={loading || !canSubmit}
+        className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+        style={{background: '#2563EB', color: '#fff'}}
+        onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
+        onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
+        {loading ? 'Adding…' : '+ Add trade'}
+      </button>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   AI STRATEGY ANALYZER (PRO BETA)
+───────────────────────────────────────── */
+function AIStrategyAnalyzer({ tier }) {
+  const isPro = tier === 'pro' || tier === 'elite';
+  const [setup, setSetup] = useState('');
+  const [strategy, setStrategy] = useState('Breakout');
+  const { text: result, loading, error, stream: startStream } = useAIStream();
+
+  function analyze() {
+    if (!setup.trim()) return;
+    startStream(
+      `You are a professional trading strategy analyst. Analyze this trade setup:\n\nStrategy type: ${strategy}\nSetup description: ${setup}\n\nProvide analysis in this EXACT format:\n\nVERDICT: STRONG SETUP | NEEDS WORK | AVOID\n\n• Strengths: [what's good about this setup]\n• Weaknesses: [risks and issues]\n• Risk Management: [position sizing, stop placement, R:R assessment]\n• Improvement: [one specific actionable improvement]\n\nBe direct. Max 120 words. This is educational analysis, not financial advice.`,
+      'trading', false
+    );
+  }
+
+  if (!isPro) {
+    return (
+      <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>🧠</div>
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>AI Strategy Analyzer</span>
+          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(79,142,247,0.2)', color: '#7aaff8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
+        </div>
+        <p style={{ fontSize: 13, color: '#4a5a7a', marginBottom: 16, maxWidth: 360, marginLeft: 'auto', marginRight: 'auto' }}>
+          Get AI-powered analysis of your trade setups — identify strengths, weaknesses, and risk management improvements.
+        </p>
+        <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}
+          style={{ background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          Upgrade to Pro
         </button>
-        {(tier === 'pro' || tier === 'elite') ? (
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-            {imgParsing ? 'Analyzing...' : '📷 Upload Screenshot'}
-            <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
-              const file = e.target.files?.[0]; if (!file) return;
-              setImgParsing(true);
-              try {
-                const base64 = await new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.onload = () => resolve(reader.result.split(',')[1]);
-                  reader.onerror = reject;
-                  reader.readAsDataURL(file);
-                });
-                console.log('[TradeUpload] base64 length:', base64.length);
-                const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'trade' });
-                console.log('[TradeUpload] API response:', data);
-                if (data.parsed) {
-                  const p = data.parsed;
-                  setForm(prev => ({
-                    ...prev,
-                    ticker: p.ticker || prev.ticker,
-                    direction: p.direction?.toUpperCase() === 'SHORT' ? 'SHORT' : p.direction?.toUpperCase() === 'LONG' ? 'LONG' : prev.direction,
-                    entry: p.entry || p.price || prev.entry,
-                    qty: p.qty || p.quantity || prev.qty,
-                    pnl: p.pnl || p.profit || prev.pnl,
-                    notes: p.notes || prev.notes,
-                  }));
-                }
-              } catch (err) {
-                console.error('[TradeUpload] Error:', err);
-                alert('Could not read screenshot. Try a clearer image.');
-              } finally {
-                setImgParsing(false);
-              }
-              e.target.value = '';
-            }} />
-          </label>
-        ) : (
-          <span style={{ fontSize: 11, color: '#2a3a5a' }}>📷 Screenshot upload — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
-        )}
       </div>
+    );
+  }
+
+  const verdictColor = result?.includes('STRONG SETUP') ? '#22c55e' : result?.includes('AVOID') ? '#ef4444' : result?.includes('NEEDS WORK') ? '#f59e0b' : '#64748b';
+  const verdictMatch = result?.match(/VERDICT:\s*(STRONG SETUP|NEEDS WORK|AVOID)/);
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-3">
+        <span style={{ fontSize: 20 }}>🧠</span>
+        <span style={{ fontSize: 16, fontWeight: 800, color: '#F5F5FA' }}>AI Strategy Analyzer</span>
+        <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(79,142,247,0.2)', color: '#7aaff8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
+      </div>
+
+      <div className="rounded-2xl p-5" style={{ background: '#0f1729', border: '1px solid #1e2a4a' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
+          <div className="sm:col-span-3">
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#64748b' }}>Describe your setup</label>
+            <textarea
+              placeholder="e.g. NQ long at 18,450 on VWAP bounce. Previous support at 18,400, resistance at 18,550. Volume declining into the pullback. Plan to risk 20 pts for 60 pt target..."
+              value={setup} onChange={e => setSetup(e.target.value)}
+              rows={3}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
+              style={{ ...inpStyle, resize: 'vertical' }} onFocus={inpFocus} onBlur={inpBlur}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#64748b' }}>Strategy</label>
+            <select value={strategy} onChange={e => setStrategy(e.target.value)}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
+              <option>Breakout</option>
+              <option>Trend Follow</option>
+              <option>Mean Reversion</option>
+              <option>Scalp</option>
+              <option>Custom</option>
+            </select>
+          </div>
+        </div>
+        <button onClick={analyze} disabled={loading || !setup.trim()}
+          className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+          style={{ background: '#2563EB', color: '#fff' }}
+          onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#1d4ed8'; }}
+          onMouseLeave={e => e.currentTarget.style.background = '#2563EB'}>
+          {loading ? 'Analyzing…' : 'Analyze Setup'}
+        </button>
+      </div>
+
+      {/* Result */}
+      {(result || loading) && (
+        <div className="rounded-2xl p-5" style={{ background: '#0f1729', border: '1px solid #1e2a4a' }}>
+          {verdictMatch && (
+            <div className="mb-4 p-3 rounded-xl text-center" style={{ background: verdictColor + '15', border: `1px solid ${verdictColor}40` }}>
+              <div style={{ fontSize: 10, color: '#4a5a7a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>AI Verdict</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: verdictColor }}>{verdictMatch[1]}</div>
+            </div>
+          )}
+          <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {result ? result.replace(/VERDICT:\s*(STRONG SETUP|NEEDS WORK|AVOID)\n?/, '') : ''}
+            {loading && <span className="inline-block w-1.5 h-4 ml-0.5 rounded-sm animate-pulse" style={{ background: '#4f8ef7', verticalAlign: 'middle' }} />}
+          </div>
+          {error && <div className="mt-2 text-xs" style={{ color: '#ef4444' }}>{error}</div>}
+          <div className="mt-4 pt-3" style={{ borderTop: '1px solid #1e2a4a' }}>
+            <p style={{ fontSize: 10, color: '#2a3a5a', lineHeight: 1.5 }}>
+              AI-generated analysis for educational purposes only. Not financial advice. Always do your own research and manage risk appropriately.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
