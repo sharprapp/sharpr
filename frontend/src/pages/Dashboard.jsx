@@ -1415,8 +1415,12 @@ function TradeForm({ form, setForm, loading, onAdd }) {
           </div>
         ))}
       </div>
-      <button onClick={() => setShowMore(s => !s)} style={{ fontSize: 11, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', marginBottom: showMore ? 12 : 0, padding: 0 }}>
-        {showMore ? 'Less details ▴' : 'More details ▾'}
+      <button onClick={() => setShowMore(s => !s)}
+        style={{ fontSize: 12, color: '#7aaff8', background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 8, cursor: 'pointer', marginBottom: showMore ? 12 : 0, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, transition: 'all 0.15s ease' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.12)'; e.currentTarget.style.borderColor = 'rgba(79,142,247,0.35)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.06)'; e.currentTarget.style.borderColor = 'rgba(79,142,247,0.2)'; }}>
+        <span style={{ display: 'inline-block', transition: 'transform 0.2s ease', transform: showMore ? 'rotate(90deg)' : 'rotate(0deg)', fontSize: 10 }}>▶</span>
+        {showMore ? 'Less details' : 'More details (notes, confidence, duration)'}
       </button>
       {showMore && (
         <div className="flex flex-col gap-3 mb-3">
@@ -1664,9 +1668,28 @@ function SportsBettingTab({ tier, activeSubTab }) {
     setLoading(false);
   }
 
+  const [markingBet, setMarkingBet] = useState(null); // bet being marked
+
   async function deleteBet(id) {
     await api.delete(`/api/bets/${id}`).catch(() => {});
     setBets(bets.filter(b => b.id !== id));
+  }
+
+  async function markResult(betId, result) {
+    const bet = bets.find(b => b.id === betId);
+    if (!bet) return;
+    const o = parseFloat(bet.odds), s = parseFloat(bet.stake);
+    let pnl = 0;
+    if (result === 'win' && o && s) {
+      pnl = o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100);
+    } else if (result === 'loss') {
+      pnl = -s;
+    } // push = 0
+    try {
+      await api.patch(`/api/bets/${betId}`, { result, pnl: Math.round(pnl * 100) / 100 });
+      setBets(prev => prev.map(b => b.id === betId ? { ...b, result, pnl: Math.round(pnl * 100) / 100 } : b));
+    } catch { alert('Failed to update bet'); }
+    setMarkingBet(null);
   }
 
   return (
@@ -1857,7 +1880,26 @@ function SportsBettingTab({ tier, activeSubTab }) {
                   <td className="px-5 py-3.5 text-slate-300">{b.odds}</td>
                   <td className="px-5 py-3.5 text-slate-300">${parseFloat(b.stake).toFixed(0)}</td>
                   <td className="px-5 py-3.5 text-slate-300">${parseFloat(b.to_win||0).toFixed(2)}</td>
-                  <td className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>{b.result}</td>
+                  <td className="px-5 py-3.5">
+                    {b.result === 'pending' ? (
+                      markingBet === b.id ? (
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          {[['W','win','#22c55e'],['L','loss','#ef4444'],['P','push','#64748b']].map(([label, res, color]) => (
+                            <button key={res} onClick={() => markResult(b.id, res)}
+                              style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: color + '20', border: `1px solid ${color}40`, color, cursor: 'pointer' }}>{label}</button>
+                          ))}
+                          <button onClick={() => setMarkingBet(null)} style={{ fontSize: 10, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+                        </div>
+                      ) : (
+                        <button onClick={() => setMarkingBet(b.id)}
+                          style={{ fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>
+                          Mark result
+                        </button>
+                      )
+                    ) : (
+                      <span className={`text-xs font-semibold uppercase tracking-wide ${cls}`}>{b.result}</span>
+                    )}
+                  </td>
                   <td className={`px-5 py-3.5 font-semibold ${cls}`}>{b.pnl!=null?(b.pnl>=0?'+':'')+' $'+Math.abs(b.pnl).toFixed(2):'—'}</td>
                   <td className="px-5 py-3.5">
                     <button onClick={() => deleteBet(b.id)} className="text-slate-600 hover:text-red-400 text-base transition-colors">✕</button>
@@ -3104,27 +3146,51 @@ function ParlayPanel() {
       </div>
 
       {validLegs.length >= 2 && (
-        <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>Parlay Card — {validLegs.length} legs</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 12 }}>
-            {[
-              ['Combined odds (American)', combinedAmerican > 0 ? '+'+combinedAmerican : combinedAmerican, '#F5F5FA'],
-              ['Decimal odds', combinedDecimal.toFixed(2)+'x', '#F5F5FA'],
-              ['Stake', '$'+stake.toFixed(2), '#94A3B8'],
-              ['Potential payout', '$'+payout.toFixed(2), '#22c55e'],
-              ['Potential profit', '$'+profit.toFixed(2), profit > 0 ? '#22c55e' : '#ef4444'],
-              ['Implied prob', impliedProb.toFixed(1)+'%', '#60a5fa'],
-            ].map(([l, v, c]) => (
-              <div key={l} style={{ background: '#0a0f1e', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontSize: 10, color: '#64748b', marginBottom: 4 }}>{l}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: c }}>{v}</div>
+        <>
+          {/* Big parlay odds hero */}
+          <div style={{ ...card, textAlign: 'center', background: 'linear-gradient(135deg, rgba(79,142,247,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '2px solid rgba(79,142,247,0.3)' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#4f8ef7', marginBottom: 6 }}>Parlay Odds</div>
+            <div style={{ fontSize: 48, fontWeight: 900, color: '#F5F5FA', letterSpacing: '-0.02em', lineHeight: 1 }}>
+              {combinedAmerican > 0 ? '+' : ''}{combinedAmerican}
+            </div>
+            <div style={{ fontSize: 14, color: '#22c55e', fontWeight: 700, marginTop: 8 }}>
+              ${payout.toFixed(2)} payout on ${stake.toFixed(0)} stake
+            </div>
+            <div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 4 }}>{validLegs.length} legs · {impliedProb.toFixed(1)}% implied probability</div>
+          </div>
+
+          {/* Leg checklist */}
+          <div style={card}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 10 }}>Parlay Legs</div>
+            {validLegs.map((leg, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: i < validLegs.length - 1 ? '1px solid #1e2a4a' : 'none' }}>
+                <span style={{ fontSize: 14, color: '#22c55e' }}>✓</span>
+                <span style={{ fontSize: 13, color: '#F5F5FA', flex: 1 }}>{leg.label || `Leg #${i + 1}`}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8' }}>{parseFloat(leg.odds) > 0 ? '+' : ''}{leg.odds}</span>
               </div>
             ))}
           </div>
-          <div style={{ fontSize: 12, color: '#64748b', padding: '10px 12px', background: '#0a0f1e', borderRadius: 8 }}>
-            💡 Kelly stake: <strong style={{color: '#fbbf24'}}>${(bankroll * Math.max(0, impliedProb/100 - (1 - impliedProb/100) / (combinedDecimal - 1))).toFixed(2)}</strong>
+
+          {/* Stats grid */}
+          <div style={card}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 12 }}>
+              {[
+                ['Decimal odds', combinedDecimal.toFixed(2)+'x', '#F5F5FA'],
+                ['Potential profit', '$'+profit.toFixed(2), profit > 0 ? '#22c55e' : '#ef4444'],
+                ['Stake', '$'+stake.toFixed(2), '#94A3B8'],
+                ['Implied prob', impliedProb.toFixed(1)+'%', '#60a5fa'],
+              ].map(([l, v, c]) => (
+                <div key={l} style={{ background: '#0a0f1e', borderRadius: 10, padding: '12px 14px' }}>
+                  <div style={{ fontSize: 10, color: '#64748b', marginBottom: 4 }}>{l}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: c }}>{v}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: '#64748b', padding: '10px 12px', background: '#0a0f1e', borderRadius: 8 }}>
+              💡 Kelly stake: <strong style={{color: '#fbbf24'}}>${(bankroll * Math.max(0, impliedProb/100 - (1 - impliedProb/100) / (combinedDecimal - 1))).toFixed(2)}</strong>
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

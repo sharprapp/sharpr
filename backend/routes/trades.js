@@ -45,7 +45,10 @@ router.post('/', requireAuth, async (req, res) => {
 
   // P&L is manually entered by user — no auto-calculation
   const pnl = rawPnl != null && rawPnl !== '' ? parseFloat(rawPnl) : null;
-  const finalStatus = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status || 'open');
+  // Manual status always takes priority; only auto-detect from P&L if status is 'open' or missing
+  const finalStatus = (status && status !== 'open')
+    ? status
+    : pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status || 'open');
 
   const insertPayload = {
     user_id: req.user.id,
