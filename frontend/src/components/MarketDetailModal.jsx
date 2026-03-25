@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Line } from 'react-chartjs-2';
 import api from '../lib/api';
 import { useAIStream } from '../lib/useAIStream';
@@ -18,6 +18,7 @@ const CAT_COLORS = {
 export default function MarketDetailModal({ market: m, onClose, userPlan }) {
   const { text: aiResult, loading: aiLoading, error: aiError, done: aiDone, stream: startAIStream } = useAIStream();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const resizeTimerRef = useRef(null);
 
   const pct = m.yes ?? 50;
   const fill = pct > 66 ? '#22c55e' : pct > 40 ? '#f59e0b' : '#ef4444';
@@ -27,11 +28,10 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
   useEffect(() => {
     const h = (e) => { if (e.key === 'Escape') onClose(); };
-    let resizeTimer;
-    const r = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => setIsMobile(window.innerWidth < 768), 150); };
+    const r = () => { clearTimeout(resizeTimerRef.current); resizeTimerRef.current = setTimeout(() => setIsMobile(window.innerWidth < 768), 150); };
     window.addEventListener('keydown', h);
     window.addEventListener('resize', r);
-    return () => { window.removeEventListener('keydown', h); window.removeEventListener('resize', r); clearTimeout(resizeTimer); };
+    return () => { window.removeEventListener('keydown', h); window.removeEventListener('resize', r); clearTimeout(resizeTimerRef.current); };
   }, [onClose]);
 
   // Auto-load AI analysis for pro users — streaming

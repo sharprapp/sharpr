@@ -90,7 +90,7 @@ router.post('/webhook', async (req, res) => {
   const data = event.data.object;
   console.log('[Stripe webhook]', event.type, '| metadata:', JSON.stringify(data.metadata || {}));
 
-  switch (event.type) {
+  try { switch (event.type) {
     case 'checkout.session.completed': {
       // This fires first — before subscription events. Use customer ID to find user.
       const customerId = data.customer;
@@ -172,7 +172,11 @@ router.post('/webhook', async (req, res) => {
       break;
     }
   }
+  } catch (webhookErr) {
+    console.error('[Stripe webhook] Unhandled error in handler:', webhookErr.message);
+  }
 
+  // Always return 200 to prevent Stripe retries
   res.json({ received: true });
 });
 

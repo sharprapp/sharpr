@@ -5,8 +5,9 @@ const { requireAuth } = require('../middleware/auth');
 const { checkAILimit, logAIUsage } = require('../middleware/tier');
 const crypto = require('crypto');
 
-// In-memory response cache
+// In-memory response cache + in-flight dedup
 const aiCache = new Map();
+const inFlight = new Map(); // cacheKey -> Promise
 const CACHE_TTL = { sports: 600000, polymarket: 600000, trading: 600000, news: 1800000 }; // 10min / 30min
 
 function getCacheKey(query, type) {

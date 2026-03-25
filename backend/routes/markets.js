@@ -61,6 +61,10 @@ router.get('/polymarket', requireAuth, async (req, res) => {
       timeout: 10000,
     });
 
+    if (!Array.isArray(data)) {
+      console.warn('[Markets] Polymarket returned non-array:', typeof data);
+      return res.json({ markets: [], total: 0, hasMore: false, offset });
+    }
     const markets = data.filter(m => m.question && m.outcomePrices).map(normalizeMarket);
 
     const payload = {
@@ -105,6 +109,7 @@ router.get('/polymarket/all', requireAuth, async (req, res) => {
         },
         timeout: 12000,
       });
+      if (!Array.isArray(data)) break;
       const markets = data.filter(m => m.question && m.outcomePrices).map(normalizeMarket);
       all.push(...markets);
       if (data.length < limit) break;

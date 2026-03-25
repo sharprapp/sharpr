@@ -115,7 +115,7 @@ router.get('/games', async (req, res) => {
   const sport = (req.query.sport || 'nba').toLowerCase();
   const sportKey = SPORT_KEYS[sport];
   if (!sportKey) {
-    return res.json({ games: [], sport, error: `Unknown sport: ${sport}`, requestsRemaining: null });
+    return res.json({ games: [], sport: 'unknown', error: 'Invalid sport parameter', requestsRemaining: null });
   }
   const cacheKey = `odds_${sportKey}`;
 

@@ -185,7 +185,7 @@ export default function NewsTab({ initialType }) {
                       <div style={{ textAlign: 'center' }}><span style={{ fontSize: 10 }}>{impactDot[e.impact] || '⚪'}</span></div>
                       <div style={{ fontSize: 11, color: '#4a5a7a', textAlign: 'right' }}>{e.forecast !== '—' ? e.forecast : ''}</div>
                       <div style={{ fontSize: 11, color: '#4a5a7a', textAlign: 'right' }}>{e.previous !== '—' ? e.previous : ''}</div>
-                      <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'right', color: e.actual ? (e.forecast !== '—' && parseFloat(e.actual) > parseFloat(e.forecast) ? '#22c55e' : parseFloat(e.actual) < parseFloat(e.forecast) ? '#ef4444' : '#F5F5FA') : '#1a2535' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textAlign: 'right', color: e.actual && !isNaN(parseFloat(e.actual)) ? (e.forecast !== '—' && !isNaN(parseFloat(e.forecast)) && parseFloat(e.actual) > parseFloat(e.forecast) ? '#22c55e' : !isNaN(parseFloat(e.forecast)) && parseFloat(e.actual) < parseFloat(e.forecast) ? '#ef4444' : '#F5F5FA') : '#1a2535' }}>
                         {e.actual || '—'}
                       </div>
                     </div>
@@ -229,7 +229,7 @@ export default function NewsTab({ initialType }) {
           {/* Hero card */}
           <div onClick={() => setSelectedArticle(articles[0])} style={{
             ...gc, height: 340, position: 'relative', overflow: 'hidden', cursor: 'pointer',
-            backgroundImage: articles[0].image ? `url(${articles[0].image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top),
+            backgroundImage: articles[0].image && /^https?:\/\//.test(articles[0].image) ? `url(${articles[0].image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top),
             backgroundSize: 'cover', backgroundPosition: 'center',
           }}>
             <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 20%, rgba(3,3,10,0.95) 100%)' }} />
@@ -250,7 +250,7 @@ export default function NewsTab({ initialType }) {
                 <div key={i} onClick={() => setSelectedArticle(a)} style={{ ...gc, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
-                  <div style={{ height: 180, backgroundImage: a.image ? `url(${a.image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top), backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <div style={{ height: 180, backgroundImage: a.image && /^https?:\/\//.test(a.image) ? `url(${a.image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top), backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <div style={{ padding: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
                       <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 12, background: 'rgba(79,142,247,0.1)', color: '#7aaff8' }}>{a.source}</span>
@@ -271,7 +271,7 @@ export default function NewsTab({ initialType }) {
                 <div key={i} onClick={() => setSelectedArticle(a)} style={{ ...gc, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
-                  <div style={{ height: 140, backgroundImage: a.image ? `url(${a.image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top), backgroundSize: 'cover', backgroundPosition: 'center' }} />
+                  <div style={{ height: 140, backgroundImage: a.image && /^https?:\/\//.test(a.image) ? `url(${a.image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top), backgroundSize: 'cover', backgroundPosition: 'center' }} />
                   <div style={{ padding: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
                       <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 12, background: 'rgba(79,142,247,0.1)', color: '#7aaff8' }}>{a.source}</span>

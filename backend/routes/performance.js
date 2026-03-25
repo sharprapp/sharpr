@@ -53,7 +53,7 @@ router.get('/insights', requireAuth, async (req, res) => {
         });
         const text = msg.content.filter(b => b.type === 'text').map(b => b.text).join('');
         const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        result.aiCoaching = JSON.parse(cleaned);
+        try { result.aiCoaching = JSON.parse(cleaned); } catch { result.aiCoaching = []; console.warn('[Performance] AI coaching JSON parse failed:', cleaned.slice(0, 100)); }
       } catch (e) {
         console.warn('AI coaching error:', e.message);
       }
