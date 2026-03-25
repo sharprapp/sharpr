@@ -3055,77 +3055,64 @@ function ArbitragePanel() {
    PARLAY OPTIMIZER (Sports Betting sub-tab)
 ───────────────────────────────────────── */
 function ParlayPanel() {
-  const [legs, setLegs]   = useState([{ label: '', odds: '' }, { label: '', odds: '' }]);
+  const [odds, setOdds] = useState('');
   const [stake, setStake] = useState(20);
 
-  function toDecimal(odds) {
-    const n = parseFloat(odds);
-    if (!n) return null;
-    if (n > 0) return n / 100 + 1;
-    if (n < 0) return 100 / Math.abs(n) + 1;
-    return null;
-  }
-
-  const validLegs = legs.filter(l => l.odds && toDecimal(l.odds));
-  const combinedDecimal = validLegs.length >= 2 ? validLegs.reduce((p, l) => p * (toDecimal(l.odds) || 1), 1) : 0;
-  const combinedAmerican = combinedDecimal >= 2 ? Math.round((combinedDecimal - 1) * 100) : combinedDecimal > 1 ? Math.round(-100 / (combinedDecimal - 1)) : 0;
-  const payout = stake * combinedDecimal;
+  const o = parseFloat(odds);
+  const hasOdds = odds && !isNaN(o) && o !== 0;
+  const decimal = hasOdds ? (o > 0 ? o / 100 + 1 : 100 / Math.abs(o) + 1) : 0;
+  const payout = hasOdds ? stake * decimal : 0;
   const profit = payout - stake;
-
-  function addLeg()    { setLegs(p => [...p, { label: '', odds: '' }]); }
-  function removeLeg(i){ setLegs(p => p.filter((_, j) => j !== i)); }
-  function updateLeg(i, k, v) { setLegs(p => p.map((l, j) => j === i ? { ...l, [k]: v } : l)); }
+  const impliedProb = hasOdds ? (1 / decimal) * 100 : 0;
 
   const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 560 }}>
-      {/* Leg inputs */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
       <div style={card}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 14 }}>🎰 Parlay Builder</div>
-        {legs.map((leg, i) => (
-          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-            <div style={{ fontSize: 12, color: '#64748b', minWidth: 20 }}>#{i+1}</div>
-            <input value={leg.label} onChange={e => updateLeg(i, 'label', e.target.value)}
-              placeholder="Pick description…" className={inp}
-              style={{ ...inpStyle, flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 12 }} onFocus={inpFocus} onBlur={inpBlur} />
-            <input value={leg.odds} onChange={e => updateLeg(i, 'odds', e.target.value)}
-              placeholder="Odds" className={inp}
-              style={{ ...inpStyle, width: 80, padding: '8px 10px', borderRadius: 8, fontSize: 12 }} onFocus={inpFocus} onBlur={inpBlur} />
-            {legs.length > 2 && (
-              <button onClick={() => removeLeg(i)} style={{ color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}
-                onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
-                onMouseLeave={e => e.currentTarget.style.color='#64748b'}>✕</button>
-            )}
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 4 }}>🎰 Parlay Calculator</div>
+        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Enter your final parlay odds and stake to see the payout.</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Parlay odds (American)</div>
+            <input value={odds} onChange={e => setOdds(e.target.value)} placeholder="e.g. +650"
+              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
-        ))}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
-          <button onClick={addLeg} className="glass-btn" style={{ padding: '7px 16px', fontSize: 12, borderRadius: 8 }}>+ Add leg</button>
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 11, color: '#64748b' }}>Stake $</span>
+          <div>
+            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Stake ($)</div>
             <input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value)||0)}
-              className={inp} style={{ ...inpStyle, padding: '6px 10px', borderRadius: 8, width: 80, fontSize: 12 }} onFocus={inpFocus} onBlur={inpBlur} />
+              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
         </div>
       </div>
 
-      {/* Final parlay odds — the main event */}
-      {validLegs.length >= 2 ? (
+      {hasOdds ? (
         <div style={{ ...card, textAlign: 'center', background: 'linear-gradient(135deg, rgba(79,142,247,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '2px solid rgba(79,142,247,0.3)', padding: 32 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#4f8ef7', marginBottom: 8 }}>Parlay Odds</div>
-          <div style={{ fontSize: 56, fontWeight: 900, color: '#F5F5FA', letterSpacing: '-0.02em', lineHeight: 1 }}>
-            {combinedAmerican > 0 ? '+' : ''}{combinedAmerican}
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#4f8ef7', marginBottom: 8 }}>Payout if win</div>
+          <div style={{ fontSize: 56, fontWeight: 900, color: '#22c55e', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            ${payout.toFixed(2)}
           </div>
-          <div style={{ fontSize: 16, color: '#22c55e', fontWeight: 700, marginTop: 12 }}>
-            ${payout.toFixed(2)} payout
+          <div style={{ fontSize: 14, color: '#94a3b8', marginTop: 10 }}>
+            ${profit.toFixed(2)} profit on ${stake.toFixed(0)} stake
           </div>
-          <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
-            ${stake.toFixed(0)} stake · {validLegs.length} legs · ${profit.toFixed(2)} profit
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 16 }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Odds</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{o > 0 ? '+' : ''}{o}</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Decimal</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{decimal.toFixed(2)}x</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Implied prob</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#60a5fa' }}>{impliedProb.toFixed(1)}%</div>
+            </div>
           </div>
         </div>
       ) : (
         <div style={{ ...card, textAlign: 'center', padding: 24 }}>
-          <div style={{ fontSize: 13, color: '#4a5a7a' }}>Add odds to at least 2 legs to see parlay odds</div>
+          <div style={{ fontSize: 13, color: '#4a5a7a' }}>Enter parlay odds to see payout</div>
         </div>
       )}
     </div>
