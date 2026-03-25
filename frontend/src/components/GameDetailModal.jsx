@@ -241,15 +241,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
               </div>
             </div>
 
-            {/* Injuries */}
-            {injuries.length === 0 && (
-              <div>
-                <div style={st}>Injuries</div>
-                <div style={{ ...gc, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 12, color: '#4a5a7a' }}>Injury data unavailable for this matchup</div>
-                </div>
-              </div>
-            )}
+            {/* Injuries — only shown if data exists */}
             {injuries.length > 0 && (
               <div>
                 <div style={st}>Key Injuries</div>

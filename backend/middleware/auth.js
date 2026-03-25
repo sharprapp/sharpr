@@ -12,7 +12,14 @@ async function requireAuth(req, res, next) {
 
   try {
     const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) return res.status(401).json({ error: 'Invalid token' });
+    if (error) {
+      const msg = error.message || '';
+      if (msg.includes('expired') || msg.includes('invalid')) {
+        return res.status(401).json({ error: 'Token expired', expired: true });
+      }
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    if (!user) return res.status(401).json({ error: 'Invalid token' });
 
     // Fetch user profile (includes stripe_customer_id and tier)
     const { data: profile } = await supabase

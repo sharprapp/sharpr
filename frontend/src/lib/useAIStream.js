@@ -17,6 +17,8 @@ export function useAIStream() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { setError('Not authenticated'); setLoading(false); return; }
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/stream`, {
         method: 'POST',
         headers: {
@@ -24,6 +26,7 @@ export function useAIStream() {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ query, type, use_web_search: useWebSearch }),
+        signal: controller.signal,
       });
 
       if (!res.ok) {
@@ -33,6 +36,7 @@ export function useAIStream() {
         return;
       }
 
+      clearTimeout(timeout);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -72,7 +76,7 @@ export function useAIStream() {
       setDone(true);
       setLoading(false);
     } catch (e) {
-      setError(e.message || 'Stream failed');
+      setError(e.name === 'AbortError' ? 'Request timed out — try again' : (e.message || 'Stream failed'));
       setLoading(false);
     }
   }, []);

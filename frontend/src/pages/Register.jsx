@@ -11,7 +11,7 @@ export default function Register() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const weakPw = password.length >= 8 && (!/\d/.test(password) || !/[^a-zA-Z0-9]/.test(password));
+  const weakPw = password.length >= 8 && (!/\d/.test(password) || !/[^a-zA-Z0-9]/.test(password) || /^\d+$/.test(password) || !/[a-zA-Z]/.test(password));
 
   async function handleSubmit(e) {
     e.preventDefault();

@@ -133,6 +133,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     setTier('free');
     hasFetchedRef.current = false;
+    try { localStorage.removeItem('sharpr_last_tier'); } catch {}
   }
 
   const value = {

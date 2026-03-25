@@ -13,9 +13,20 @@ app.use(require('compression')());
 app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
 
+const ALLOWED_ORIGINS = [
+  process.env.FRONTEND_URL || 'https://sharprapp.com',
+  'https://sharprapp.com',
+  'https://www.sharprapp.com',
+  'http://localhost:5173',
+  'http://localhost:5174',
+].filter(Boolean);
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
+  origin: (origin, cb) => {
+    // Allow requests with no origin (mobile apps, curl, server-to-server)
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error('CORS blocked: ' + origin));
+  },
+  credentials: true,
 }));
 
 // ── Rate limiters ────────────────────────────────────────────────────────────

@@ -113,7 +113,10 @@ function fmtML(n) { return n == null ? null : n > 0 ? `+${n}` : `${n}`; }
 // GET /api/odds/games?sport=nba
 router.get('/games', async (req, res) => {
   const sport = (req.query.sport || 'nba').toLowerCase();
-  const sportKey = SPORT_KEYS[sport] || sport;
+  const sportKey = SPORT_KEYS[sport];
+  if (!sportKey) {
+    return res.json({ games: [], sport, error: `Unknown sport: ${sport}`, requestsRemaining: null });
+  }
   const cacheKey = `odds_${sportKey}`;
 
   const cached = cache.get(cacheKey);

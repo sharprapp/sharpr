@@ -699,7 +699,7 @@ function PortfolioPanel() {
   const [form, setForm] = useState({ title: '', side: 'YES', shares: '', avgPrice: '', currentPrice: '' });
   const [adding, setAdding] = useState(false);
 
-  function save(next) { setPositions(next); localStorage.setItem('pm_positions', JSON.stringify(next)); }
+  function save(next) { setPositions(next); try { localStorage.setItem('pm_positions', JSON.stringify(next)); } catch {} }
 
   function addPosition() {
     if (!form.title || !form.shares || !form.avgPrice) return;
@@ -712,7 +712,13 @@ function PortfolioPanel() {
   }
 
   function updateCurrent(id, price) {
-    save(positions.map(p => p.id === id ? { ...p, currentPrice: parseFloat(price) || p.currentPrice } : p));
+    setPositions(prev => {
+      const exists = prev.find(p => p.id === id);
+      if (!exists) return prev;
+      const next = prev.map(p => p.id === id ? { ...p, currentPrice: parseFloat(price) || p.currentPrice } : p);
+      try { localStorage.setItem('pm_positions', JSON.stringify(next)); } catch {}
+      return next;
+    });
   }
 
   const totalPnl = positions.reduce((sum, p) => {

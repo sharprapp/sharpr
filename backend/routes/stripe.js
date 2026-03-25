@@ -1,13 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const { stripe, PRICES } = require('../lib/stripe');
 const { requireAuth } = require('../middleware/auth');
 const supabase = require('../lib/supabase');
+const recentCheckouts = new Map(); // userId -> timestamp
 
 // Create Stripe checkout session → redirect user to Stripe hosted page
 router.post('/create-checkout', requireAuth, async (req, res) => {
   try {
     const { price_id = PRICES.pro_monthly } = req.body;
+    // Prevent double-click: reject if checkout created within last 10 seconds
+    const lastCheckout = recentCheckouts.get(req.user.id);
+    if (lastCheckout && Date.now() - lastCheckout < 10000) {
+      return res.status(429).json({ error: 'Checkout already in progress. Please wait.' });
+    }
+    recentCheckouts.set(req.user.id, Date.now());
     const user = req.user;
     const profile = req.profile;
 

@@ -12,7 +12,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
-  return user ? children : <Navigate to="/login" replace />;
+  return user != null ? children : <Navigate to="/login" replace />;
 }
 
 function SmartHome() {

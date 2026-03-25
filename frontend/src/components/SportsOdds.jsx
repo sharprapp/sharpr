@@ -78,7 +78,7 @@ export default function SportsOdds({ initialSport, tier }) {
 
   async function fetchGames() {
     const oddsKey = ODDS_API_KEY_MAP[sport] || sport.toLowerCase();
-    const cacheKey = 'odds_' + oddsKey;
+    const cacheKey = 'odds_' + oddsKey + '_' + new Date().toISOString().slice(0, 10);
     // Check frontend cache (5 min TTL)
     if (oddsCache[cacheKey] && Date.now() - oddsCache[cacheKey].ts < 300000) {
       setGames(oddsCache[cacheKey].games);

@@ -124,7 +124,7 @@ export default function HomeTab({ onSwitchTab }) {
     const settledTrades = trades.filter(t => t.status === 'win' || t.status === 'loss').map(t => ({ date: t.created_at, pnl: t.pnl || 0, type: 'trade' }));
     const all = [...settledBets, ...settledTrades].sort((a, b) => new Date(a.date) - new Date(b.date));
     const filtered = perfView === 'betting' ? settledBets.sort((a, b) => new Date(a.date) - new Date(b.date)) : perfView === 'trading' ? settledTrades.sort((a, b) => new Date(a.date) - new Date(b.date)) : all;
-    if (filtered.length === 0) return null;
+    if (!filtered || filtered.length === 0) return null;
 
     let cum = 0;
     const points = filtered.map(r => { cum += r.pnl; return { date: new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), total: Math.round(cum * 100) / 100 }; });
@@ -199,7 +199,7 @@ export default function HomeTab({ onSwitchTab }) {
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '2px', color: '#4f8ef7', textTransform: 'uppercase', marginBottom: 6 }}>Sharpr Score</div>
             <div style={{ height: 6, borderRadius: 3, background: '#1e2a4a', overflow: 'hidden', marginBottom: 8 }}>
-              <div style={{ height: '100%', borderRadius: 3, background: scoreColor, width: (sharprScore ?? 0) + '%', transition: 'width 0.8s ease' }} />
+              <div style={{ height: '100%', borderRadius: 3, background: scoreColor, width: (isNaN(sharprScore) ? 0 : (sharprScore ?? 0)) + '%', transition: 'width 0.8s ease' }} />
             </div>
             <div style={{ fontSize: 12, color: '#6a7a9a' }}>{sharprScore != null ? scoreLabel : 'Log trades and bets to calculate'}</div>
           </div>

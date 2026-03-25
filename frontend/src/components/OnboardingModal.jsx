@@ -12,12 +12,15 @@ export default function OnboardingModal({ onComplete, userPlan }) {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from('profiles').update({
+        const { error } = await supabase.from('profiles').update({
           onboarding_completed: true,
           onboarding_focus: focus.join(','),
         }).eq('id', user.id);
+        if (error) console.error('[Onboarding] Save failed:', error.message);
       }
-    } catch {}
+    } catch (e) {
+      console.error('[Onboarding] Error:', e.message);
+    }
     onComplete();
   }
 

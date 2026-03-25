@@ -27,10 +27,11 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
   useEffect(() => {
     const h = (e) => { if (e.key === 'Escape') onClose(); };
-    const r = () => setIsMobile(window.innerWidth < 768);
+    let resizeTimer;
+    const r = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => setIsMobile(window.innerWidth < 768), 150); };
     window.addEventListener('keydown', h);
     window.addEventListener('resize', r);
-    return () => { window.removeEventListener('keydown', h); window.removeEventListener('resize', r); };
+    return () => { window.removeEventListener('keydown', h); window.removeEventListener('resize', r); clearTimeout(resizeTimer); };
   }, [onClose]);
 
   // Auto-load AI analysis for pro users — streaming
