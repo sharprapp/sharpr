@@ -3055,64 +3055,244 @@ function ArbitragePanel() {
    PARLAY OPTIMIZER (Sports Betting sub-tab)
 ───────────────────────────────────────── */
 function ParlayPanel() {
-  const [odds, setOdds] = useState('');
+  const [mode, setMode] = useState('build'); // 'build' | 'manual'
+  const [games, setGames] = useState([]);
+  const [gamesLoading, setGamesLoading] = useState(true);
+  const [book, setBook] = useState('DraftKings');
+  const [legs, setLegs] = useState([]);
   const [stake, setStake] = useState(20);
+  const [manualOdds, setManualOdds] = useState('');
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [betType, setBetType] = useState(null); // 'ml' | 'spread' | 'ou' | 'prop'
+  const [propLabel, setPropLabel] = useState('');
+  const [propOdds, setPropOdds] = useState('');
 
-  const o = parseFloat(odds);
-  const hasOdds = odds && !isNaN(o) && o !== 0;
-  const decimal = hasOdds ? (o > 0 ? o / 100 + 1 : 100 / Math.abs(o) + 1) : 0;
-  const payout = hasOdds ? stake * decimal : 0;
+  useEffect(() => {
+    api.get('/api/odds/games?sport=nba').then(r => setGames(r.data?.games || [])).catch(() => {}).finally(() => setGamesLoading(false));
+  }, []);
+
+  function toDecimal(odds) {
+    const n = parseFloat(odds);
+    if (!n) return null;
+    return n > 0 ? n / 100 + 1 : 100 / Math.abs(n) + 1;
+  }
+  function fmtOdds(n) { return n == null ? '--' : n > 0 ? '+' + n : '' + n; }
+
+  // Get odds for a specific book
+  function getBookOdds(game, marketKey, outcomeName) {
+    if (!game?.allBookmakers) return null;
+    const bookKey = book.toLowerCase().replace(/\s/g, '');
+    for (const b of game.allBookmakers) {
+      if (!b.title.toLowerCase().replace(/\s/g, '').includes(bookKey)) continue;
+      const mkt = b.markets?.find(m => m.key === marketKey);
+      if (!mkt) continue;
+      const out = mkt.outcomes?.find(o => o.name === outcomeName);
+      if (out) return out;
+    }
+    // Fallback to first book
+    for (const b of game.allBookmakers) {
+      const mkt = b.markets?.find(m => m.key === marketKey);
+      if (!mkt) continue;
+      const out = mkt.outcomes?.find(o => o.name === outcomeName);
+      if (out) return out;
+    }
+    return null;
+  }
+
+  function addLeg(label, odds) {
+    if (!odds) return;
+    setLegs(prev => [...prev, { id: Date.now(), label, odds: parseFloat(odds) }]);
+    setSelectedGame(null);
+    setBetType(null);
+    setPropLabel('');
+    setPropOdds('');
+  }
+  function removeLeg(id) { setLegs(prev => prev.filter(l => l.id !== id)); }
+
+  // Calculate combined odds
+  const combinedDecimal = legs.length >= 2 ? legs.reduce((p, l) => p * (toDecimal(l.odds) || 1), 1) : 0;
+  const combinedAmerican = combinedDecimal >= 2 ? Math.round((combinedDecimal - 1) * 100) : combinedDecimal > 1 ? Math.round(-100 / (combinedDecimal - 1)) : 0;
+  const payout = mode === 'manual' ? (parseFloat(manualOdds) && stake ? stake * (toDecimal(manualOdds) || 0) : 0) : (legs.length >= 2 ? stake * combinedDecimal : 0);
   const profit = payout - stake;
-  const impliedProb = hasOdds ? (1 / decimal) * 100 : 0;
+  const finalOdds = mode === 'manual' ? parseFloat(manualOdds) : combinedAmerican;
+  const hasFinalOdds = mode === 'manual' ? (manualOdds && !isNaN(parseFloat(manualOdds)) && parseFloat(manualOdds) !== 0) : legs.length >= 2;
+  const impliedProb = hasFinalOdds ? (1 / (mode === 'manual' ? (toDecimal(manualOdds) || 1) : combinedDecimal)) * 100 : 0;
 
   const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const pillActive = { background: 'rgba(79,142,247,0.2)', border: '1px solid rgba(79,142,247,0.4)', color: '#7aaff8' };
+  const pillInactive = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a' };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 480 }}>
-      <div style={card}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 4 }}>🎰 Parlay Calculator</div>
-        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Enter your final parlay odds and stake to see the payout.</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Parlay odds (American)</div>
-            <input value={odds} onChange={e => setOdds(e.target.value)} placeholder="e.g. +650"
-              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
-          </div>
-          <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Stake ($)</div>
-            <input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value)||0)}
-              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
-          </div>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 560 }}>
+      {/* Mode toggle + book selector */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        {['build', 'manual'].map(m => (
+          <button key={m} onClick={() => setMode(m)}
+            style={{ ...(mode === m ? pillActive : pillInactive), padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            {m === 'build' ? 'Build parlay' : 'Enter odds manually'}
+          </button>
+        ))}
+        {mode === 'build' && (
+          <select value={book} onChange={e => setBook(e.target.value)}
+            style={{ marginLeft: 'auto', background: '#0a0f1e', border: '1px solid #1e2a4a', color: '#94a3b8', borderRadius: 8, padding: '5px 10px', fontSize: 11, outline: 'none' }}>
+            {['DraftKings', 'FanDuel', 'BetMGM', 'Caesars', 'PointsBet'].map(b => <option key={b}>{b}</option>)}
+          </select>
+        )}
       </div>
 
-      {hasOdds ? (
-        <div style={{ ...card, textAlign: 'center', background: 'linear-gradient(135deg, rgba(79,142,247,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '2px solid rgba(79,142,247,0.3)', padding: 32 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#4f8ef7', marginBottom: 8 }}>Payout if win</div>
-          <div style={{ fontSize: 56, fontWeight: 900, color: '#22c55e', letterSpacing: '-0.02em', lineHeight: 1 }}>
-            ${payout.toFixed(2)}
-          </div>
-          <div style={{ fontSize: 14, color: '#94a3b8', marginTop: 10 }}>
-            ${profit.toFixed(2)} profit on ${stake.toFixed(0)} stake
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 16 }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Odds</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{o > 0 ? '+' : ''}{o}</div>
+      {mode === 'manual' ? (
+        /* ── Manual mode ── */
+        <div style={card}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 12 }}>🎰 Parlay Calculator</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Parlay odds (American)</div>
+              <input value={manualOdds} onChange={e => setManualOdds(e.target.value)} placeholder="+650"
+                className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Decimal</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{decimal.toFixed(2)}x</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Implied prob</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#60a5fa' }}>{impliedProb.toFixed(1)}%</div>
+            <div>
+              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Stake ($)</div>
+              <input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value)||0)}
+                className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
             </div>
           </div>
         </div>
       ) : (
+        /* ── Build mode ── */
+        <>
+          <div style={card}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 12 }}>🎰 Add Leg</div>
+            {/* Game selector */}
+            <select value={selectedGame?.id || ''} onChange={e => { setSelectedGame(games.find(g => g.id === e.target.value) || null); setBetType(null); }}
+              className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%', marginBottom: 10, fontSize: 12 }} onFocus={inpFocus} onBlur={inpBlur}>
+              <option value="">Select a game...</option>
+              {gamesLoading ? <option disabled>Loading...</option> : games.map(g => (
+                <option key={g.id} value={g.id}>{g.awayTeam} @ {g.homeTeam}</option>
+              ))}
+            </select>
+
+            {selectedGame && (
+              <>
+                {/* Bet type buttons */}
+                <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                  {[['ml', 'ML'], ['spread', 'Spread'], ['ou', 'O/U'], ['prop', 'Prop']].map(([k, label]) => (
+                    <button key={k} onClick={() => setBetType(k)}
+                      style={{ ...(betType === k ? pillActive : pillInactive), padding: '5px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>{label}</button>
+                  ))}
+                </div>
+
+                {/* ML picks */}
+                {betType === 'ml' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {[
+                      [selectedGame.homeTeam, getBookOdds(selectedGame, 'h2h', selectedGame.homeTeam)],
+                      [selectedGame.awayTeam, getBookOdds(selectedGame, 'h2h', selectedGame.awayTeam)],
+                    ].map(([team, out]) => (
+                      <button key={team} onClick={() => out && addLeg(`${team} ML`, out.price)}
+                        style={{ ...card, padding: 12, cursor: out ? 'pointer' : 'default', opacity: out ? 1 : 0.4, textAlign: 'center' }}>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>{team}</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{out ? fmtOdds(out.price) : '--'}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Spread picks */}
+                {betType === 'spread' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {[
+                      [selectedGame.homeTeam, getBookOdds(selectedGame, 'spreads', selectedGame.homeTeam)],
+                      [selectedGame.awayTeam, getBookOdds(selectedGame, 'spreads', selectedGame.awayTeam)],
+                    ].map(([team, out]) => (
+                      <button key={team} onClick={() => out && addLeg(`${team} ${out.point > 0 ? '+' : ''}${out.point}`, out.price)}
+                        style={{ ...card, padding: 12, cursor: out ? 'pointer' : 'default', opacity: out ? 1 : 0.4, textAlign: 'center' }}>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>{team} {out ? (out.point > 0 ? '+' : '') + out.point : ''}</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{out ? fmtOdds(out.price) : '--'}</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* O/U picks */}
+                {betType === 'ou' && (() => {
+                  const overOut = getBookOdds(selectedGame, 'totals', 'Over');
+                  const underOut = getBookOdds(selectedGame, 'totals', 'Under');
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                      <button onClick={() => overOut && addLeg(`Over ${overOut.point}`, overOut.price)}
+                        style={{ ...card, padding: 12, cursor: overOut ? 'pointer' : 'default', opacity: overOut ? 1 : 0.4, textAlign: 'center' }}>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>Over {overOut?.point || '--'}</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{overOut ? fmtOdds(overOut.price) : '--'}</div>
+                      </button>
+                      <button onClick={() => underOut && addLeg(`Under ${underOut.point}`, underOut.price)}
+                        style={{ ...card, padding: 12, cursor: underOut ? 'pointer' : 'default', opacity: underOut ? 1 : 0.4, textAlign: 'center' }}>
+                        <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>Under {underOut?.point || '--'}</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{underOut ? fmtOdds(underOut.price) : '--'}</div>
+                      </button>
+                    </div>
+                  );
+                })()}
+
+                {/* Player prop */}
+                {betType === 'prop' && (
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Prop description</div>
+                      <input value={propLabel} onChange={e => setPropLabel(e.target.value)} placeholder="e.g. LeBron Over 25.5 pts"
+                        className={inp} style={{ ...inpStyle, padding: '8px 10px', borderRadius: 8, fontSize: 12, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
+                    </div>
+                    <div style={{ width: 80 }}>
+                      <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Odds</div>
+                      <input value={propOdds} onChange={e => setPropOdds(e.target.value)} placeholder="-110"
+                        className={inp} style={{ ...inpStyle, padding: '8px 10px', borderRadius: 8, fontSize: 12, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
+                    </div>
+                    <button onClick={() => { if (propLabel && propOdds) addLeg(propLabel, propOdds); }}
+                      style={{ background: '#2563EB', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>Add</button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Legs list */}
+          {legs.length > 0 && (
+            <div style={card}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 8 }}>Parlay Legs ({legs.length})</div>
+              {legs.map((leg, i) => (
+                <div key={leg.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0', borderBottom: i < legs.length - 1 ? '1px solid #1e2a4a' : 'none' }}>
+                  <span style={{ fontSize: 13, color: '#22c55e' }}>✓</span>
+                  <span style={{ fontSize: 13, color: '#F5F5FA', flex: 1 }}>{leg.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8' }}>{fmtOdds(leg.odds)}</span>
+                  <button onClick={() => removeLeg(leg.id)} style={{ color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}
+                    onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
+                    onMouseLeave={e => e.currentTarget.style.color='#4a5a7a'}>✕</button>
+                </div>
+              ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
+                <span style={{ fontSize: 11, color: '#64748b' }}>Stake $</span>
+                <input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value)||0)}
+                  className={inp} style={{ ...inpStyle, padding: '6px 10px', borderRadius: 8, width: 80, fontSize: 12 }} onFocus={inpFocus} onBlur={inpBlur} />
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Final parlay odds display */}
+      {hasFinalOdds ? (
+        <div style={{ ...card, textAlign: 'center', background: 'linear-gradient(135deg, rgba(79,142,247,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '2px solid rgba(79,142,247,0.3)', padding: 32 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#4f8ef7', marginBottom: 8 }}>Parlay Odds</div>
+          <div style={{ fontSize: 56, fontWeight: 900, color: '#F5F5FA', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            {finalOdds > 0 ? '+' : ''}{Math.round(finalOdds)}
+          </div>
+          <div style={{ fontSize: 16, color: '#22c55e', fontWeight: 700, marginTop: 12 }}>${payout.toFixed(2)} payout</div>
+          <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>
+            ${stake.toFixed(0)} stake · ${profit.toFixed(2)} profit · {impliedProb.toFixed(1)}% implied
+          </div>
+        </div>
+      ) : (
         <div style={{ ...card, textAlign: 'center', padding: 24 }}>
-          <div style={{ fontSize: 13, color: '#4a5a7a' }}>Enter parlay odds to see payout</div>
+          <div style={{ fontSize: 13, color: '#4a5a7a' }}>{mode === 'build' ? 'Add at least 2 legs to see parlay odds' : 'Enter parlay odds to see payout'}</div>
         </div>
       )}
     </div>
