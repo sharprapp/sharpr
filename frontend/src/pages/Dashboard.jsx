@@ -1615,11 +1615,9 @@ function SportsBettingTab({ tier, activeSubTab }) {
   const subTab = activeSubTab || 'journal';
   const [bets, setBets]       = useState([]);
   const [form, setForm]       = useState({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' });
-  const [imgParsing, setImgParsing] = useState(false);
-  const [showMoreBet, setShowMoreBet] = useState(false);
   const [betSaved, setBetSaved] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [view, setView]       = useState('calendar');
+  const [feedFilter, setFeedFilter] = useState(null);
 
   const [monthGoal,  setMonthGoal]  = useState(() => parseFloat(localStorage.getItem('bet_month_goal')  || '500'));
   const [dailyLimit, setDailyLimit] = useState(() => parseFloat(localStorage.getItem('bet_daily_limit') || '100'));
@@ -1631,7 +1629,6 @@ function SportsBettingTab({ tier, activeSubTab }) {
     function handleBetPrefill(e) {
       const { sport, match } = e.detail || {};
       setForm(prev => ({ ...prev, sport: sport || prev.sport, match: match || prev.match }));
-      setView('table');
     }
     window.addEventListener('bet-prefill', handleBetPrefill);
     return () => window.removeEventListener('bet-prefill', handleBetPrefill);
@@ -1706,223 +1703,176 @@ function SportsBettingTab({ tier, activeSubTab }) {
       {subTab === 'analytics' && <BettingAnalyticsPanel bets={bets} />}
 
       {subTab === 'journal' && (<>
-      <MonthlyTracker
-        monthPnl={monthPnl} monthGoal={monthGoal} todayPnl={todayPnl} dailyLimit={dailyLimit}
-        monthWR={monthWR} wrTarget={wrTarget} maxDD={maxDD}
-        onGoalChange={v  => { setMonthGoal(v);  localStorage.setItem('bet_month_goal',  v); }}
-        onLimitChange={v => { setDailyLimit(v); localStorage.setItem('bet_daily_limit', v); }}
-        onTargetChange={v => { setWrTarget(v);  localStorage.setItem('bet_wr_target',   v); }}
-      />
-
-      {/* Export buttons */}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={() => exportBetsCSV(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>Export CSV</button>
-        {(tier === 'pro' || tier === 'elite') ? (
-          <button onClick={() => exportBetsPDF(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>Export PDF</button>
-        ) : (
-          <span style={{ fontSize: 10, color: '#2a3a5a', alignSelf: 'center' }}>PDF export — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
-        )}
-      </div>
-
-      {/* All-time stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[['Total bets', bets.length, null],['Win rate', wr+'%', null],['Total P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(2), totalPnl],['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi)]].map(([l,v,pnl],i) => (
-          <div key={l} className="rounded-2xl p-5" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease'}}>
-            <div className="text-xs font-medium uppercase tracking-wide mb-1.5" style={{color: '#64748b'}}>{l}</div>
-            <div className={`text-2xl font-bold ${i>=2 ? (pnl>=0 ? 'text-green-500' : 'text-red-500') : ''}`} style={i<2 ? {color: '#F5F5FA'} : {}}>{v}</div>
+      {/* ── Stats bar ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          ['Total P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(0), totalPnl >= 0 ? '#22c55e' : '#ef4444'],
+          ['Win Rate', wr+'%', wr >= 50 ? '#22c55e' : '#F5F5FA'],
+          ['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi) >= 0 ? '#22c55e' : '#ef4444'],
+          ['Active', bets.filter(b => b.result==='pending').length+'', '#4f8ef7'],
+        ].map(([l, v, c]) => (
+          <div key={l} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ fontSize: 10, color: '#4a5a7a', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{l}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: c }}>{v}</div>
           </div>
         ))}
       </div>
 
-      <ViewToggle view={view} setView={setView} options={['calendar', 'table', 'odds']} />
-
-      {view === 'calendar' && <BettingCalendar bets={bets} />}
-      {view === 'odds'     && <SportsOdds />}
-      {view === 'table'    && (
-        <>
-          {/* Bet form */}
-          <div className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Quick log</div>
-              {betSaved && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Bet logged ✓</span>}
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-              <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Matchup / bet</label>
-                <input placeholder="e.g. Lakers ML" value={form.match} onChange={e => setForm({...form,match:e.target.value})}
-                  onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
-                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                  onFocus={inpFocus} onBlur={inpBlur} />
-              </div>
-              <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Odds</label>
-                <input placeholder="-110" value={form.odds} onChange={e => setForm({...form,odds:e.target.value})}
-                  onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
-                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                  onFocus={inpFocus} onBlur={inpBlur} />
-              </div>
-              <div>
-                <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Stake ($)</label>
-                <input type="number" placeholder="50" value={form.stake} onChange={e => setForm({...form,stake:e.target.value})}
-                  onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
-                  className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle}
-                  onFocus={inpFocus} onBlur={inpBlur} />
-              </div>
-            </div>
-            {/* Collapsible details */}
-            <button onClick={() => setShowMoreBet(s => !s)} style={{ fontSize: 11, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', marginBottom: showMoreBet ? 12 : 0, padding: 0 }}>
-              {showMoreBet ? 'Less details ▴' : 'More details ▾'}
-            </button>
-            {showMoreBet && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-                <div>
-                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sport</label>
-                  <select value={form.sport} onChange={e => setForm({...form,sport:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-                    {['NFL','NBA','MLB','NHL','Soccer','UFC'].map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Sportsbook</label>
-                  <select value={form.sportsbook} onChange={e => setForm({...form,sportsbook:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-                    {['DraftKings','FanDuel','BetMGM','Caesars','PointsBet','Bet365','Other'].map(s => <option key={s}>{s}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Bet type</label>
-                  <select value={form.type} onChange={e => setForm({...form,type:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-                    {['Moneyline','Spread','Over/Under','Prop','Parlay'].map(t => <option key={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Result</label>
-                  <select value={form.result} onChange={e => setForm({...form,result:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-                    <option value="pending">Pending</option><option value="win">Win</option><option value="loss">Loss</option><option value="push">Push</option>
-                  </select>
-                </div>
-                <div className="col-span-2 sm:col-span-4">
-                  <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
-                  <input placeholder="Reasoning…" value={form.notes} onChange={e => setForm({...form,notes:e.target.value})} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
-                </div>
-              </div>
-            )}
-            {/* Payout preview */}
-            {form.odds && form.stake && (() => {
-              const o = parseFloat(form.odds), s = parseFloat(form.stake);
-              if (!o || !s) return null;
-              const profit = o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100);
-              return (
-                <div style={{ fontSize: 13, color: '#22c55e', marginBottom: 8, fontWeight: 600 }}>
-                  Potential payout: ${(s + profit).toFixed(2)} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 400 }}>(profit: ${profit.toFixed(2)})</span>
-                </div>
-              );
-            })()}
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button onClick={addBet} disabled={loading}
-                className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
-                style={{background: '#2563EB', color: '#fff'}}
-                onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
-                onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
-                {loading ? 'Adding…' : '+ Log bet'}
-              </button>
-              {(tier === 'pro' || tier === 'elite') ? (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 12, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                  {imgParsing ? 'Analyzing...' : '📷 Upload Screenshot'}
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
-                    const file = e.target.files?.[0]; if (!file) return;
-                    setImgParsing(true);
-                    try {
-                      const base64 = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                      });
-                      console.log('[BetUpload] base64 length:', base64.length);
-                      const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'bet' });
-                      console.log('[BetUpload] API response:', data);
-                      if (data.parsed) {
-                        const p = data.parsed;
-                        console.log('[BetUpload] Parsed fields:', p);
-                        setForm(prev => ({
-                          ...prev,
-                          match: p.match || prev.match,
-                          odds: p.odds || prev.odds,
-                          stake: p.stake ? String(p.stake).replace(/[$,]/g, '') : prev.stake,
-                          type: p.type || prev.type,
-                          sport: p.sport || prev.sport,
-                          sportsbook: p.sportsbook || prev.sportsbook,
-                          notes: p.notes || prev.notes,
-                        }));
-                      }
-                    } catch (err) {
-                      console.error('[BetUpload] Error:', err);
-                      alert('Could not read screenshot. Try a clearer image.');
-                    } finally {
-                      setImgParsing(false);
-                    }
-                    e.target.value = '';
-                  }} />
-                </label>
-              ) : (
-                <span style={{ fontSize: 11, color: '#2a3a5a' }}>📷 Screenshot upload — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
-              )}
-            </div>
+      {/* ── Bet entry form — bet slip style ── */}
+      <div data-bet-form style={{ background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 }}>
+        {betSaved && <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600, marginBottom: 8 }}>Bet logged ✓</div>}
+        {/* Sport tiles */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+          {[['🏀','NBA'],['🏈','NFL'],['⚾','MLB'],['🏒','NHL'],['⚽','Soccer'],['🥊','UFC'],['🎾','Tennis'],['⛳','Golf']].map(([icon, s]) => (
+            <button key={s} onClick={() => setForm(f => ({...f, sport: s}))}
+              style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', display: 'flex', alignItems: 'center', gap: 4,
+                ...(form.sport === s ? { background: 'rgba(79,142,247,0.15)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#4a5a7a' })
+              }}>{icon} {s}</button>
+          ))}
+        </div>
+        {/* Bet type pills */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          {['Moneyline','Spread','Over/Under','Prop','Parlay'].map(t => (
+            <button key={t} onClick={() => setForm(f => ({...f, type: t}))}
+              style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: '1px solid',
+                ...(form.type === t ? { background: 'rgba(79,142,247,0.15)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#4a5a7a' })
+              }}>{t}</button>
+          ))}
+        </div>
+        {/* Matchup + Odds */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Matchup / pick</div>
+            <input placeholder="e.g. Lakers ML, Chiefs -3.5" value={form.match} onChange={e => setForm({...form, match: e.target.value})}
+              onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
+          <div>
+            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Odds (American)</div>
+            <input placeholder="-110" value={form.odds} onChange={e => setForm({...form, odds: e.target.value})}
+              onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
+        </div>
+        {/* Stake with quick-add */}
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Stake ($)</div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <input type="number" placeholder="50" value={form.stake} onChange={e => setForm({...form, stake: e.target.value})}
+              onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
+              className={`rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={{...inpStyle, width: 100}} onFocus={inpFocus} onBlur={inpBlur} />
+            {[10, 25, 50, 100].map(v => (
+              <button key={v} onClick={() => setForm(f => ({...f, stake: String((parseFloat(f.stake) || 0) + v)}))}
+                style={{ padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b' }}>+${v}</button>
+            ))}
+          </div>
+        </div>
+        {/* Book selector pills */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+          {['DraftKings','FanDuel','BetMGM','Caesars','Other'].map(b => (
+            <button key={b} onClick={() => setForm(f => ({...f, sportsbook: b}))}
+              style={{ padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer', border: '1px solid',
+                ...(form.sportsbook === b ? { background: 'rgba(79,142,247,0.1)', borderColor: 'rgba(79,142,247,0.3)', color: '#7aaff8' } : { background: 'transparent', borderColor: 'rgba(255,255,255,0.06)', color: '#2a3a5a' })
+              }}>{b}</button>
+          ))}
+        </div>
+        {/* Payout preview */}
+        {form.odds && form.stake && (() => {
+          const o = parseFloat(form.odds), s = parseFloat(form.stake);
+          if (!o || !s) return null;
+          const pr = o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100);
+          return <div style={{ fontSize: 14, color: '#22c55e', fontWeight: 700, marginBottom: 10 }}>Payout: ${(s + pr).toFixed(2)} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 400 }}>(+${pr.toFixed(2)} profit)</span></div>;
+        })()}
+        <button onClick={addBet} disabled={loading || !form.match || !form.odds || !form.stake}
+          style={{ width: '100%', padding: '12px', borderRadius: 12, background: '#2563EB', color: '#fff', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', opacity: loading || !form.match || !form.odds || !form.stake ? 0.5 : 1 }}>
+          {loading ? 'Logging…' : 'Log Bet'}
+        </button>
+      </div>
 
-          <DarkTable
-            headers={['Sport','Type','Bet','Odds','Stake','To win','Result','P&L','']}
-            empty="No bets logged yet.">
-            {bets.map(b => {
-              const cls = b.result==='win'?'text-green-500':b.result==='loss'?'text-red-500':'text-slate-500';
-              return (
-                <tr key={b.id} className="transition-colors" style={{borderBottom: '1px solid #1e2a4a'}}
-                  onMouseEnter={e => e.currentTarget.style.background='rgba(30,42,74,0.4)'}
-                  onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                  <td className="px-5 py-3.5">
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${SPORT_COLORS[b.sport]||'bg-slate-500/20 text-slate-400'}`}>{b.sport}</span>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-400 text-xs">{b.type}</td>
-                  <td className="px-5 py-3.5 max-w-[160px] truncate text-slate-200" title={b.match}>{b.match}</td>
-                  <td className="px-5 py-3.5 text-slate-300">{b.odds}</td>
-                  <td className="px-5 py-3.5 text-slate-300">${parseFloat(b.stake).toFixed(0)}</td>
-                  <td className="px-5 py-3.5 text-slate-300">${parseFloat(b.to_win||0).toFixed(2)}</td>
-                  <td className="px-5 py-3.5">
-                    {b.result === 'pending' ? (
-                      markingBet === b.id ? (
-                        <div style={{ display: 'flex', gap: 4 }}>
-                          {[['W','win','#22c55e'],['L','loss','#ef4444'],['P','push','#64748b']].map(([label, res, color]) => (
-                            <button key={res} onClick={() => markResult(b.id, res)}
-                              style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: color + '20', border: `1px solid ${color}40`, color, cursor: 'pointer' }}>{label}</button>
-                          ))}
-                          <button onClick={() => setMarkingBet(null)} style={{ fontSize: 10, color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
-                        </div>
-                      ) : (
-                        <button onClick={() => setMarkingBet(b.id)}
-                          style={{ fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 6, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>
-                          Mark result
-                        </button>
-                      )
-                    ) : (
-                      <span className={`text-xs font-semibold uppercase tracking-wide ${cls}`}>{b.result}</span>
-                    )}
-                  </td>
-                  <td className={`px-5 py-3.5 font-semibold ${cls}`}>{b.pnl!=null?(b.pnl>=0?'+':'')+' $'+Math.abs(b.pnl).toFixed(2):'—'}</td>
-                  <td className="px-5 py-3.5">
-                    <button onClick={() => deleteBet(b.id)} className="text-slate-600 hover:text-red-400 text-base transition-colors">✕</button>
-                  </td>
-                </tr>
-              );
-            })}
-          </DarkTable>
-          <button onClick={() => sendPrompt('Analyze my sports betting history. Which sports and bet types are profitable? Where should I stop betting? Give me specific data-driven feedback.')}
-            className="text-sm text-left transition-colors rounded-xl px-5 py-3"
-            style={{border: '1px solid #1e2a4a', color: '#94A3B8', background: 'transparent'}}
-            onMouseEnter={e => { e.currentTarget.style.borderColor='#2563EB'; e.currentTarget.style.color='#F5F5FA'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor='#1e2a4a'; e.currentTarget.style.color='#94A3B8'; }}>
-            Ask Claude to analyze my bets ↗
-          </button>
-        </>
-      )}
+      {/* ── Filter pills ── */}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        {['All','Pending','Won','Lost',...[...new Set(bets.map(b => b.sport))]].map(f => {
+          const isActive = (feedFilter || 'All') === f;
+          return (
+            <button key={f} onClick={() => setFeedFilter(f === 'All' ? null : f)}
+              style={{ padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: '1px solid',
+                ...(isActive ? { background: 'rgba(79,142,247,0.15)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#4a5a7a' })
+              }}>{f}</button>
+          );
+        })}
+      </div>
+
+      {/* ── Bet feed cards ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {bets.filter(b => {
+          if (!feedFilter) return true;
+          if (feedFilter === 'Pending') return b.result === 'pending';
+          if (feedFilter === 'Won') return b.result === 'win';
+          if (feedFilter === 'Lost') return b.result === 'loss';
+          return b.sport === feedFilter;
+        }).map(b => {
+          const borderColor = b.result === 'win' ? '#22c55e' : b.result === 'loss' ? '#ef4444' : '#4f8ef7';
+          const sportIcons = { NBA:'🏀', NFL:'🏈', MLB:'⚾', NHL:'🏒', Soccer:'⚽', UFC:'🥊', Tennis:'🎾', Golf:'⛳' };
+          const o = parseFloat(b.odds), s = parseFloat(b.stake);
+          const toWin = o && s ? (o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100)) : 0;
+          return (
+            <div key={b.id} style={{ background: '#0f1729', border: '1px solid #1e2a4a', borderLeft: `3px solid ${borderColor}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+              <div style={{ fontSize: 20, flexShrink: 0 }}>{sportIcons[b.sport] || '🎯'}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.match}</div>
+                <div style={{ fontSize: 11, color: '#4a5a7a', marginTop: 2 }}>{b.type} · {b.odds} · ${s?.toFixed(0)} on {b.sportsbook || 'Book'}</div>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                {b.result === 'pending' ? (
+                  markingBet === b.id ? (
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {[['W','win','#22c55e'],['L','loss','#ef4444'],['P','push','#64748b']].map(([label, res, color]) => (
+                        <button key={res} onClick={() => markResult(b.id, res)}
+                          style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: color + '20', border: `1px solid ${color}40`, color, cursor: 'pointer' }}>{label}</button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8' }}>+${toWin.toFixed(0)}</div>
+                      <button onClick={() => setMarkingBet(b.id)} style={{ fontSize: 10, color: '#4f8ef7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, marginTop: 2 }}>Mark result</button>
+                    </div>
+                  )
+                ) : (
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: b.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{b.pnl >= 0 ? '+' : ''}${(b.pnl||0).toFixed(0)}</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: borderColor, textTransform: 'uppercase' }}>{b.result}</div>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => deleteBet(b.id)} style={{ color: '#1e2a4a', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}
+                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                onMouseLeave={e => e.currentTarget.style.color = '#1e2a4a'}>✕</button>
+            </div>
+          );
+        })}
+        {bets.length === 0 && (
+          <div style={{ background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 14, padding: 40, textAlign: 'center' }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>📝</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#4a5a7a' }}>No bets yet — log your first one above</div>
+          </div>
+        )}
+      </div>
+
+      {/* Export + AI */}
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => exportBetsCSV(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>Export CSV</button>
+          {(tier === 'pro' || tier === 'elite') && (
+            <button onClick={() => exportBetsPDF(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>Export PDF</button>
+          )}
+        </div>
+        <button onClick={() => sendPrompt('Analyze my sports betting history. Which sports and bet types are profitable?')}
+          style={{ fontSize: 11, color: '#4f8ef7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+          Ask AI to analyze ↗
+        </button>
+      </div>
       </>)}
     </div>
   );
