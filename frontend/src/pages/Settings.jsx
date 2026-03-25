@@ -40,6 +40,11 @@ export default function Settings() {
   const { user, tier, username, signOut } = useAuth();
   const navigate = useNavigate();
   const [resetSent, setResetSent] = useState(false);
+  const [editUsername, setEditUsername] = useState('');
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState('');
+  const [usernameSaved, setUsernameSaved] = useState(false);
+  const [usernameSaving, setUsernameSaving] = useState(false);
   const [searchParams]          = useSearchParams();
   const [subStatus, setSubStatus] = useState(null);
   const [loading, setLoading]   = useState(false);
@@ -118,12 +123,39 @@ export default function Settings() {
         <div style={CARD}>
           <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Account</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {username && (
-              <div>
-                <label style={LABEL}>Username</label>
-                <div style={{ ...inpStyle, background: '#0a0f1e', color: '#94A3B8' }}>@{username}</div>
-              </div>
-            )}
+            <div>
+              <label style={LABEL}>Username</label>
+              {editingUsername ? (
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#4a5a7a', fontSize: 14 }}>@</span>
+                    <input value={editUsername} onChange={e => { setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '')); setUsernameError(''); setUsernameSaved(false); }}
+                      placeholder="new_username" className={inp} style={{ ...inpStyle, paddingLeft: 28 }} onFocus={inpFocus} onBlur={inpBlur} maxLength={20} />
+                  </div>
+                  <button disabled={usernameSaving || !editUsername || editUsername.length < 3} onClick={async () => {
+                    setUsernameSaving(true); setUsernameError('');
+                    try {
+                      const { data } = await api.post('/api/user/set-username', { username: editUsername });
+                      if (data.success) { setUsernameSaved(true); setEditingUsername(false); setTimeout(() => setUsernameSaved(false), 3000); }
+                    } catch (e) { setUsernameError(e.response?.data?.error || 'Could not update username'); }
+                    setUsernameSaving(false);
+                  }} style={{ background: '#2563EB', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', opacity: usernameSaving || !editUsername || editUsername.length < 3 ? 0.5 : 1 }}>
+                    {usernameSaving ? 'Saving…' : 'Save'}
+                  </button>
+                  <button onClick={() => { setEditingUsername(false); setUsernameError(''); }} style={{ color: '#4a5a7a', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}>✕</button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ ...inpStyle, background: '#0a0f1e', color: '#94A3B8', flex: 1 }}>@{username || 'not set'}</div>
+                  <button onClick={() => { setEditUsername(username || ''); setEditingUsername(true); }}
+                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 14px', fontSize: 12, color: '#94A3B8', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                    Change
+                  </button>
+                </div>
+              )}
+              {usernameError && <div style={{ fontSize: 12, color: '#ef4444', marginTop: 6 }}>{usernameError}</div>}
+              {usernameSaved && <div style={{ fontSize: 12, color: '#22c55e', marginTop: 6 }}>Username updated successfully</div>}
+            </div>
             <div>
               <label style={LABEL}>Email</label>
               <div style={{ ...inpStyle, background: '#0a0f1e', color: '#64748b' }}>{user?.email}</div>
