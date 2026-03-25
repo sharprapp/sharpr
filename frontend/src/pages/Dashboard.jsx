@@ -146,6 +146,13 @@ export default function Dashboard() {
     return () => window.removeEventListener('open-upgrade', handler);
   }, []);
 
+  // Switch to bet journal when bet-prefill fires from Events tab
+  useEffect(() => {
+    function handler() { switchTab('sb-journal'); }
+    window.addEventListener('bet-prefill', handler);
+    return () => window.removeEventListener('bet-prefill', handler);
+  }, []);
+
   useEffect(() => {
     function handler(e) { setEventsSport(e.detail); }
     window.addEventListener('events-sport', handler);
@@ -1629,8 +1636,16 @@ function SportsBettingTab({ tier, activeSubTab }) {
 
   useEffect(() => {
     function handleBetPrefill(e) {
-      const { sport, match } = e.detail || {};
-      setForm(prev => ({ ...prev, sport: sport || prev.sport, match: match || prev.match }));
+      const { sport, match, odds, type, sportsbook } = e.detail || {};
+      setForm(prev => ({
+        ...prev,
+        sport: sport || prev.sport,
+        match: match || prev.match,
+        odds: odds || prev.odds,
+        type: type || prev.type,
+        sportsbook: sportsbook || prev.sportsbook,
+      }));
+      setEntryMode('manual');
     }
     window.addEventListener('bet-prefill', handleBetPrefill);
     return () => window.removeEventListener('bet-prefill', handleBetPrefill);

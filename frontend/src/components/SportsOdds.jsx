@@ -110,10 +110,17 @@ export default function SportsOdds({ initialSport, tier }) {
     setLoading(false);
   }
 
-  function betGame(game, betType) {
-    const match = `${game.awayTeam} @ ${game.homeTeam}`;
-    const detail = betType ? ` (${betType})` : '';
-    window.dispatchEvent(new CustomEvent('bet-prefill', { detail: { sport, match: match + detail } }));
+  function betGame(game, betType, side) {
+    const match = side
+      ? `${side} ${betType === 'ML' ? 'ML' : betType === 'Spread' ? formatSpread(side === game.homeTeam ? game.homeSpread : game.awaySpread) : betType === 'Over' ? 'Over ' + game.overTotal : betType === 'Under' ? 'Under ' + game.overTotal : ''}`
+      : `${game.awayTeam} @ ${game.homeTeam}`;
+    const odds = side === game.homeTeam ? (betType === 'ML' ? game.homeML : game.homeSpreadOdds)
+      : side === game.awayTeam ? (betType === 'ML' ? game.awayML : game.awaySpreadOdds)
+      : betType === 'Over' ? game.overOdds : betType === 'Under' ? game.underOdds : '';
+    const sportMap = { nba: 'NBA', nfl: 'NFL', mlb: 'MLB', nhl: 'NHL' };
+    window.dispatchEvent(new CustomEvent('bet-prefill', {
+      detail: { sport: sportMap[sport.toLowerCase()] || sport, match, odds: odds ? String(odds) : '', type: betType === 'Over' || betType === 'Under' ? 'Over/Under' : betType === 'Spread' ? 'Spread' : 'Moneyline', sportsbook: game.bookmakers?.[0] || 'DraftKings' }
+    }));
   }
 
   function analyzeGame(game) {
@@ -222,13 +229,13 @@ export default function SportsOdds({ initialSport, tier }) {
                       <TeamLogo teamName={game.awayTeam} size={24} />
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', wordBreak: 'break-word' }}>{game.awayTeam}</span>
                     </div>
-                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.awayTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
                       {formatSpread(game.awaySpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.awaySpreadOdds)})</span>
                     </div>
-                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.awayML > 0 ? '#22c55e' : '#ef4444' }}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.awayTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.awayML > 0 ? '#22c55e' : '#ef4444', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
                       {formatOdds(game.awayML)}
                     </div>
-                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Over', null); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
                       O {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.overOdds)})</span>
                     </div>
                   </div>
@@ -238,13 +245,13 @@ export default function SportsOdds({ initialSport, tier }) {
                       <TeamLogo teamName={game.homeTeam} size={24} />
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', wordBreak: 'break-word' }}>{game.homeTeam}</span>
                     </div>
-                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.homeTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
                       {formatSpread(game.homeSpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.homeSpreadOdds)})</span>
                     </div>
-                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.homeML > 0 ? '#22c55e' : '#ef4444' }}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.homeTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.homeML > 0 ? '#22c55e' : '#ef4444', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
                       {formatOdds(game.homeML)}
                     </div>
-                    <div style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb' }}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Under', null); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
                       U {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.underOdds)})</span>
                     </div>
                   </div>
@@ -265,7 +272,7 @@ export default function SportsOdds({ initialSport, tier }) {
 
               {/* Action row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button onClick={e => { e.stopPropagation(); betGame(game); }}
+                <button onClick={e => { e.stopPropagation(); betGame(game, 'ML', null); }}
                   style={{ background: '#2563EB', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 12, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
                   Log bet
                 </button>
