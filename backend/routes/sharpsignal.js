@@ -218,23 +218,26 @@ router.get('/signals', async (req, res) => {
 
     // ── Pure Polymarket signals ──
     const POLY_ONLY_CATS = ['Sports', 'Crypto', 'US Politics'];
+    let dbg = { total: 0, lowVol: 0, prob: 0, junk: 0, days: 0, cat: 0, passed: 0 };
     for (const m of polyMarkets.slice(0, 200)) {
+      dbg.total++;
       let prices = []; try { prices = JSON.parse(m.outcomePrices || '[]'); } catch {}
       const prob = prices[0] ? parseFloat(prices[0]) : null;
-      if (!prob || prob < 0.05 || prob > 0.95) continue;
+      if (!prob || prob < 0.05 || prob > 0.95) { dbg.prob++; continue; }
 
       const vol = parseFloat(m.volume || 0);
-      if (vol < MIN_POLY_ONLY_VOL) continue;
+      if (vol < MIN_POLY_ONLY_VOL) { dbg.lowVol++; continue; }
 
       const title = m.question || m.title || '';
-      if (isJunkMarket(title, vol)) continue;
+      if (isJunkMarket(title, vol)) { dbg.junk++; continue; }
 
       const close = new Date(m.endDate || m.closeTime);
       const days = (close - Date.now()) / 86400000;
-      if (days < 0 || days > MAX_DAYS_POLY_ONLY) continue;
+      if (days < 0 || days > MAX_DAYS_POLY_ONLY) { dbg.days++; continue; }
 
       const category = detectCategory(title);
-      if (!POLY_ONLY_CATS.includes(category)) continue;
+      if (!POLY_ONLY_CATS.includes(category)) { dbg.cat++; continue; }
+      dbg.passed++;
 
       // Skip if already matched as a sports signal
       if (signals.some(s => s.polyMarket === title)) continue;
@@ -264,6 +267,7 @@ router.get('/signals', async (req, res) => {
       signals.push(sig);
     }
 
+    console.log(`[SharpSignals DEBUG] polyMarkets: ${polyMarkets.length} | allGames: ${allGames.length} | filters:`, dbg, `| sportsSignals: ${signals.length}`);
     // Sort by quality score descending, then edge
     signals.sort((a, b) => {
       if (b.quality_score !== a.quality_score) return b.quality_score - a.quality_score;
