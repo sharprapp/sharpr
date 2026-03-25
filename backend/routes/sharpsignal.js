@@ -6,12 +6,12 @@ let webpush; try { webpush = require('web-push'); webpush.setVapidDetails(proces
 const notifiedSignals = new Set();
 
 /* ── Thresholds ── */
-const MIN_EDGE = 5;            // TEMP: lowered from 8 for testing
-const MIN_POLY_VOL = 25000;    // TEMP: lowered from 75000 for testing
-const MIN_POLY_ONLY_VOL = 25000; // TEMP: lowered from 100000 for testing
+const MIN_EDGE = 8;            // minimum edge % for sports signals
+const MIN_POLY_VOL = 75000;    // minimum Polymarket volume for sports cross-ref
+const MIN_POLY_ONLY_VOL = 100000; // minimum volume for poly-only signals
 const PUSH_THRESHOLD = 15;     // edge % to trigger push notification
-const MAX_DAYS_SPORTS = 21;    // TEMP: raised from 14 for testing
-const MAX_DAYS_POLY_ONLY = 14; // TEMP: raised from 7 for testing
+const MAX_DAYS_SPORTS = 14;    // max days to close for sports signals
+const MAX_DAYS_POLY_ONLY = 7;  // max days to close for poly-only signals
 
 /* ── Junk market filters ── */
 const JUNK_RE = /weather|temperature|rainfall|degrees|celsius|fahrenheit|wind speed|tornado|hurricane|snow.*inches/i;
@@ -218,26 +218,23 @@ router.get('/signals', async (req, res) => {
 
     // ── Pure Polymarket signals ──
     const POLY_ONLY_CATS = ['Sports', 'Crypto', 'US Politics'];
-    let dbg = { total: 0, lowVol: 0, prob: 0, junk: 0, days: 0, cat: 0, passed: 0 };
     for (const m of polyMarkets.slice(0, 200)) {
-      dbg.total++;
       let prices = []; try { prices = JSON.parse(m.outcomePrices || '[]'); } catch {}
       const prob = prices[0] ? parseFloat(prices[0]) : null;
-      if (!prob || prob < 0.05 || prob > 0.95) { dbg.prob++; continue; }
+      if (!prob || prob < 0.05 || prob > 0.95) continue;
 
       const vol = parseFloat(m.volume || 0);
-      if (vol < MIN_POLY_ONLY_VOL) { dbg.lowVol++; continue; }
+      if (vol < MIN_POLY_ONLY_VOL) continue;
 
       const title = m.question || m.title || '';
-      if (isJunkMarket(title, vol)) { dbg.junk++; continue; }
+      if (isJunkMarket(title, vol)) continue;
 
       const close = new Date(m.endDate || m.closeTime);
       const days = (close - Date.now()) / 86400000;
-      if (days < 0 || days > MAX_DAYS_POLY_ONLY) { dbg.days++; continue; }
+      if (days < 0 || days > MAX_DAYS_POLY_ONLY) continue;
 
       const category = detectCategory(title);
-      if (!POLY_ONLY_CATS.includes(category)) { dbg.cat++; continue; }
-      dbg.passed++;
+      if (!POLY_ONLY_CATS.includes(category)) continue;
 
       // Skip if already matched as a sports signal
       if (signals.some(s => s.polyMarket === title)) continue;
@@ -267,7 +264,6 @@ router.get('/signals', async (req, res) => {
       signals.push(sig);
     }
 
-    console.log(`[SharpSignals DEBUG] polyMarkets: ${polyMarkets.length} | allGames: ${allGames.length} | filters:`, dbg, `| sportsSignals: ${signals.length}`);
     // Sort by quality score descending, then edge
     signals.sort((a, b) => {
       if (b.quality_score !== a.quality_score) return b.quality_score - a.quality_score;

@@ -45,10 +45,9 @@ router.post('/', requireAuth, async (req, res) => {
 
   // P&L is manually entered by user — no auto-calculation
   const pnl = rawPnl != null && rawPnl !== '' ? parseFloat(rawPnl) : null;
-  // Manual status always takes priority; only auto-detect from P&L if status is 'open' or missing
-  const finalStatus = (status && status !== 'open')
-    ? status
-    : pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status || 'open');
+  // If P&L is provided, status is always derived from P&L (source of truth)
+  // If no P&L, use the manual status or default to 'open'
+  const finalStatus = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status || 'open');
 
   const insertPayload = {
     user_id: req.user.id,
@@ -88,8 +87,8 @@ router.patch('/:id', requireAuth, async (req, res) => {
     return res.status(400).json({ error: 'P&L must be a valid number' });
   }
   const pnl = rawPnl != null && rawPnl !== '' ? Math.round(parseFloat(rawPnl) * 100) / 100 : (rawPnl === '' ? null : existing.pnl);
-  // Manual status takes priority; only auto-detect from P&L if status not explicitly set
-  const newStatus = (status && status !== existing.status) ? status : pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status ?? existing.status);
+  // P&L is source of truth for status when present; manual status only used when no P&L
+  const newStatus = pnl != null ? (pnl > 0 ? 'win' : pnl < 0 ? 'loss' : 'be') : (status ?? existing.status);
 
   const { data, error } = await supabase
     .from('trades')

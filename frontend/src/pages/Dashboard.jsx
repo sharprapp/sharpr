@@ -1361,7 +1361,7 @@ function DayTradingTab({ activeSubTab, tier }) {
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${t.direction==='LONG'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{t.direction}</span>
                     </td>
                     <td className="px-5 py-3.5 text-slate-300">${parseFloat(t.entry).toFixed(2)}</td>
-                    <td className={`px-5 py-3.5 font-semibold ${cls}`}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
+                    <td className="px-5 py-3.5 font-semibold" style={{color: t.status==='open' ? '#94a3b8' : t.pnl > 0 ? '#22c55e' : t.pnl < 0 ? '#ef4444' : '#94a3b8'}}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
                     <td className="px-5 py-3.5"><span style={{ fontSize: 11, fontWeight: 600, color: confColor }}>{t.confidence || '—'}</span></td>
                     <td className="px-5 py-3.5 text-slate-400" style={{ fontSize: 12 }}>{t.duration || '—'}</td>
                     <td className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>{t.status}</td>
@@ -1469,9 +1469,12 @@ function TradeForm({ form, setForm, loading, onAdd }) {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Status</label>
-              <select value={form.status} onChange={e => f('status', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
-                <option value="open">Open</option><option value="win">Win</option><option value="loss">Loss</option><option value="be">Breakeven</option>
-              </select>
+              <div className={`w-full rounded-xl px-3.5 py-2.5 text-sm`} style={{...inpStyle, display: 'flex', alignItems: 'center', gap: 6}}>
+                <span style={{color: form.pnl && parseFloat(form.pnl) > 0 ? '#22c55e' : form.pnl && parseFloat(form.pnl) < 0 ? '#ef4444' : '#64748b', fontWeight: 600}}>
+                  {form.pnl && parseFloat(form.pnl) > 0 ? 'Win' : form.pnl && parseFloat(form.pnl) < 0 ? 'Loss' : 'Open'}
+                </span>
+                <span style={{fontSize: 10, color: '#4a5a7a'}}>Auto from P&L</span>
+              </div>
             </div>
             <div>
               <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
