@@ -88,13 +88,23 @@ export default function HomeTab({ onSwitchTab }) {
       .sort((a, b) => (b.volume || 0) - (a.volume || 0)),
   [markets]);
 
-  // Pick top market: min $50K volume, Sports or Finance preferred
+  // Pick top market: $50K+ volume, 10-90% YES, closing in >24h, prefer 20-80%
   const topMarket = useMemo(() => {
-    const premium = qualityMarkets.filter(m => (m.volume || 0) >= 50000);
+    const now = Date.now();
+    const premium = qualityMarkets.filter(m => {
+      const yes = m.yes ?? 50;
+      if (yes < 10 || yes > 90) return false; // too close to resolved
+      if ((m.volume || 0) < 50000) return false;
+      const close = m.endDate ? new Date(m.endDate).getTime() : null;
+      if (close && close - now < 86400000) return false; // expiring within 24h
+      return true;
+    });
     if (!premium.length) return null;
-    // Prefer Sports/Finance, then sort by volume
-    const preferred = premium.filter(m => /sports|finance|economics|crypto/i.test(m.cat || ''));
-    return (preferred.length ? preferred : premium)[0];
+    // Prefer 20-80% range (most interesting), then Sports/Finance, then by volume
+    const interesting = premium.filter(m => (m.yes ?? 50) >= 20 && (m.yes ?? 50) <= 80);
+    const pool = interesting.length ? interesting : premium;
+    const preferred = pool.filter(m => /sports|finance|economics|crypto/i.test(m.cat || ''));
+    return (preferred.length ? preferred : pool)[0];
   }, [qualityMarkets]);
 
   // Pick best value underdog (+150 to +600, fallback to any underdog)

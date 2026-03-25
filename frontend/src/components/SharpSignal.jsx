@@ -100,7 +100,7 @@ export default function SharpSignal({ userPlan }) {
       {/* Signals */}
       {isPro && loading && <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1, 2, 3, 4].map(i => <div key={i} style={{ ...gc, height: 140, animation: 'pulse 1.5s infinite' }} />)}</div>}
       {isPro && !loading && error && <div style={{ ...gc, padding: 32, textAlign: 'center', color: '#ef4444', fontSize: 13 }}>{error} — <button onClick={fetchSignals} style={{ color: '#7aaff8', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>retry</button></div>}
-      {isPro && !loading && !error && filtered.length === 0 && <div style={{ ...gc, padding: 40, textAlign: 'center' }}><div style={{ fontSize: 32, marginBottom: 12 }}>📡</div><div style={{ fontSize: 16, fontWeight: 700, color: '#f0f4ff', marginBottom: 8 }}>No actionable signals right now</div><div style={{ fontSize: 13, color: '#4a5a7a' }}>Signals update every 15 minutes. Only showing divergences over 7% with $25K+ volume.</div></div>}
+      {isPro && !loading && !error && filtered.length === 0 && <div style={{ ...gc, padding: 48, textAlign: 'center' }}><div style={{ fontSize: 40, marginBottom: 14 }}>📡</div><div style={{ fontSize: 18, fontWeight: 800, color: '#f0f4ff', marginBottom: 10 }}>Signals are being monitored</div><div style={{ fontSize: 13, color: '#6a7a9a', maxWidth: 440, margin: '0 auto', lineHeight: 1.7 }}>Quality signals appear here when Polymarket and sportsbook odds diverge by 8%+ on markets with $75K+ volume. Check back throughout the day as odds update.</div></div>}
 
       {isPro && !loading && filtered.map(sig => {
         const cs = confStyle(sig.confidence);
