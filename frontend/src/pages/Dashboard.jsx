@@ -100,7 +100,7 @@ export default function Dashboard() {
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [showCmdPalette, setShowCmdPalette] = useState(false);
   const [eventsSport, setEventsSport] = useState('NBA');
-  const { tier, username, usernameSet, setUsername } = useAuth();
+  const { tier, displayName } = useAuth();
   const navigate = useNavigate();
 
   useKeyboardShortcuts(useCallback((action) => {
@@ -181,13 +181,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen" style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
-      {!usernameSet && (
-        <UsernameModal onComplete={(newUsername) => { setUsername(newUsername); }} />
-      )}
-      {usernameSet && showOnboarding && (
+      {showOnboarding && (
         <OnboardingModal userPlan={tier} onComplete={() => setShowOnboarding(false)} />
       )}
-      <DashboardNav tab={tab} setTab={switchTab} tier={tier} username={username} />
+      <DashboardNav tab={tab} setTab={switchTab} tier={tier} displayName={displayName} />
       <TradingViewTicker />
       <SportsTicker />
 
@@ -512,7 +509,7 @@ function NavGroups({ tab, setTab }) {
   );
 }
 
-function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport }) {
+function MobileNavDrawer({ tab, setTab, displayName, user, navigate, setEventsSport }) {
   const [expanded, setExpanded] = useState(null);
   function firstName(email = '') { const r = (email.split('@')[0].split('.')[0]).replace(/\d+$/, ''); return r.charAt(0).toUpperCase() + r.slice(1); }
   const go = (key) => setTab(key);
@@ -558,7 +555,7 @@ function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport
         style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#6a7a9a' }}>
         ⚙️ Settings
       </button>
-      <div style={{ padding: '8px 12px', fontSize: 12, color: '#2a3a5a' }}>{username ? `@${username}` : firstName(user?.email)}</div>
+      <div style={{ padding: '8px 12px', fontSize: 12, color: '#2a3a5a' }}>{displayName || firstName(user?.email)}</div>
     </div>
   );
 }
@@ -566,7 +563,7 @@ function MobileNavDrawer({ tab, setTab, username, user, navigate, setEventsSport
 /* ─────────────────────────────────────────
    UNIFIED DASHBOARD NAVBAR
 ───────────────────────────────────────── */
-function DashboardNav({ tab, setTab, tier, username }) {
+function DashboardNav({ tab, setTab, tier, displayName }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [alerts, setAlerts]     = useState([]);
@@ -671,7 +668,7 @@ function DashboardNav({ tab, setTab, tier, username }) {
             )}
           </div>
 
-          <span className="hidden sm:block" style={{ fontSize: 13, color: '#4a5a7a', fontWeight: 600 }}>{username ? `@${username}` : firstName(user?.email)}</span>
+          <span className="hidden sm:block" style={{ fontSize: 13, color: '#4a5a7a', fontWeight: 600 }}>{displayName || firstName(user?.email)}</span>
 
           <button onClick={() => navigate('/settings')} className="hide-mobile" title="Settings"
             style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid transparent', color: '#4a5a7a', cursor: 'pointer' }}
@@ -683,7 +680,7 @@ function DashboardNav({ tab, setTab, tier, username }) {
       </div>
       {/* Mobile nav drawer */}
       {mobileOpen && (
-        <MobileNavDrawer tab={tab} setTab={t => { setTab(t); setMobileOpen(false); }} username={username} user={user} navigate={navigate} setEventsSport={s => window.dispatchEvent(new CustomEvent('events-sport', { detail: s }))} />
+        <MobileNavDrawer tab={tab} setTab={t => { setTab(t); setMobileOpen(false); }} displayName={displayName} user={user} navigate={navigate} setEventsSport={s => window.dispatchEvent(new CustomEvent('events-sport', { detail: s }))} />
       )}
     </div>
   );

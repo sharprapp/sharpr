@@ -7,8 +7,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [tier, setTier] = useState('free');
-  const [username, setUsername] = useState(null);
-  const [usernameSet, setUsernameSet] = useState(true);
+  const [displayName, setDisplayName] = useState(null);
   const [loading, setLoading] = useState(true);
   const fetchingRef = useRef(false);
   const hasFetchedRef = useRef(false);
@@ -27,8 +26,7 @@ export function AuthProvider({ children }) {
       if (result) {
         console.log('[useAuth] plan from /me:', result);
         setTier(result);
-        setUsername(data.profile?.username || null);
-        setUsernameSet(data.profile?.username_set !== false);
+        setDisplayName(data.profile?.display_name || null);
         hasFetchedRef.current = true;
         try { localStorage.setItem('sharpr_last_tier', result); } catch {}
       }
@@ -43,15 +41,14 @@ export function AuthProvider({ children }) {
         if (u) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('tier, plan, plan_status, username, username_set')
+            .select('tier, plan, plan_status, display_name')
             .eq('id', u.id)
             .single();
           result = profile?.plan || profile?.tier || null;
           if (result) {
             console.log('[useAuth] plan from Supabase:', result);
             setTier(result);
-            setUsername(profile?.username || null);
-            setUsernameSet(profile?.username_set !== false);
+            setDisplayName(profile?.display_name || null);
             hasFetchedRef.current = true;
             try { localStorage.setItem('sharpr_last_tier', result); } catch {}
           }
@@ -137,7 +134,7 @@ export function AuthProvider({ children }) {
   }
 
   const value = {
-    user, tier, username, usernameSet, setUsername, loading,
+    user, tier, displayName, setDisplayName, loading,
     signIn, signUp, signOut, refreshProfile: fetchProfile,
     isPro: tier === 'pro' || tier === 'elite',
   };
@@ -149,7 +146,7 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
     console.warn('[useAuth] called outside AuthProvider');
-    return { user: null, tier: 'free', username: null, usernameSet: true, setUsername: () => {}, loading: true, signIn: async () => {}, signUp: async () => {}, signOut: async () => {}, refreshProfile: async () => 'free', isPro: false };
+    return { user: null, tier: 'free', displayName: null, setDisplayName: () => {}, loading: true, signIn: async () => {}, signUp: async () => {}, signOut: async () => {}, refreshProfile: async () => 'free', isPro: false };
   }
   return ctx;
 }
