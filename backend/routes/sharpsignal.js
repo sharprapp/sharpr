@@ -6,12 +6,12 @@ let webpush; try { webpush = require('web-push'); webpush.setVapidDetails(proces
 const notifiedSignals = new Set();
 
 /* ── Thresholds ── */
-const MIN_EDGE = 8;            // minimum edge % for sports signals
-const MIN_POLY_VOL = 75000;    // minimum Polymarket volume for sports cross-ref
-const MIN_POLY_ONLY_VOL = 100000; // minimum volume for poly-only signals
+const MIN_EDGE = 5;            // TEMP: lowered from 8 for testing
+const MIN_POLY_VOL = 25000;    // TEMP: lowered from 75000 for testing
+const MIN_POLY_ONLY_VOL = 25000; // TEMP: lowered from 100000 for testing
 const PUSH_THRESHOLD = 15;     // edge % to trigger push notification
-const MAX_DAYS_SPORTS = 14;    // max days to close for sports signals
-const MAX_DAYS_POLY_ONLY = 7;  // max days to close for poly-only signals
+const MAX_DAYS_SPORTS = 21;    // TEMP: raised from 14 for testing
+const MAX_DAYS_POLY_ONLY = 14; // TEMP: raised from 7 for testing
 
 /* ── Junk market filters ── */
 const JUNK_RE = /weather|temperature|rainfall|degrees|celsius|fahrenheit|wind speed|tornado|hurricane|snow.*inches/i;
