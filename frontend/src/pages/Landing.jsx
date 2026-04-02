@@ -58,7 +58,7 @@ function FadeUp({ children, delay = 0, className = '' }) {
     <div ref={ref} className={className} style={{
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
-      transition: \`all 0.8s cubic-bezier(0.16, 1, 0.3, 1) \${delay}ms\`
+      transition: `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
     }}>
       {children}
     </div>
@@ -76,7 +76,7 @@ function RevealText({ text, delayOffset = 0 }) {
   return (
     <span style={{ display: 'inline-block' }}>
       {words.map((w, i) => (
-        <span key={i} className="word-reveal" style={{ animationDelay: \`\${delayOffset + (i * 0.1)}s\`, display: 'inline-block', marginRight: '0.25em' }}>
+        <span key={i} className="word-reveal" style={{ animationDelay: `${delayOffset + (i * 0.1)}s`, display: 'inline-block', marginRight: '0.25em' }}>
           {w}
         </span>
       ))}
@@ -153,7 +153,7 @@ export default function Landing() {
     if (document.getElementById('sharpr-animations')) return;
     const style = document.createElement('style');
     style.id = 'sharpr-animations';
-    style.innerHTML = \`
+    style.innerHTML = `
       html { scroll-behavior: smooth; }
       body { background: #0A0A0F; color: #F0F0FF; overflow-x: hidden; }
 
@@ -231,7 +231,7 @@ export default function Landing() {
         opacity: 0;
         animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
-    \`;
+    `;
     document.head.appendChild(style);
   }, []);
 
