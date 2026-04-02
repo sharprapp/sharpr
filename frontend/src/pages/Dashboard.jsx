@@ -1145,29 +1145,102 @@ const CAT_COLORS = {
 };
 function catColor(cat) { return CAT_COLORS[cat] || CAT_COLORS.Other; }
 
+let marketStylesInjected = false;
+function injectMarketStyles() {
+  if (typeof document === 'undefined' || marketStylesInjected) return;
+  marketStylesInjected = true;
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @keyframes marketPulseUp {
+      0% { box-shadow: 0 0 0 0 rgba(0, 255, 204, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(0, 255, 204, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 255, 204, 0); }
+    }
+    @keyframes marketPulseDown {
+      0% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(255, 51, 102, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0); }
+    }
+    @keyframes marketPulseNeutral {
+      0% { box-shadow: 0 0 0 0 rgba(100, 116, 139, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(100, 116, 139, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(100, 116, 139, 0); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 const MarketCard = memo(function MarketCard({ market: m, onClick }) {
   const [expanded, setExpanded] = useState(false);
   const pct      = m.yes ?? 50;
   const vol      = m.volume >= 1e6 ? '$'+(m.volume/1e6).toFixed(1)+'M' : m.volume >= 1000 ? '$'+(m.volume/1000).toFixed(0)+'k' : '$'+Math.round(m.volume||0);
-  const fill     = pct > 66 ? '#22c55e' : pct > 40 ? '#f59e0b' : '#ef4444';
   const isSharp  = m.volume >= 1000000; // 🔥 sharp activity: volume > $1M
 
-  // Mock 7-day probability history (seeded from market id for consistency)
+  const [historyData, setHistoryData] = useState([]);
+
+  useEffect(() => {
+    injectMarketStyles();
+    let active = true;
+    fetch(`https://gamma-api.polymarket.com/markets/${m.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!active || !data?.clobTokenIds?.[0]) return;
+        return fetch(`https://clob.polymarket.com/prices-history?market=${data.clobTokenIds[0]}&interval=1d`);
+      })
+      .then(res => res?.json())
+      .then(data => {
+        if (active && data?.history) {
+          setHistoryData(data.history);
+        }
+      })
+      .catch(err => console.error("History fetch error:", err));
+    return () => { active = false; };
+  }, [m.id]);
+
+  // Use real history when available, otherwise fallback
   const probHistory = useMemo(() => {
-    const seed = (m.id || '').split('').reduce((s, c) => s + c.charCodeAt(0), 0);
+    if (historyData.length > 0) {
+      return historyData.slice(-7).map(d => d.p * 100);
+    }
+    const seed = String(m.id || '').split('').reduce((s, c) => s + c.charCodeAt(0), 0);
     const base = pct;
     return Array.from({ length: 7 }, (_, i) => {
       const noise = ((seed * (i + 1) * 7 + 13) % 21) - 10;
       return Math.max(5, Math.min(95, base + noise - (i * 0.5)));
     }).reverse();
-  }, [m.id, pct]);
+  }, [m.id, pct, historyData]);
+
+  const pFirst = probHistory[0] ?? pct;
+  const pLast  = probHistory[probHistory.length - 1] ?? pct;
+  
+  // Neon Green for UP, Vivid Crimson/Magenta for DOWN
+  const isUp = pLast > pFirst || (pLast === pFirst && pct >= 50);
+  const trendColor = isUp ? '#00ffcc' : '#ff3366';
+  
+  const pulseAnim = pLast === pFirst ? 'marketPulseNeutral' : isUp ? 'marketPulseUp' : 'marketPulseDown';
+
+  const renderSparkline = () => {
+    const pts = historyData.length > 0 
+      ? historyData.slice(-7) 
+      : probHistory.map(p => ({ p: p / 100 }));
+      
+    if (pts.length < 2) return null;
+    const w = 100, h = 30, dx = w / (pts.length - 1);
+    const path = pts.map((d, i) => `${i === 0 ? 'M' : 'L'} ${i * dx} ${h - (d.p * h)}`).join(' ');
+    
+    return (
+      <svg width="56" height="20" viewBox="-2 -2 104 34" style={{ overflow: 'visible', opacity: 0.95, filter: `drop-shadow(0 0 6px ${trendColor}b3)`, transform: 'translateY(1px)' }}>
+        <path d={path} fill="none" stroke={trendColor} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  };
 
   const chartData = {
     labels: ['7d ago','6d','5d','4d','3d','2d','Today'],
     datasets: [{
       data: probHistory,
-      borderColor: fill, backgroundColor: fill+'22',
-      tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: fill,
+      borderColor: trendColor, backgroundColor: trendColor+'22',
+      tension: 0.4, fill: true, pointRadius: 3, pointBackgroundColor: trendColor,
     }],
   };
   const chartOpts = {
@@ -1181,46 +1254,73 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
 
   return (
     <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
-      style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease', cursor: 'pointer'}}
+      style={{
+        background: 'linear-gradient(145deg, rgba(30,41,59,0.55) 0%, rgba(15,23,42,0.85) 100%)', 
+        border: '1px solid rgba(255,255,255,0.06)', 
+        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.4)',
+        backdropFilter: 'blur(24px)', 
+        WebkitBackdropFilter: 'blur(24px)', 
+        transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)', 
+        cursor: 'pointer',
+        position: 'relative',
+        overflow: 'hidden'
+      }}
       onClick={onClick}
-      onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(79,142,247,0.3)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; e.currentTarget.style.transform='translateY(-2px)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow='none'; e.currentTarget.style.transform='translateY(0)'; }}>
+      onMouseEnter={e => { 
+        e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'; 
+        e.currentTarget.style.boxShadow=`inset 0 1px 1px rgba(255,255,255,0.1), 0 12px 30px rgba(0,0,0,0.7), 0 0 20px ${trendColor}2a`; 
+        e.currentTarget.style.transform='translateY(-4px)'; 
+      }}
+      onMouseLeave={e => { 
+        e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'; 
+        e.currentTarget.style.boxShadow='inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.4)'; 
+        e.currentTarget.style.transform='translateY(0)'; 
+      }}>
 
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
+          {historyData.length > 0 && (
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: trendColor, animation: `${pulseAnim} 2s infinite` }} />
+          )}
           <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={catColor(m.cat)}>{m.cat}</span>
           {isSharp && (
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background: 'rgba(239,68,68,0.15)', color: '#f87171'}}>🔥 Sharp</span>
           )}
         </div>
-        <span className="text-xs font-medium" style={{color: '#64748b'}}>Vol {vol}</span>
+        <span className="text-xs font-medium uppercase tracking-wider" style={{color: '#94a3b8'}}>Vol {vol}</span>
       </div>
 
-      <p style={{fontSize: 13, fontWeight: 500, color: '#F5F5FA', lineHeight: 1.4, flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{m.title}</p>
+      <p style={{fontSize: 15, fontWeight: 600, color: '#F8FAFC', lineHeight: 1.35, letterSpacing: '-0.01em', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{m.title}</p>
 
       <div>
-        <div className="flex justify-between items-baseline mb-1.5">
-          <span className="text-xs" style={{color: '#64748b'}}>YES</span>
-          <span style={{fontSize: 28, fontWeight: 900, color: fill}}>{pct}%</span>
-          <span className="text-xs" style={{color: '#64748b'}}>NO {m.no ?? 100 - pct}%</span>
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#64748b'}}>YES</span>
+          <div className="flex items-center gap-4">
+            {renderSparkline()}
+            <div className="flex items-center gap-1.5">
+              <span style={{fontSize: 32, fontWeight: 800, color: trendColor, lineHeight: 1, letterSpacing: '-0.03em', textShadow: `0 0 24px ${trendColor}66`}}>{pct}%</span>
+              <span style={{fontSize: 20, fontWeight: 900, color: trendColor, transform: 'translateY(-2px)'}}>{isUp ? '↑' : '↓'}</span>
+            </div>
+          </div>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#64748b'}}>NO {m.no ?? 100 - pct}%</span>
         </div>
-        <div className="h-2 rounded-full overflow-hidden" style={{background: '#1e2a4a'}}>
-          <div className="h-full rounded-full transition-all" style={{width: pct+'%', background: fill}} />
+        <div className="h-1.5 rounded-full overflow-hidden" style={{background: 'rgba(0,0,0,0.5)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)'}}>
+          <div className="h-full rounded-full transition-all" style={{width: pct+'%', background: trendColor, boxShadow: `0 0 10px ${trendColor}80`}} />
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
-        <AIAnalyzeButton topic={m.title} type="polymarket" />
-        <button onClick={() => setExpanded(e => !e)}
-          className="text-xs transition-colors" style={{color: '#475569'}}
-          onMouseEnter={e => e.currentTarget.style.color='#94A3B8'}
-          onMouseLeave={e => e.currentTarget.style.color='#475569'}>
-          {expanded ? '▲ Hide chart' : '▼ 7-day chart'}
+      <div className="flex items-center justify-between mt-1">
+        <div onClick={e => e.stopPropagation()}><AIAnalyzeButton topic={m.title} type="polymarket" /></div>
+        <button onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
+          className="text-xs font-semibold transition-colors" style={{color: '#64748b'}}
+          onMouseEnter={e => e.currentTarget.style.color='#cbd5e1'}
+          onMouseLeave={e => e.currentTarget.style.color='#64748b'}>
+          {expanded ? '▲ Hide history' : '▼ 7-day history'}
         </button>
       </div>
 
       {expanded && (
-        <div style={{height: 120}}>
+        <div style={{height: 120, marginTop: 4}} onClick={e => e.stopPropagation()}>
           <Line data={chartData} options={chartOpts} />
         </div>
       )}
