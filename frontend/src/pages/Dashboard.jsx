@@ -80,9 +80,9 @@ function setPMCache(markets) {
 
 /* ── shared input / select style helpers ── */
 const inp = 'outline-none transition-colors';
-const inpStyle = { background: '#0a0f1e', border: '1px solid #1e2a4a', color: '#F5F5FA' };
-const inpFocus  = e => { e.target.style.borderColor = '#2563EB'; };
-const inpBlur   = e => { e.target.style.borderColor = '#1e2a4a'; };
+const inpStyle = { background: '#111118', border: '1px solid #1E1E2E', color: '#F0F0FF' };
+const inpFocus  = e => { e.target.style.borderColor = '#6C63FF'; };
+const inpBlur   = e => { e.target.style.borderColor = '#1E1E2E'; };
 
 export default function Dashboard() {
   const [tab, setTab]     = useState(() => {
@@ -234,7 +234,7 @@ export default function Dashboard() {
       }} onClose={() => setShowCmdPalette(false)} />}
       {/* Help button */}
       <button onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts (?)"
-        style={{ position: 'fixed', bottom: 20, right: 20, width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#4a5a7a', fontSize: 16, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}>
+        style={{ position: 'fixed', bottom: 20, right: 20, width: 36, height: 36, borderRadius: '50%', background: '#1E1E2E', border: '1px solid rgba(255,255,255,0.1)', color: '#4E4E63', fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 40 }}>
         ?
       </button>
     </div>
@@ -258,11 +258,11 @@ function NavGroups({ tab, setTab }) {
       {/* Home */}
       <button onClick={() => { setTab('Home'); setOpenGroup(null); }}
         style={{
-          background: tab === 'Home' ? 'rgba(79,142,247,0.15)' : 'transparent',
-          border: tab === 'Home' ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-          borderBottom: tab === 'Home' ? '2px solid #4f8ef7' : '2px solid transparent',
-          color: tab === 'Home' ? '#7aaff8' : '#2a3a5a',
-          borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+          background: tab === 'Home' ? 'rgba(108,99,255,0.15)' : 'transparent',
+          border: tab === 'Home' ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+          borderBottom: tab === 'Home' ? '2px solid #6C63FF' : '2px solid transparent',
+          color: tab === 'Home' ? '#867fff' : '#2a3a5a',
+          borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em',
           cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
         }}
         onMouseEnter={e => { if (tab !== 'Home') { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
@@ -280,11 +280,11 @@ function NavGroups({ tab, setTab }) {
                 else setOpenGroup(isOpen ? null : g.label);
               }}
               style={{
-                background: isActive ? 'rgba(79,142,247,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
-                border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-                borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
-                color: isActive ? '#7aaff8' : isOpen ? '#94A3B8' : '#2a3a5a',
-                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+                background: isActive ? 'rgba(108,99,255,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
+                border: isActive ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+                borderBottom: isActive ? '2px solid #6C63FF' : '2px solid transparent',
+                color: isActive ? '#867fff' : isOpen ? '#6B6B8A' : '#2a3a5a',
+                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em',
                 cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
               }}
               onMouseEnter={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
@@ -308,15 +308,15 @@ function NavGroups({ tab, setTab }) {
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                         padding: '10px 12px', borderRadius: 8, border: 'none',
-                        borderLeft: isItemActive ? '2px solid #4f8ef7' : '2px solid transparent',
-                        background: isItemActive ? 'rgba(79,142,247,0.12)' : 'transparent',
+                        borderLeft: isItemActive ? '2px solid #6C63FF' : '2px solid transparent',
+                        background: isItemActive ? 'rgba(108,99,255,0.12)' : 'transparent',
                         cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left',
                       }}
                       onMouseEnter={e => { if (!isItemActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                       onMouseLeave={e => { if (!isItemActive) e.currentTarget.style.background = 'transparent'; }}>
                       <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: isItemActive ? '#7aaff8' : '#f0f4ff' }}>{item.label}</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: isItemActive ? '#867fff' : '#f0f4ff' }}>{item.label}</div>
                         <div style={{ fontSize: 10, color: '#2a3a5a', marginTop: 1 }}>{item.desc}</div>
                       </div>
                     </button>
@@ -337,7 +337,7 @@ function NavGroups({ tab, setTab }) {
               border: isActive ? '1px solid rgba(245,158,11,0.3)' : '1px solid transparent',
               borderBottom: isActive ? '2px solid #f59e0b' : '2px solid transparent',
               color: isActive ? '#fbbf24' : '#2a3a5a',
-              borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+              borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em',
               cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
             }}
             onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
@@ -352,11 +352,11 @@ function NavGroups({ tab, setTab }) {
         return (
           <button onClick={() => { setTab('AI Research'); setOpenGroup(null); }}
             style={{
-              background: isActive ? 'rgba(79,142,247,0.15)' : 'transparent',
-              border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-              borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
-              color: isActive ? '#7aaff8' : '#2a3a5a',
-              borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+              background: isActive ? 'rgba(108,99,255,0.15)' : 'transparent',
+              border: isActive ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+              borderBottom: isActive ? '2px solid #6C63FF' : '2px solid transparent',
+              color: isActive ? '#867fff' : '#2a3a5a',
+              borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em',
               cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
             }}
             onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
@@ -397,14 +397,14 @@ function NavGroups({ tab, setTab }) {
         ];
         const renderSection = (sec) => (
           <div key={sec.label}>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: '#2a3a5a', textTransform: 'uppercase', padding: '8px 12px 4px' }}>{sec.label}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '0.08em', color: '#2a3a5a', textTransform: 'uppercase', padding: '8px 12px 4px' }}>{sec.label}</div>
             {sec.items.map(s => (
               <button key={s.key} onClick={() => pickSport(s.key)}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <span style={{ fontSize: 16, flexShrink: 0 }}>{s.e}</span>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#f0f4ff' }}>{s.l}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#f0f4ff' }}>{s.l}</div>
               </button>
             ))}
           </div>
@@ -414,11 +414,11 @@ function NavGroups({ tab, setTab }) {
             <button
               onClick={() => { if (isOpen) setOpenGroup(null); else setOpenGroup('Events'); }}
               style={{
-                background: isActive ? 'rgba(79,142,247,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
-                border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-                borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
-                color: isActive ? '#7aaff8' : isOpen ? '#94A3B8' : '#2a3a5a',
-                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+                background: isActive ? 'rgba(108,99,255,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
+                border: isActive ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+                borderBottom: isActive ? '2px solid #6C63FF' : '2px solid transparent',
+                color: isActive ? '#867fff' : isOpen ? '#6B6B8A' : '#2a3a5a',
+                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em',
                 cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
               }}
               onMouseEnter={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
@@ -436,13 +436,13 @@ function NavGroups({ tab, setTab }) {
               }}>
                 {/* All Events — full width */}
                 <button onClick={() => { setTab('Events'); setOpenGroup(null); window.dispatchEvent(new CustomEvent('events-sport', { detail: 'NBA' })); }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, border: 'none', background: 'rgba(79,142,247,0.08)', cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all 0.15s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,142,247,0.15)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(79,142,247,0.08)'}>
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, border: 'none', background: 'rgba(108,99,255,0.08)', cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.15)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(108,99,255,0.08)'}>
                   <span style={{ fontSize: 16, flexShrink: 0 }}>📅</span>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#7aaff8' }}>All Events</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#867fff' }}>All Events</div>
                 </button>
-                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+                <div style={{ height: 1, background: '#1E1E2E', margin: '4px 0' }} />
                 {/* 2-column grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
                   <div>{leftSections.map(renderSection)}</div>
@@ -465,11 +465,11 @@ function NavGroups({ tab, setTab }) {
                 else setOpenGroup(isOpen ? null : g.label);
               }}
               style={{
-                background: isActive ? 'rgba(79,142,247,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
-                border: isActive ? '1px solid rgba(79,142,247,0.3)' : '1px solid transparent',
-                borderBottom: isActive ? '2px solid #4f8ef7' : '2px solid transparent',
-                color: isActive ? '#7aaff8' : isOpen ? '#94A3B8' : '#2a3a5a',
-                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 600,
+                background: isActive ? 'rgba(108,99,255,0.15)' : isOpen ? 'rgba(255,255,255,0.05)' : 'transparent',
+                border: isActive ? '1px solid rgba(108,99,255,0.3)' : '1px solid transparent',
+                borderBottom: isActive ? '2px solid #6C63FF' : '2px solid transparent',
+                color: isActive ? '#867fff' : isOpen ? '#6B6B8A' : '#2a3a5a',
+                borderRadius: 8, padding: '6px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em',
                 cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s',
               }}
               onMouseEnter={e => { if (!isActive && !isOpen) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#6a7a9a'; } }}
@@ -493,15 +493,15 @@ function NavGroups({ tab, setTab }) {
                       style={{
                         width: '100%', display: 'flex', alignItems: 'center', gap: 10,
                         padding: '10px 12px', borderRadius: 8, border: 'none',
-                        borderLeft: isItemActive ? '2px solid #4f8ef7' : '2px solid transparent',
-                        background: isItemActive ? 'rgba(79,142,247,0.12)' : 'transparent',
+                        borderLeft: isItemActive ? '2px solid #6C63FF' : '2px solid transparent',
+                        background: isItemActive ? 'rgba(108,99,255,0.12)' : 'transparent',
                         cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left',
                       }}
                       onMouseEnter={e => { if (!isItemActive) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                       onMouseLeave={e => { if (!isItemActive) e.currentTarget.style.background = 'transparent'; }}>
                       <span style={{ fontSize: 16, flexShrink: 0 }}>{item.emoji}</span>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: isItemActive ? '#7aaff8' : '#f0f4ff' }}>{item.label}</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: isItemActive ? '#867fff' : '#f0f4ff' }}>{item.label}</div>
                         <div style={{ fontSize: 10, color: '#2a3a5a', marginTop: 1 }}>{item.desc}</div>
                       </div>
                     </button>
@@ -533,23 +533,23 @@ function MobileNavDrawer({ tab, setTab, displayName, user, navigate, setEventsSp
   ];
   const isActive = (key) => tab === key;
   return (
-    <div className="mobile-nav-drawer" style={{ background: 'rgba(3,3,10,0.97)', backdropFilter: 'blur(24px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '8px 16px 12px', display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '80vh', overflowY: 'auto' }}>
+    <div className="mobile-nav-drawer" style={{ background: 'rgba(3,3,10,0.97)', backdropFilter: 'blur(24px)', borderBottom: '1px solid #1E1E2E', padding: '8px 16px 12px', display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '80vh', overflowY: 'auto' }}>
       {sections.map(s => s.key ? (
         <button key={s.key} onClick={() => go(s.key)}
-          style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: isActive(s.key) ? 'rgba(79,142,247,0.12)' : 'transparent', color: isActive(s.key) ? '#7aaff8' : '#94A3B8' }}>
+          style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', minHeight: 44, background: isActive(s.key) ? 'rgba(108,99,255,0.12)' : 'transparent', color: isActive(s.key) ? '#867fff' : '#6B6B8A' }}>
           {s.label}
         </button>
       ) : (
         <div key={s.label}>
           <button onClick={() => setExpanded(expanded === s.label ? null : s.label)}
-            style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#94A3B8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#6B6B8A', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {s.label} <span style={{ fontSize: 9, opacity: 0.5, marginLeft: 4 }}>{expanded === s.label ? '\u25B2' : '\u25BC'}</span>
           </button>
           {expanded === s.label && (
             <div style={{ paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 2 }}>
               {s.children.map(c => (
                 <button key={c.k} onClick={() => s.isEvent ? goEvent(c.k) : go(c.k)}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: 'none', textAlign: 'left', fontSize: 13, fontWeight: 500, cursor: 'pointer', minHeight: 40, background: isActive(c.k) ? 'rgba(79,142,247,0.1)' : 'transparent', color: isActive(c.k) ? '#7aaff8' : '#6a7a9a' }}>
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 6, border: 'none', textAlign: 'left', fontSize: 13, fontWeight: 500, cursor: 'pointer', minHeight: 40, background: isActive(c.k) ? 'rgba(108,99,255,0.1)' : 'transparent', color: isActive(c.k) ? '#867fff' : '#6a7a9a' }}>
                   {c.l}
                 </button>
               ))}
@@ -557,9 +557,9 @@ function MobileNavDrawer({ tab, setTab, displayName, user, navigate, setEventsSp
           )}
         </div>
       ))}
-      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+      <div style={{ height: 1, background: '#1E1E2E', margin: '4px 0' }} />
       <button onClick={() => { navigate('/settings'); setTab(tab); }}
-        style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 600, cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#6a7a9a' }}>
+        style={{ width: '100%', padding: '12px 12px', borderRadius: 8, border: 'none', textAlign: 'left', fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', minHeight: 44, background: 'transparent', color: '#6a7a9a' }}>
         ⚙️ Settings
       </button>
       <div style={{ padding: '8px 12px', fontSize: 12, color: '#2a3a5a' }}>{displayName || firstName(user?.email)}</div>
@@ -622,18 +622,18 @@ function DashboardNav({ tab, setTab, tier, displayName }) {
 
         {/* Mobile hamburger */}
         <button className="mobile-menu-btn" onClick={() => setMobileOpen(o => !o)}
-          style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, background: mobileOpen ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#94A3B8', cursor: 'pointer', fontSize: 18, marginLeft: 'auto' }}>
+          style={{ display: 'none', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, borderRadius: 8, background: mobileOpen ? 'rgba(108,99,255,0.15)' : 'rgba(255,255,255,0.05)', border: '1px solid rgba(108,99,255,0.2)', color: '#6B6B8A', cursor: 'pointer', fontSize: 18, marginLeft: 'auto' }}>
           {mobileOpen ? '✕' : '☰'}
         </button>
 
         {/* Right: User controls */}
         <div className="hide-mobile" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
           {tier === 'elite' ? (
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24' }}>⚡ Elite</span>
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', padding: '4px 14px', borderRadius: 100, background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)', color: '#fbbf24' }}>⚡ Elite</span>
           ) : tier === 'pro' ? (
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b' }}>⚡ Pro</span>
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', padding: '4px 14px', borderRadius: 100, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#f59e0b' }}>⚡ Pro</span>
           ) : (
-            <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 100, background: 'rgba(148,163,184,0.1)', border: '1px solid rgba(148,163,184,0.2)', color: '#94a3b8', cursor: 'pointer' }}>
+            <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', padding: '4px 14px', borderRadius: 100, background: 'rgba(148,163,184,0.1)', border: '1px solid rgba(148,163,184,0.2)', color: '#94a3b8', cursor: 'pointer' }}>
               Free — Upgrade
             </button>
           )}
@@ -641,28 +641,28 @@ function DashboardNav({ tab, setTab, tier, displayName }) {
           {/* Bell */}
           <div className="relative" ref={bellRef}>
             <button onClick={openBell}
-              style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: bellOpen ? 'rgba(79,142,247,0.15)' : 'transparent', color: '#4a5a7a', border: '1px solid transparent', cursor: 'pointer', position: 'relative' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+              style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: bellOpen ? 'rgba(108,99,255,0.15)' : 'transparent', color: '#4E4E63', border: '1px solid transparent', cursor: 'pointer', position: 'relative' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#1E1E2E'; }}
               onMouseLeave={e => { if (!bellOpen) e.currentTarget.style.background = 'transparent'; }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
               </svg>
-              {unread > 0 && <span style={{ position: 'absolute', top: -2, right: -2, width: 16, height: 16, borderRadius: '50%', background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unread > 9 ? '9+' : unread}</span>}
+              {unread > 0 && <span style={{ position: 'absolute', top: -2, right: -2, width: 16, height: 16, borderRadius: '50%', background: '#FF4560', color: '#fff', fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{unread > 9 ? '9+' : unread}</span>}
             </button>
 
             {bellOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 40, width: 280, borderRadius: 16, background: '#070712', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', zIndex: 50, overflow: 'hidden' }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA' }}>Alerts</span>
-                  {alerts.length > 0 && <button onClick={() => setAlerts([])} style={{ fontSize: 12, color: '#4a5a7a', cursor: 'pointer', background: 'none', border: 'none' }}>Clear all</button>}
+              <div style={{ position: 'absolute', right: 0, top: 40, width: 280, borderRadius: 16, background: '#070712', border: '1px solid rgba(108,99,255,0.2)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', zIndex: 50, overflow: 'hidden' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #1E1E2E', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>Alerts</span>
+                  {alerts.length > 0 && <button onClick={() => setAlerts([])} style={{ fontSize: 12, color: '#4E4E63', cursor: 'pointer', background: 'none', border: 'none' }}>Clear all</button>}
                 </div>
                 {alerts.length === 0 ? (
                   <div style={{ padding: '32px 16px', textAlign: 'center', fontSize: 13, color: '#2a3a5a' }}>No alerts yet</div>
                 ) : (
                   <div style={{ maxHeight: 280, overflowY: 'auto' }}>
                     {alerts.map(a => (
-                      <div key={a.id} style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', opacity: a.read ? 0.6 : 1, display: 'flex', gap: 12 }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.read ? '#1a2535' : '#4f8ef7', marginTop: 4, flexShrink: 0 }} />
+                      <div key={a.id} style={{ padding: '12px 16px', borderBottom: '1px solid #1A1A24', opacity: a.read ? 0.6 : 1, display: 'flex', gap: 12 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: a.read ? '#1a2535' : '#6C63FF', marginTop: 4, flexShrink: 0 }} />
                         <div>
                           <p style={{ fontSize: 12, color: '#cbd5e1', margin: 0 }}>{a.text}</p>
                           <p style={{ fontSize: 11, color: '#2a3a5a', marginTop: 2 }}>{new Date(a.ts).toLocaleTimeString()}</p>
@@ -675,11 +675,11 @@ function DashboardNav({ tab, setTab, tier, displayName }) {
             )}
           </div>
 
-          <span className="hidden sm:block" style={{ fontSize: 13, color: '#4a5a7a', fontWeight: 600 }}>{displayName || firstName(user?.email)}</span>
+          <span className="hidden sm:block" style={{ fontSize: 13, color: '#4E4E63', fontWeight: 800, letterSpacing: '-0.02em' }}>{displayName || firstName(user?.email)}</span>
 
           <button onClick={() => navigate('/settings')} className="hide-mobile" title="Settings"
-            style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid transparent', color: '#4a5a7a', cursor: 'pointer' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+            style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid transparent', color: '#4E4E63', cursor: 'pointer' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#1E1E2E'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
           </button>
@@ -729,19 +729,19 @@ function PortfolioPanel() {
     return sum + (p.currentPrice - p.avgPrice) * p.shares * (p.side === 'YES' ? 1 : -1);
   }, 0);
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
         {[
-          ['Open positions', positions.length, '#F5F5FA'],
-          ['Unrealized P&L', (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2), totalPnl >= 0 ? '#22c55e' : '#ef4444'],
-          ['Avg cost basis', positions.length ? '$' + (positions.reduce((s,p) => s + p.shares * p.avgPrice, 0) / positions.length).toFixed(2) : '—', '#F5F5FA'],
+          ['Open positions', positions.length, '#F0F0FF'],
+          ['Unrealized P&L', (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2), totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
+          ['Avg cost basis', positions.length ? '$' + (positions.reduce((s,p) => s + p.shares * p.avgPrice, 0) / positions.length).toFixed(2) : '—', '#F0F0FF'],
         ].map(([l, v, c]) => (
           <div key={l} style={card}>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{l}</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: c }}>{v}</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{l}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: c }}>{v}</div>
           </div>
         ))}
       </div>
@@ -752,7 +752,7 @@ function PortfolioPanel() {
         </button>
       ) : (
         <div style={card}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 14 }}>New position</div>
+          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 14 }}>New position</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 10, marginBottom: 10 }}>
             <input value={form.title} onChange={e => setForm({...form, title: e.target.value})}
               placeholder="Market title…" className={inp}
@@ -765,7 +765,7 @@ function PortfolioPanel() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 12 }}>
             {[['Shares', 'shares', '100'], ['Avg price (¢)', 'avgPrice', '55'], ['Current price (¢)', 'currentPrice', '—']].map(([label, key, ph]) => (
               <div key={key}>
-                <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>{label}</div>
                 <input type="number" value={form[key]} onChange={e => setForm({...form, [key]: e.target.value})}
                   placeholder={ph} className={inp}
                   style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
@@ -782,16 +782,16 @@ function PortfolioPanel() {
       {positions.length === 0 ? (
         <div style={{ ...card, textAlign: 'center', padding: 48 }}>
           <div style={{ fontSize: 32, marginBottom: 10 }}>💼</div>
-          <div style={{ fontSize: 14, color: '#64748b' }}>No positions tracked yet.</div>
-          <div style={{ fontSize: 12, color: '#475569', marginTop: 4 }}>Add markets you hold shares in to track unrealized P&L.</div>
+          <div style={{ fontSize: 14, color: '#6B6B8A' }}>No positions tracked yet.</div>
+          <div style={{ fontSize: 12, color: '#6B6B8A', marginTop: 4 }}>Add markets you hold shares in to track unrealized P&L.</div>
         </div>
       ) : (
-        <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #1e2a4a' }}>
+        <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #1E1E2E' }}>
           <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#0a0f1e', borderBottom: '1px solid #1e2a4a' }}>
+              <tr style={{ background: '#111118', borderBottom: '1px solid #1E1E2E' }}>
                 {['Market','Side','Shares','Avg ¢','Cur ¢','P&L',''].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B6B8A' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -799,25 +799,25 @@ function PortfolioPanel() {
               {positions.map((p, i) => {
                 const pnl = (p.currentPrice - p.avgPrice) * p.shares * (p.side === 'YES' ? 1 : -1);
                 return (
-                  <tr key={p.id} style={{ borderBottom: i < positions.length - 1 ? '1px solid rgba(30,42,74,0.5)' : 'none', background: '#0f1729' }}>
-                    <td style={{ padding: '10px 14px', color: '#F5F5FA', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</td>
+                  <tr key={p.id} style={{ borderBottom: i < positions.length - 1 ? '1px solid rgba(30,42,74,0.5)' : 'none', background: '#111118' }}>
+                    <td style={{ padding: '10px 14px', color: '#F0F0FF', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</td>
                     <td style={{ padding: '10px 14px' }}>
-                      <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: p.side === 'YES' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: p.side === 'YES' ? '#22c55e' : '#ef4444' }}>{p.side}</span>
+                      <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', background: p.side === 'YES' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: p.side === 'YES' ? '#00E5B4' : '#FF4560' }}>{p.side}</span>
                     </td>
-                    <td style={{ padding: '10px 14px', color: '#94A3B8' }}>{p.shares}</td>
-                    <td style={{ padding: '10px 14px', color: '#94A3B8' }}>{p.avgPrice}</td>
+                    <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{p.shares}</td>
+                    <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{p.avgPrice}</td>
                     <td style={{ padding: '10px 14px' }}>
                       <input type="number" defaultValue={p.currentPrice}
                         onBlur={e => updateCurrent(p.id, e.target.value)}
-                        style={{ background: 'transparent', border: 'none', borderBottom: '1px solid #1e2a4a', color: '#F5F5FA', width: 46, fontSize: 13, outline: 'none' }} />
+                        style={{ background: 'transparent', border: 'none', borderBottom: '1px solid #1E1E2E', color: '#F0F0FF', width: 46, fontSize: 13, outline: 'none' }} />
                     </td>
-                    <td style={{ padding: '10px 14px', fontWeight: 700, color: pnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                    <td style={{ padding: '10px 14px', fontWeight: 800, letterSpacing: '-0.03em', color: pnl >= 0 ? '#00E5B4' : '#FF4560' }}>
                       {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
                     </td>
                     <td style={{ padding: '10px 14px' }}>
                       <button onClick={() => save(positions.filter(x => x.id !== p.id))}
                         style={{ color: '#334155', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}
-                        onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
+                        onMouseEnter={e => e.currentTarget.style.color='#FF4560'}
                         onMouseLeave={e => e.currentTarget.style.color='#334155'}>✕</button>
                     </td>
                   </tr>
@@ -827,7 +827,7 @@ function PortfolioPanel() {
           </table>
         </div>
       )}
-      <div style={{ fontSize: 11, color: '#475569', textAlign: 'right' }}>
+      <div style={{ fontSize: 11, color: '#6B6B8A', textAlign: 'right' }}>
         Stored locally. Edit "Cur ¢" column to update prices and recalculate P&L.
       </div>
     </div>
@@ -856,24 +856,24 @@ function AlertsPanel() {
     }));
   }
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 560 }}>
       <div style={card}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 4 }}>🔔 Price Alerts</div>
-        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 4 }}>🔔 Price Alerts</div>
+        <div style={{ fontSize: 12, color: '#6B6B8A', marginBottom: 16 }}>
           Get notified in-app when a market's YES% crosses your threshold.
         </div>
         <div style={{ marginBottom: 10 }}>
-          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Market title (partial match)</div>
+          <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Market title (partial match)</div>
           <input value={form.title} onChange={e => setForm({...form, title: e.target.value})}
             placeholder="e.g. Will BTC hit $120k" className={inp}
             style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Condition</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Condition</div>
             <select value={form.condition} onChange={e => setForm({...form, condition: e.target.value})}
               className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur}>
               <option value="above">YES% rises above</option>
@@ -881,7 +881,7 @@ function AlertsPanel() {
             </select>
           </div>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Threshold (%)</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Threshold (%)</div>
             <input type="number" min="1" max="99" value={form.threshold}
               onChange={e => setForm({...form, threshold: e.target.value})}
               placeholder="60" className={inp}
@@ -897,32 +897,32 @@ function AlertsPanel() {
       {alertsList.length === 0 ? (
         <div style={{ ...card, textAlign: 'center', padding: 40 }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🔕</div>
-          <div style={{ fontSize: 13, color: '#64748b' }}>No alerts set. Add one above.</div>
+          <div style={{ fontSize: 13, color: '#6B6B8A' }}>No alerts set. Add one above.</div>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {alertsList.map(a => (
             <div key={a.id} style={{ ...card, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, color: '#F5F5FA', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>
-                  Fire when YES% {a.condition} <span style={{ color: '#fbbf24', fontWeight: 700 }}>{a.threshold}%</span>
+                <div style={{ fontSize: 13, color: '#F0F0FF', marginBottom: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.title}</div>
+                <div style={{ fontSize: 11, color: '#6B6B8A' }}>
+                  Fire when YES% {a.condition} <span style={{ color: '#fbbf24', fontWeight: 800, letterSpacing: '-0.03em' }}>{a.threshold}%</span>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 600, background: a.triggered ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)', color: a.triggered ? '#22c55e' : '#60a5fa' }}>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 800, letterSpacing: '-0.02em', background: a.triggered ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)', color: a.triggered ? '#00E5B4' : '#60a5fa' }}>
                   {a.triggered ? '✓ Triggered' : '⏳ Watching'}
                 </span>
                 <button onClick={() => save(alertsList.filter(x => x.id !== a.id))}
                   style={{ color: '#334155', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}
-                  onMouseEnter={e => e.currentTarget.style.color='#ef4444'}
+                  onMouseEnter={e => e.currentTarget.style.color='#FF4560'}
                   onMouseLeave={e => e.currentTarget.style.color='#334155'}>✕</button>
               </div>
             </div>
           ))}
         </div>
       )}
-      <div style={{ fontSize: 11, color: '#475569' }}>
+      <div style={{ fontSize: 11, color: '#6B6B8A' }}>
         Alerts stored locally. Refresh the Markets tab to check live prices against thresholds.
       </div>
     </div>
@@ -1003,11 +1003,11 @@ function PolymarketTab({ tier }) {
   return (
     <div className="flex flex-col gap-5">
       {/* Sub-tab bar */}
-      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#0a0f1e'}}>
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#111118'}}>
         {PM_SUBTABS.map(t => (
           <button key={t.id} onClick={() => setPmTab(t.id)}
             className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={pmTab===t.id ? {background: '#2563EB', color: '#fff'} : {color: '#94A3B8'}}>
+            style={pmTab===t.id ? {background: '#6C63FF', color: '#fff'} : {color: '#6B6B8A'}}>
             {t.label}
           </button>
         ))}
@@ -1020,17 +1020,17 @@ function PolymarketTab({ tier }) {
         <div className="flex gap-5">
           {/* Sidebar */}
           <aside className="hidden lg:flex flex-col gap-1 w-48 shrink-0 sticky top-20 self-start">
-            <div className="text-xs font-semibold uppercase tracking-wider px-3 mb-2" style={{color: '#64748b'}}>Categories</div>
+            <div className="text-xs font-semibold uppercase tracking-wider px-3 mb-2" style={{color: '#6B6B8A'}}>Categories</div>
             {PM_SIDEBAR_CATS.map(c => (
               <button key={c} onClick={() => setFilt(c)}
                 className="flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all"
                 style={filt === c
-                  ? {background: '#2563EB', color: '#fff'}
-                  : {color: '#94A3B8'}}
-                onMouseEnter={e => { if (filt !== c) { e.currentTarget.style.background='#1e2a4a'; e.currentTarget.style.color='#F5F5FA'; } }}
-                onMouseLeave={e => { if (filt !== c) { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#94A3B8'; } }}>
+                  ? {background: '#6C63FF', color: '#fff'}
+                  : {color: '#6B6B8A'}}
+                onMouseEnter={e => { if (filt !== c) { e.currentTarget.style.background='#1E1E2E'; e.currentTarget.style.color='#F0F0FF'; } }}
+                onMouseLeave={e => { if (filt !== c) { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='#6B6B8A'; } }}>
                 <span>{c}</span>
-                <span className="text-xs tabular-nums" style={{color: filt === c ? 'rgba(255,255,255,0.6)' : '#475569'}}>{catCounts[c] || 0}</span>
+                <span className="text-xs tabular-nums" style={{color: filt === c ? 'rgba(255,255,255,0.6)' : '#6B6B8A'}}>{catCounts[c] || 0}</span>
               </button>
             ))}
           </aside>
@@ -1039,7 +1039,7 @@ function PolymarketTab({ tier }) {
           <div className="flex flex-col gap-5 flex-1 min-w-0">
             <div className="flex gap-3 flex-col sm:flex-row">
               <div className="relative flex-1">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{color: '#475569'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{color: '#6B6B8A'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 <input className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm ${inp}`} placeholder="Search markets…"
@@ -1049,9 +1049,9 @@ function PolymarketTab({ tier }) {
               </div>
               <button onClick={() => fetchMarkets(true)} disabled={loading}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                style={{border: '1px solid #1e2a4a', color: '#94A3B8', background: 'transparent'}}
-                onMouseEnter={e => { e.currentTarget.style.borderColor='#2563EB'; e.currentTarget.style.color='#F5F5FA'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor='#1e2a4a'; e.currentTarget.style.color='#94A3B8'; }}>
+                style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
+                onMouseEnter={e => { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#F0F0FF'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; }}>
                 {loading ? 'Loading…' : '↻ Refresh'}
               </button>
             </div>
@@ -1060,25 +1060,25 @@ function PolymarketTab({ tier }) {
             <div className="flex gap-2 flex-wrap lg:hidden">
               {PM_SIDEBAR_CATS.map(c => (
                 <button key={c} onClick={() => setFilt(c)}
-                  className="text-xs px-3.5 py-1.5 rounded-full font-medium transition-all"
+                  className="text-xs px-3.5 py-1.5 rounded-lg font-medium transition-all"
                   style={filt === c
-                    ? {background: '#2563EB', color: '#fff', border: '1px solid #2563EB'}
-                    : {border: '1px solid #1e2a4a', color: '#94A3B8'}}>
+                    ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'}
+                    : {border: '1px solid #1E1E2E', color: '#6B6B8A'}}>
                   {c} {catCounts[c] > 0 && <span style={{opacity: 0.6}}>{catCounts[c]}</span>}
                 </button>
               ))}
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="text-xs" style={{color: '#64748b'}}>
+              <div className="text-xs" style={{color: '#6B6B8A'}}>
                 {loading && markets.length === 0 ? 'Loading…' : `${visible.length} of ${filtered.length}${filt !== 'All' ? ` in ${filt}` : ''}`}
                 {totalLoaded > 0 && filt === 'All' && !loading && (
-                  <span style={{color: '#475569'}}> ({totalLoaded} total)</span>
+                  <span style={{color: '#6B6B8A'}}> ({totalLoaded} total)</span>
                 )}
               </div>
               {(loading || fetching) && (
-                <div className="flex items-center gap-1.5 text-xs animate-pulse" style={{color: '#64748b'}}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{background: '#2563EB'}} />
+                <div className="flex items-center gap-1.5 text-xs animate-pulse" style={{color: '#6B6B8A'}}>
+                  <div className="w-1.5 h-1.5 rounded-full" style={{background: '#6C63FF'}} />
                   {loading ? 'Loading markets…' : `Fetching more… (${totalLoaded})`}
                 </div>
               )}
@@ -1090,7 +1090,7 @@ function PolymarketTab({ tier }) {
             {loading && markets.length === 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {Array.from({length: 6}).map((_, i) => (
-                  <div key={i} className="rounded-2xl p-5 flex flex-col gap-4" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
+                  <div key={i} className="rounded-2xl p-5 flex flex-col gap-4" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
                     <div className="skeleton" style={{height: 20, width: '40%', borderRadius: 8}} />
                     <div className="skeleton" style={{height: 16, borderRadius: 6}} />
                     <div className="skeleton" style={{height: 14, width: '75%', borderRadius: 6}} />
@@ -1107,11 +1107,11 @@ function PolymarketTab({ tier }) {
             {/* Free tier gate */}
             {!isPro && filtered.length > maxFree && (
               <div style={{ position: 'relative', marginTop: -40 }}>
-                <div style={{ height: 120, background: 'linear-gradient(to bottom, transparent, #03030a)', pointerEvents: 'none' }} />
+                <div style={{ height: 120, background: 'linear-gradient(to bottom, transparent, #0A0A0F)', pointerEvents: 'none' }} />
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff', marginBottom: 6 }}>See all {filtered.length.toLocaleString()} markets</div>
-                  <div style={{ fontSize: 12, color: '#4a5a7a', marginBottom: 12 }}>Free plan shows {maxFree} markets</div>
-                  <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ background: '#4f8ef7', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, color: '#fff', cursor: 'pointer' }}>Upgrade to Pro</button>
+                  <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f4ff', marginBottom: 6 }}>See all {filtered.length.toLocaleString()} markets</div>
+                  <div style={{ fontSize: 12, color: '#4E4E63', marginBottom: 12 }}>Free plan shows {maxFree} markets</div>
+                  <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ background: '#6C63FF', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#fff', cursor: 'pointer' }}>Upgrade to Pro</button>
                 </div>
               </div>
             )}
@@ -1120,7 +1120,7 @@ function PolymarketTab({ tier }) {
             {isPro && visible.length < filtered.length && !loading && (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
                 <button onClick={() => setVisibleCount(n => n + 20)}
-                  style={{ fontSize: 13, fontWeight: 600, padding: '10px 28px', borderRadius: 10, background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>
+                  style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', padding: '10px 28px', borderRadius: 10, background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>
                   Load more ({filtered.length - visible.length} remaining)
                 </button>
               </div>
@@ -1136,8 +1136,8 @@ function PolymarketTab({ tier }) {
 const CAT_COLORS = {
   Politics: { background: 'rgba(167,139,250,0.15)', color: '#c084fc' },
   Crypto: { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-  Sports: { background: 'rgba(34,197,94,0.15)', color: '#4ade80' },
-  Finance: { background: 'rgba(79,142,247,0.15)', color: '#7aaff8' },
+  Sports: { background: 'rgba(34,197,94,0.15)', color: '#00E5B4' },
+  Finance: { background: 'rgba(108,99,255,0.15)', color: '#867fff' },
   Science: { background: 'rgba(20,184,166,0.15)', color: '#2dd4bf' },
   Entertainment: { background: 'rgba(244,63,94,0.15)', color: '#fb7185' },
   Economics: { background: 'rgba(245,158,11,0.15)', color: '#f59e0b' },
@@ -1247,8 +1247,8 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.raw.toFixed(1)+'%' } } },
     scales: {
-      x: { grid: { color: 'rgba(30,42,74,0.6)' }, ticks: { color: '#475569', font: { size: 10 } } },
-      y: { grid: { color: 'rgba(30,42,74,0.6)' }, ticks: { color: '#475569', font: { size: 10 }, callback: v => v+'%' }, min: 0, max: 100 },
+      x: { grid: { color: 'rgba(30,42,74,0.6)' }, ticks: { color: '#6B6B8A', font: { size: 10 } } },
+      y: { grid: { color: 'rgba(30,42,74,0.6)' }, ticks: { color: '#6B6B8A', font: { size: 10 }, callback: v => v+'%' }, min: 0, max: 100 },
     },
   };
 
@@ -1256,7 +1256,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
     <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
       style={{
         background: 'linear-gradient(145deg, rgba(30,41,59,0.55) 0%, rgba(15,23,42,0.85) 100%)', 
-        border: '1px solid rgba(255,255,255,0.06)', 
+        border: '1px solid #1E1E2E', 
         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.4)',
         backdropFilter: 'blur(24px)', 
         WebkitBackdropFilter: 'blur(24px)', 
@@ -1272,7 +1272,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
         e.currentTarget.style.transform='translateY(-4px)'; 
       }}
       onMouseLeave={e => { 
-        e.currentTarget.style.borderColor='rgba(255,255,255,0.06)'; 
+        e.currentTarget.style.borderColor='#1E1E2E'; 
         e.currentTarget.style.boxShadow='inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.4)'; 
         e.currentTarget.style.transform='translateY(0)'; 
       }}>
@@ -1282,19 +1282,19 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
           {historyData.length > 0 && (
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: trendColor, animation: `${pulseAnim} 2s infinite` }} />
           )}
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={catColor(m.cat)}>{m.cat}</span>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={catColor(m.cat)}>{m.cat}</span>
           {isSharp && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{background: 'rgba(239,68,68,0.15)', color: '#f87171'}}>🔥 Sharp</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-lg" style={{background: 'rgba(239,68,68,0.15)', color: '#FF4560'}}>🔥 Sharp</span>
           )}
         </div>
         <span className="text-xs font-medium uppercase tracking-wider" style={{color: '#94a3b8'}}>Vol {vol}</span>
       </div>
 
-      <p style={{fontSize: 15, fontWeight: 600, color: '#F8FAFC', lineHeight: 1.35, letterSpacing: '-0.01em', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{m.title}</p>
+      <p style={{fontSize: 15, fontWeight: 800, letterSpacing: '-0.02em', color: '#F8FAFC', lineHeight: 1.35, letterSpacing: '-0.01em', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{m.title}</p>
 
       <div>
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#64748b'}}>YES</span>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#6B6B8A'}}>YES</span>
           <div className="flex items-center gap-4">
             {renderSparkline()}
             <div className="flex items-center gap-1.5">
@@ -1302,7 +1302,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
               <span style={{fontSize: 20, fontWeight: 900, color: trendColor, transform: 'translateY(-2px)'}}>{isUp ? '↑' : '↓'}</span>
             </div>
           </div>
-          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#64748b'}}>NO {m.no ?? 100 - pct}%</span>
+          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#6B6B8A'}}>NO {m.no ?? 100 - pct}%</span>
         </div>
         <div className="h-1.5 rounded-full overflow-hidden" style={{background: 'rgba(0,0,0,0.5)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)'}}>
           <div className="h-full rounded-full transition-all" style={{width: pct+'%', background: trendColor, boxShadow: `0 0 10px ${trendColor}80`}} />
@@ -1312,9 +1312,9 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
       <div className="flex items-center justify-between mt-1">
         <div onClick={e => e.stopPropagation()}><AIAnalyzeButton topic={m.title} type="polymarket" /></div>
         <button onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
-          className="text-xs font-semibold transition-colors" style={{color: '#64748b'}}
+          className="text-xs font-semibold transition-colors" style={{color: '#6B6B8A'}}
           onMouseEnter={e => e.currentTarget.style.color='#cbd5e1'}
-          onMouseLeave={e => e.currentTarget.style.color='#64748b'}>
+          onMouseLeave={e => e.currentTarget.style.color='#6B6B8A'}>
           {expanded ? '▲ Hide history' : '▼ 7-day history'}
         </button>
       </div>
@@ -1414,28 +1414,28 @@ function DayTradingTab({ activeSubTab, tier }) {
         />
         {/* Export buttons */}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={() => exportTradesCSV(trades)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>Export CSV</button>
+          <button onClick={() => exportTradesCSV(trades)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', cursor: 'pointer' }}>Export CSV</button>
           {(tier === 'pro' || tier === 'elite') ? (
-            <button onClick={() => exportTradesPDF(trades)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>Export PDF</button>
+            <button onClick={() => exportTradesPDF(trades)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>Export PDF</button>
           ) : (
-            <span style={{ fontSize: 10, color: '#2a3a5a', alignSelf: 'center' }}>PDF — <span style={{ color: '#4f8ef7', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
+            <span style={{ fontSize: 10, color: '#2a3a5a', alignSelf: 'center' }}>PDF — <span style={{ color: '#6C63FF', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
           )}
         </div>
 
         {/* Hero P&L */}
-        <div className="rounded-2xl p-6" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center'}}>
-          <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#64748b'}}>Total P&L</div>
-          <div style={{fontSize: 48, fontWeight: 900, color: stats.pnl >= 0 ? '#22c55e' : '#ef4444', letterSpacing: '-0.02em', lineHeight: 1}}>
+        <div className="rounded-2xl p-6" style={{background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', textAlign: 'center'}}>
+          <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#6B6B8A'}}>Total P&L</div>
+          <div style={{fontSize: 48, fontWeight: 900, color: stats.pnl >= 0 ? '#00E5B4' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1}}>
             {(stats.pnl>=0?'+':'')+'$'+stats.pnl.toFixed(2)}
           </div>
         </div>
         <div className="grid grid-cols-3 gap-4">
-          {[['Win Rate', stats.wr+'%', '#F5F5FA', 28], ['Max Drawdown', maxDD ? '-$'+Math.abs(maxDD).toFixed(0) : '$0', maxDD < 0 ? '#ef4444' : '#F5F5FA', 28], ['Total Trades', stats.total, '#F5F5FA', 28]].map(([l,v,c,sz]) => (
-            <div key={l} className="rounded-2xl p-5" style={{background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', textAlign: 'center', transition: 'all 0.2s ease'}}
+          {[['Win Rate', stats.wr+'%', '#F0F0FF', 28], ['Max Drawdown', maxDD ? '-$'+Math.abs(maxDD).toFixed(0) : '$0', maxDD < 0 ? '#FF4560' : '#F0F0FF', 28], ['Total Trades', stats.total, '#F0F0FF', 28]].map(([l,v,c,sz]) => (
+            <div key={l} className="rounded-2xl p-5" style={{background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', textAlign: 'center', transition: 'all 0.2s ease'}}
               onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
-              <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#64748b'}}>{l}</div>
-              <div style={{fontSize: sz, fontWeight: 700, color: c}}>{v}</div>
+              <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#6B6B8A'}}>{l}</div>
+              <div style={{fontSize: sz, fontWeight: 800, letterSpacing: '-0.03em', color: c}}>{v}</div>
             </div>
           ))}
         </div>
@@ -1450,27 +1450,27 @@ function DayTradingTab({ activeSubTab, tier }) {
               empty="No trades yet. Log your first trade above.">
               {trades.map(t => {
                 const cls = t.status==='win'?'text-green-500':t.status==='loss'?'text-red-500':'text-slate-500';
-                const confColor = t.confidence === 'Max' ? '#ef4444' : t.confidence === 'High' ? '#22c55e' : t.confidence === 'Medium' ? '#7aaff8' : '#64748b';
+                const confColor = t.confidence === 'Max' ? '#FF4560' : t.confidence === 'High' ? '#00E5B4' : t.confidence === 'Medium' ? '#867fff' : '#6B6B8A';
                 return (
-                  <tr key={t.id} className="transition-colors" style={{borderBottom: '1px solid #1e2a4a'}}
+                  <tr key={t.id} className="transition-colors" style={{borderBottom: '1px solid #1E1E2E'}}
                     onMouseEnter={e => e.currentTarget.style.background='rgba(30,42,74,0.4)'}
                     onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                    <td className="px-5 py-3.5 font-semibold" style={{color: '#F5F5FA'}}>
+                    <td className="px-5 py-3.5 font-semibold" style={{color: '#F0F0FF'}}>
                       <div className="flex items-center gap-2">
                         {t.ticker}
-                        {t.screenshot_url && <span title="Has chart screenshot" style={{ fontSize: 10, color: '#4f8ef7' }}>📸</span>}
+                        {t.screenshot_url && <span title="Has chart screenshot" style={{ fontSize: 10, color: '#6C63FF' }}>📸</span>}
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${t.direction==='LONG'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{t.direction}</span>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${t.direction==='LONG'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{t.direction}</span>
                     </td>
                     <td className="px-5 py-3.5 text-slate-300">${parseFloat(t.entry).toFixed(2)}</td>
-                    <td className="px-5 py-3.5 font-semibold" style={{color: t.status==='open' ? '#94a3b8' : t.pnl > 0 ? '#22c55e' : t.pnl < 0 ? '#ef4444' : '#94a3b8'}}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
-                    <td className="px-5 py-3.5"><span style={{ fontSize: 11, fontWeight: 600, color: confColor }}>{t.confidence || '—'}</span></td>
+                    <td className="px-5 py-3.5 font-semibold" style={{color: t.status==='open' ? '#94a3b8' : t.pnl > 0 ? '#00E5B4' : t.pnl < 0 ? '#FF4560' : '#94a3b8'}}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
+                    <td className="px-5 py-3.5"><span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', color: confColor }}>{t.confidence || '—'}</span></td>
                     <td className="px-5 py-3.5 text-slate-400" style={{ fontSize: 12 }}>{t.duration || '—'}</td>
                     <td className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>{t.status}</td>
                     <td className="px-5 py-3.5">
-                      <label title="Attach chart screenshot" style={{ cursor: 'pointer', fontSize: 14, color: t.screenshot_url ? '#4f8ef7' : '#2a3a5a' }}
+                      <label title="Attach chart screenshot" style={{ cursor: 'pointer', fontSize: 14, color: t.screenshot_url ? '#6C63FF' : '#2a3a5a' }}
                         className="hover:text-blue-400 transition-colors">
                         📷
                         <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
@@ -1489,9 +1489,9 @@ function DayTradingTab({ activeSubTab, tier }) {
             </DarkTable>
             <button onClick={() => sendPrompt('Analyze my day trading journal. Tell me which setups are most profitable, where I leave money on the table, and give me 3 specific improvements.')}
               className="text-sm text-left transition-colors rounded-xl px-5 py-3"
-              style={{border: '1px solid #1e2a4a', color: '#94A3B8', background: 'transparent'}}
-              onMouseEnter={e => { e.currentTarget.style.borderColor='#2563EB'; e.currentTarget.style.color='#F5F5FA'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor='#1e2a4a'; e.currentTarget.style.color='#94A3B8'; }}>
+              style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
+              onMouseEnter={e => { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#F0F0FF'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; }}>
               Ask Claude to review my trading ↗
             </button>
           </>
@@ -1509,15 +1509,15 @@ function TradeForm({ form, setForm, loading, onAdd }) {
   const handleSubmit = () => { onAdd(); setSaved(true); setTimeout(() => setSaved(false), 2000); };
   const onEnter = (e) => { if (e.key === 'Enter' && canSubmit) handleSubmit(); };
   return (
-    <div className="rounded-2xl p-5" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
+    <div className="rounded-2xl p-5" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Quick log</div>
-        {saved && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>Trade logged ✓</span>}
+        <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#6B6B8A'}}>Quick log</div>
+        {saved && <span style={{ fontSize: 12, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em' }}>Trade logged ✓</span>}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
         {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['pnl','P&L $','number']].map(([k,pl,t]) => (
           <div key={k}>
-            <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>{pl}</label>
+            <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>{pl}</label>
             <input type={t} placeholder={pl} value={form[k]} onChange={e => f(k, e.target.value)}
               onKeyDown={onEnter}
               className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
@@ -1526,9 +1526,9 @@ function TradeForm({ form, setForm, loading, onAdd }) {
         ))}
       </div>
       <button onClick={() => setShowMore(s => !s)}
-        style={{ fontSize: 12, color: '#7aaff8', background: 'rgba(79,142,247,0.06)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 8, cursor: 'pointer', marginBottom: showMore ? 12 : 0, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, transition: 'all 0.15s ease' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.12)'; e.currentTarget.style.borderColor = 'rgba(79,142,247,0.35)'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(79,142,247,0.06)'; e.currentTarget.style.borderColor = 'rgba(79,142,247,0.2)'; }}>
+        style={{ fontSize: 12, color: '#867fff', background: 'rgba(108,99,255,0.06)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 8, cursor: 'pointer', marginBottom: showMore ? 12 : 0, padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 800, letterSpacing: '-0.02em', transition: 'all 0.15s ease' }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.12)'; e.currentTarget.style.borderColor = 'rgba(108,99,255,0.35)'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(108,99,255,0.2)'; }}>
         <span style={{ display: 'inline-block', transition: 'transform 0.2s ease', transform: showMore ? 'rotate(90deg)' : 'rotate(0deg)', fontSize: 10 }}>▶</span>
         {showMore ? 'Less details' : 'More details (notes, confidence, duration)'}
       </button>
@@ -1536,32 +1536,32 @@ function TradeForm({ form, setForm, loading, onAdd }) {
         <div className="flex flex-col gap-3 mb-3">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Direction</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Direction</label>
               <select value={form.direction} onChange={e => f('direction', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
                 <option>LONG</option><option>SHORT</option>
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Setup</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Setup</label>
               <select value={form.setup} onChange={e => f('setup', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
                 {['Breakout','Pullback','VWAP','Gap & Go','Reversal','Momentum','Other'].map(s => <option key={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Confidence</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Confidence</label>
               <div style={{ display: 'flex', gap: 4 }}>
                 {['Low','Medium','High','Max'].map(c => (
                   <button key={c} type="button" onClick={() => f('confidence', c)}
-                    style={{ flex: 1, padding: '7px 0', borderRadius: 10, fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease',
-                      background: form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.2)' : c === 'High' ? 'rgba(34,197,94,0.2)' : c === 'Medium' ? 'rgba(79,142,247,0.2)' : 'rgba(255,255,255,0.06)') : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.4)' : c === 'High' ? 'rgba(34,197,94,0.4)' : c === 'Medium' ? 'rgba(79,142,247,0.4)' : 'rgba(255,255,255,0.15)') : 'rgba(255,255,255,0.08)'}`,
-                      color: form.confidence === c ? (c === 'Max' ? '#ef4444' : c === 'High' ? '#22c55e' : c === 'Medium' ? '#7aaff8' : '#94a3b8') : '#4a5a7a',
+                    style={{ flex: 1, padding: '7px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', transition: 'all 0.15s ease',
+                      background: form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.2)' : c === 'High' ? 'rgba(34,197,94,0.2)' : c === 'Medium' ? 'rgba(108,99,255,0.2)' : '#1E1E2E') : '#1A1A24',
+                      border: `1px solid ${form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.4)' : c === 'High' ? 'rgba(34,197,94,0.4)' : c === 'Medium' ? 'rgba(108,99,255,0.4)' : 'rgba(255,255,255,0.15)') : 'rgba(108,99,255,0.2)'}`,
+                      color: form.confidence === c ? (c === 'Max' ? '#FF4560' : c === 'High' ? '#00E5B4' : c === 'Medium' ? '#867fff' : '#94a3b8') : '#4E4E63',
                     }}>{c}</button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Duration</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Duration</label>
               <select value={form.duration} onChange={e => f('duration', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
                 <option value="Scalp">Scalp (&lt; 5min)</option>
                 <option value="Day Trade">Day Trade</option>
@@ -1572,27 +1572,27 @@ function TradeForm({ form, setForm, loading, onAdd }) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Status</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Status</label>
               <div className={`w-full rounded-xl px-3.5 py-2.5 text-sm`} style={{...inpStyle, display: 'flex', alignItems: 'center', gap: 6}}>
-                <span style={{color: form.pnl && parseFloat(form.pnl) > 0 ? '#22c55e' : form.pnl && parseFloat(form.pnl) < 0 ? '#ef4444' : '#64748b', fontWeight: 600}}>
+                <span style={{color: form.pnl && parseFloat(form.pnl) > 0 ? '#00E5B4' : form.pnl && parseFloat(form.pnl) < 0 ? '#FF4560' : '#6B6B8A', fontWeight: 800, letterSpacing: '-0.02em'}}>
                   {form.pnl && parseFloat(form.pnl) > 0 ? 'Win' : form.pnl && parseFloat(form.pnl) < 0 ? 'Loss' : 'Open'}
                 </span>
-                <span style={{fontSize: 10, color: '#4a5a7a'}}>Auto from P&L</span>
+                <span style={{fontSize: 10, color: '#4E4E63'}}>Auto from P&L</span>
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Notes</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Notes</label>
               <input placeholder="Quick note" value={form.notes} onChange={e => f('notes', e.target.value)} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Pre-Market Notes</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Pre-Market Notes</label>
               <textarea placeholder="Pre-market thesis, key levels, plan..." value={form.pre_market_notes} onChange={e => f('pre_market_notes', e.target.value)}
                 rows={2} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={{...inpStyle, resize: 'vertical'}} onFocus={inpFocus} onBlur={inpBlur} />
             </div>
             <div>
-              <label className="text-xs font-medium block mb-1.5" style={{color: '#64748b'}}>Post-Market Notes</label>
+              <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Post-Market Notes</label>
               <textarea placeholder="What happened, what you learned..." value={form.post_market_notes} onChange={e => f('post_market_notes', e.target.value)}
                 rows={2} className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={{...inpStyle, resize: 'vertical'}} onFocus={inpFocus} onBlur={inpBlur} />
             </div>
@@ -1601,9 +1601,9 @@ function TradeForm({ form, setForm, loading, onAdd }) {
       )}
       <button onClick={handleSubmit} disabled={loading || !canSubmit}
         className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
-        style={{background: '#2563EB', color: '#fff'}}
+        style={{background: '#6C63FF', color: '#fff'}}
         onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background='#1d4ed8'; }}
-        onMouseLeave={e => e.currentTarget.style.background='#2563EB'}>
+        onMouseLeave={e => e.currentTarget.style.background='#6C63FF'}>
         {loading ? 'Adding…' : '+ Add trade'}
       </button>
     </div>
@@ -1629,38 +1629,38 @@ function AIStrategyAnalyzer({ tier }) {
 
   if (!isPro) {
     return (
-      <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+      <div className="rounded-2xl p-8 text-center" style={{ background: '#111118', border: '1px solid rgba(108,99,255,0.2)' }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>🧠</div>
         <div className="flex items-center justify-center gap-2 mb-2">
-          <span style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>AI Strategy Analyzer</span>
-          <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(79,142,247,0.2)', color: '#7aaff8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#F0F0FF' }}>AI Strategy Analyzer</span>
+          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 4, background: 'rgba(108,99,255,0.2)', color: '#867fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
         </div>
-        <p style={{ fontSize: 13, color: '#4a5a7a', marginBottom: 16, maxWidth: 360, marginLeft: 'auto', marginRight: 'auto' }}>
+        <p style={{ fontSize: 13, color: '#4E4E63', marginBottom: 16, maxWidth: 360, marginLeft: 'auto', marginRight: 'auto' }}>
           Get AI-powered analysis of your trade setups — identify strengths, weaknesses, and risk management improvements.
         </p>
         <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}
-          style={{ background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+          style={{ background: '#6C63FF', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer' }}>
           Upgrade to Pro
         </button>
       </div>
     );
   }
 
-  const verdictColor = result?.includes('STRONG SETUP') ? '#22c55e' : result?.includes('AVOID') ? '#ef4444' : result?.includes('NEEDS WORK') ? '#f59e0b' : '#64748b';
+  const verdictColor = result?.includes('STRONG SETUP') ? '#00E5B4' : result?.includes('AVOID') ? '#FF4560' : result?.includes('NEEDS WORK') ? '#f59e0b' : '#6B6B8A';
   const verdictMatch = result?.match(/VERDICT:\s*(STRONG SETUP|NEEDS WORK|AVOID)/);
 
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center gap-3">
         <span style={{ fontSize: 20 }}>🧠</span>
-        <span style={{ fontSize: 16, fontWeight: 800, color: '#F5F5FA' }}>AI Strategy Analyzer</span>
-        <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: 'rgba(79,142,247,0.2)', color: '#7aaff8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
+        <span style={{ fontSize: 16, fontWeight: 800, color: '#F0F0FF' }}>AI Strategy Analyzer</span>
+        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 4, background: 'rgba(108,99,255,0.2)', color: '#867fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
       </div>
 
-      <div className="rounded-2xl p-5" style={{ background: '#0f1729', border: '1px solid #1e2a4a' }}>
+      <div className="rounded-2xl p-5" style={{ background: '#111118', border: '1px solid #1E1E2E' }}>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
           <div className="sm:col-span-3">
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#64748b' }}>Describe your setup</label>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Describe your setup</label>
             <textarea
               placeholder="e.g. NQ long at 18,450 on VWAP bounce. Previous support at 18,400, resistance at 18,550. Volume declining into the pullback. Plan to risk 20 pts for 60 pt target..."
               value={setup} onChange={e => setSetup(e.target.value)}
@@ -1670,7 +1670,7 @@ function AIStrategyAnalyzer({ tier }) {
             />
           </div>
           <div>
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#64748b' }}>Strategy</label>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Strategy</label>
             <select value={strategy} onChange={e => setStrategy(e.target.value)}
               className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur}>
               <option>Breakout</option>
@@ -1683,28 +1683,28 @@ function AIStrategyAnalyzer({ tier }) {
         </div>
         <button onClick={analyze} disabled={loading || !setup.trim()}
           className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
-          style={{ background: '#2563EB', color: '#fff' }}
+          style={{ background: '#6C63FF', color: '#fff' }}
           onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#1d4ed8'; }}
-          onMouseLeave={e => e.currentTarget.style.background = '#2563EB'}>
+          onMouseLeave={e => e.currentTarget.style.background = '#6C63FF'}>
           {loading ? 'Analyzing…' : 'Analyze Setup'}
         </button>
       </div>
 
       {/* Result */}
       {(result || loading) && (
-        <div className="rounded-2xl p-5" style={{ background: '#0f1729', border: '1px solid #1e2a4a' }}>
+        <div className="rounded-2xl p-5" style={{ background: '#111118', border: '1px solid #1E1E2E' }}>
           {verdictMatch && (
             <div className="mb-4 p-3 rounded-xl text-center" style={{ background: verdictColor + '15', border: `1px solid ${verdictColor}40` }}>
-              <div style={{ fontSize: 10, color: '#4a5a7a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>AI Verdict</div>
+              <div style={{ fontSize: 10, color: '#4E4E63', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>AI Verdict</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: verdictColor }}>{verdictMatch[1]}</div>
             </div>
           )}
           <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.8, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
             {result ? result.replace(/VERDICT:\s*(STRONG SETUP|NEEDS WORK|AVOID)\n?/, '') : ''}
-            {loading && <span className="inline-block w-1.5 h-4 ml-0.5 rounded-sm animate-pulse" style={{ background: '#4f8ef7', verticalAlign: 'middle' }} />}
+            {loading && <span className="inline-block w-1.5 h-4 ml-0.5 rounded-sm animate-pulse" style={{ background: '#6C63FF', verticalAlign: 'middle' }} />}
           </div>
-          {error && <div className="mt-2 text-xs" style={{ color: '#ef4444' }}>{error}</div>}
-          <div className="mt-4 pt-3" style={{ borderTop: '1px solid #1e2a4a' }}>
+          {error && <div className="mt-2 text-xs" style={{ color: '#FF4560' }}>{error}</div>}
+          <div className="mt-4 pt-3" style={{ borderTop: '1px solid #1E1E2E' }}>
             <p style={{ fontSize: 10, color: '#2a3a5a', lineHeight: 1.5 }}>
               AI-generated analysis for educational purposes only. Not financial advice. Always do your own research and manage risk appropriately.
             </p>
@@ -1823,15 +1823,15 @@ function SportsBettingTab({ tier, activeSubTab }) {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {[
-          ['P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(0), totalPnl >= 0 ? '#22c55e' : '#ef4444'],
-          ['Units', (totalPnl>=0?'+':'')+((totalPnl/unitSize)||0).toFixed(1)+'u', totalPnl >= 0 ? '#22c55e' : '#ef4444'],
-          ['Win Rate', wr+'%', wr >= 50 ? '#22c55e' : '#F5F5FA'],
-          ['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi) >= 0 ? '#22c55e' : '#ef4444'],
-          ['CLV Avg', '—', '#4a5a7a'],
-          ['Active', bets.filter(b => b.result==='pending').length+'', '#4f8ef7'],
+          ['P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(0), totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
+          ['Units', (totalPnl>=0?'+':'')+((totalPnl/unitSize)||0).toFixed(1)+'u', totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
+          ['Win Rate', wr+'%', wr >= 50 ? '#00E5B4' : '#F0F0FF'],
+          ['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+          ['CLV Avg', '—', '#4E4E63'],
+          ['Active', bets.filter(b => b.result==='pending').length+'', '#6C63FF'],
         ].map(([l, v, c]) => (
-          <div key={l} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '10px 12px' }}>
-            <div style={{ fontSize: 9, color: '#4a5a7a', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{l}</div>
+          <div key={l} style={{ background: '#111118', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 12, padding: '10px 12px' }}>
+            <div style={{ fontSize: 9, color: '#4E4E63', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{l}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: c }}>{v}</div>
           </div>
         ))}
@@ -1841,24 +1841,24 @@ function SportsBettingTab({ tier, activeSubTab }) {
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         {['screenshot', 'manual'].map(m => (
           <button key={m} onClick={() => setEntryMode(m)}
-            style={{ padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: 'pointer', flex: m === 'screenshot' ? 1 : 0, border: '1px solid',
-              ...(entryMode === m ? { background: m === 'screenshot' ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.06)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#4a5a7a' })
+            style={{ padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', flex: m === 'screenshot' ? 1 : 0, border: '1px solid',
+              ...(entryMode === m ? { background: m === 'screenshot' ? 'rgba(108,99,255,0.15)' : '#1E1E2E', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
             }}>{m === 'screenshot' ? '📷 Snap your bet slip' : 'Manual entry'}</button>
         ))}
       </div>
 
       {/* ── Screenshot import ── */}
       {entryMode === 'screenshot' && (
-        <div style={{ background: '#0f1729', border: '2px dashed rgba(79,142,247,0.3)', borderRadius: 16, padding: 32, textAlign: 'center' }}>
+        <div style={{ background: '#111118', border: '2px dashed rgba(108,99,255,0.3)', borderRadius: 16, padding: 32, textAlign: 'center' }}>
           {imgParsing ? (
-            <div><div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 12 }}>{[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#4f8ef7', animation: `pulse 1.2s infinite ${i*0.2}s` }} />)}</div><div style={{ fontSize: 13, color: '#4a5a7a' }}>Reading bet slip with AI...</div></div>
+            <div><div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 12 }}>{[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#6C63FF', animation: `pulse 1.2s infinite ${i*0.2}s` }} />)}</div><div style={{ fontSize: 13, color: '#4E4E63' }}>Reading bet slip with AI...</div></div>
           ) : parsedPreview ? (
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#7aaff8', marginBottom: 12 }}>Detected from screenshot:</div>
+              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff', marginBottom: 12 }}>Detected from screenshot:</div>
               <div className="grid grid-cols-2 gap-3 mb-3">
                 {[['Matchup', 'match'], ['Odds', 'odds'], ['Stake', 'stake'], ['Sport', 'sport'], ['Type', 'type'], ['Book', 'sportsbook']].map(([label, key]) => (
                   <div key={key}>
-                    <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>{label}</div>
+                    <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 2 }}>{label}</div>
                     <input value={form[key]} onChange={e => setForm(f => ({...f, [key]: e.target.value}))}
                       className={`w-full rounded-lg px-3 py-2 text-sm ${inp}`} style={{...inpStyle, fontSize: 13}} onFocus={inpFocus} onBlur={inpBlur} />
                   </div>
@@ -1867,19 +1867,19 @@ function SportsBettingTab({ tier, activeSubTab }) {
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => { addBet(); setParsedPreview(null); }}
                   disabled={loading || !form.match || !form.odds || !form.stake}
-                  style={{ flex: 1, padding: '10px', borderRadius: 10, background: '#2563EB', color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer' }}>
+                  style={{ flex: 1, padding: '10px', borderRadius: 10, background: '#6C63FF', color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', border: 'none', cursor: 'pointer' }}>
                   {loading ? 'Logging…' : 'Confirm & Log Bet'}
                 </button>
                 <button onClick={() => { setParsedPreview(null); setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' }); }}
-                  style={{ padding: '10px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
+                  style={{ padding: '10px 16px', borderRadius: 10, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
               </div>
             </div>
           ) : (
             <label style={{ cursor: 'pointer', display: 'block' }}>
               <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#F5F5FA', marginBottom: 4 }}>Snap your bet slip</div>
-              <div style={{ fontSize: 12, color: '#4a5a7a', marginBottom: 12 }}>Upload a screenshot from DraftKings, FanDuel, BetMGM, or any sportsbook</div>
-              <div style={{ display: 'inline-block', padding: '10px 24px', borderRadius: 10, background: '#4f8ef7', color: '#fff', fontSize: 13, fontWeight: 600 }}>Upload Screenshot</div>
+              <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 4 }}>Snap your bet slip</div>
+              <div style={{ fontSize: 12, color: '#4E4E63', marginBottom: 12 }}>Upload a screenshot from DraftKings, FanDuel, BetMGM, or any sportsbook</div>
+              <div style={{ display: 'inline-block', padding: '10px 24px', borderRadius: 10, background: '#6C63FF', color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em' }}>Upload Screenshot</div>
               <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
                 const file = e.target.files?.[0]; if (!file) return;
                 setImgParsing(true);
@@ -1915,14 +1915,14 @@ function SportsBettingTab({ tier, activeSubTab }) {
 
       {/* ── Manual bet slip entry ── */}
       {entryMode === 'manual' && (
-        <div data-bet-form style={{ background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 }}>
-          {betSaved && <div style={{ fontSize: 12, color: '#22c55e', fontWeight: 600, marginBottom: 8 }}>Bet logged ✓</div>}
+        <div data-bet-form style={{ background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 }}>
+          {betSaved && <div style={{ fontSize: 12, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>Bet logged ✓</div>}
           {/* Sport tiles */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {[['🏀','NBA'],['🏈','NFL'],['⚾','MLB'],['🏒','NHL'],['⚽','Soccer'],['🥊','UFC'],['🎾','Tennis'],['⛳','Golf']].map(([icon, s]) => (
               <button key={s} onClick={() => setForm(f => ({...f, sport: s}))}
-                style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', display: 'flex', alignItems: 'center', gap: 4,
-                  ...(form.sport === s ? { background: 'rgba(79,142,247,0.15)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#4a5a7a' })
+                style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid', display: 'flex', alignItems: 'center', gap: 4,
+                  ...(form.sport === s ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
                 }}>{icon} {s}</button>
             ))}
           </div>
@@ -1930,21 +1930,21 @@ function SportsBettingTab({ tier, activeSubTab }) {
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {['Moneyline','Spread','Over/Under','Prop','Parlay','Futures'].map(t => (
               <button key={t} onClick={() => setForm(f => ({...f, type: t}))}
-                style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: '1px solid',
-                  ...(form.type === t ? { background: 'rgba(79,142,247,0.15)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#4a5a7a' })
+                style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
+                  ...(form.type === t ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
                 }}>{t}</button>
             ))}
           </div>
           {/* Matchup + Odds */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
-              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Matchup / pick</div>
+              <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Matchup / pick</div>
               <input placeholder="e.g. Lakers ML, Chiefs -3.5" value={form.match} onChange={e => setForm({...form, match: e.target.value})}
                 onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
                 className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
             </div>
             <div>
-              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Odds (American)</div>
+              <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Odds (American)</div>
               <input placeholder="-110" value={form.odds} onChange={e => setForm({...form, odds: e.target.value})}
                 onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
                 className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
@@ -1952,24 +1952,24 @@ function SportsBettingTab({ tier, activeSubTab }) {
           </div>
           {/* Stake with quick-add */}
           <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Stake ($)</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Stake ($)</div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
               <input type="number" placeholder="50" value={form.stake} onChange={e => setForm({...form, stake: e.target.value})}
                 onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
                 className={`rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={{...inpStyle, width: 100}} onFocus={inpFocus} onBlur={inpBlur} />
               {[10, 25, 50, 100].map(v => (
                 <button key={v} onClick={() => setForm(f => ({...f, stake: String((parseFloat(f.stake) || 0) + v)}))}
-                  style={{ padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b' }}>+${v}</button>
+                  style={{ padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#6B6B8A' }}>+${v}</button>
               ))}
-              {form.stake && <span style={{ fontSize: 11, color: '#4a5a7a' }}>{(parseFloat(form.stake)/unitSize).toFixed(1)}u</span>}
+              {form.stake && <span style={{ fontSize: 11, color: '#4E4E63' }}>{(parseFloat(form.stake)/unitSize).toFixed(1)}u</span>}
             </div>
           </div>
           {/* Book selector pills */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {['DraftKings','FanDuel','BetMGM','Caesars','ESPN Bet','Other'].map(b => (
               <button key={b} onClick={() => setForm(f => ({...f, sportsbook: b}))}
-                style={{ padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600, cursor: 'pointer', border: '1px solid',
-                  ...(form.sportsbook === b ? { background: 'rgba(79,142,247,0.1)', borderColor: 'rgba(79,142,247,0.3)', color: '#7aaff8' } : { background: 'transparent', borderColor: 'rgba(255,255,255,0.06)', color: '#2a3a5a' })
+                style={{ padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
+                  ...(form.sportsbook === b ? { background: 'rgba(108,99,255,0.1)', borderColor: 'rgba(108,99,255,0.3)', color: '#867fff' } : { background: 'transparent', borderColor: '#1E1E2E', color: '#2a3a5a' })
                 }}>{b}</button>
             ))}
           </div>
@@ -1978,10 +1978,10 @@ function SportsBettingTab({ tier, activeSubTab }) {
             const o = parseFloat(form.odds), s = parseFloat(form.stake);
             if (!o || !s) return null;
             const pr = o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100);
-            return <div style={{ fontSize: 14, color: '#22c55e', fontWeight: 700, marginBottom: 10 }}>Payout: ${(s + pr).toFixed(2)} <span style={{ fontSize: 11, color: '#64748b', fontWeight: 400 }}>(+${pr.toFixed(2)} profit · {(s/unitSize).toFixed(1)}u)</span></div>;
+            return <div style={{ fontSize: 14, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10 }}>Payout: ${(s + pr).toFixed(2)} <span style={{ fontSize: 11, color: '#6B6B8A', fontWeight: 400 }}>(+${pr.toFixed(2)} profit · {(s/unitSize).toFixed(1)}u)</span></div>;
           })()}
           <button onClick={addBet} disabled={loading || !form.match || !form.odds || !form.stake}
-            style={{ width: '100%', padding: '12px', borderRadius: 12, background: '#2563EB', color: '#fff', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer', opacity: loading || !form.match || !form.odds || !form.stake ? 0.5 : 1 }}>
+            style={{ width: '100%', padding: '12px', borderRadius: 12, background: '#6C63FF', color: '#fff', fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', border: 'none', cursor: 'pointer', opacity: loading || !form.match || !form.odds || !form.stake ? 0.5 : 1 }}>
             {loading ? 'Logging…' : 'Log Bet'}
           </button>
         </div>
@@ -1994,8 +1994,8 @@ function SportsBettingTab({ tier, activeSubTab }) {
             const isActive = (feedFilter || 'All') === f;
             return (
               <button key={f} onClick={() => setFeedFilter(f === 'All' ? null : f)}
-                style={{ padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: 600, cursor: 'pointer', border: '1px solid',
-                  ...(isActive ? { background: 'rgba(79,142,247,0.15)', borderColor: 'rgba(79,142,247,0.4)', color: '#7aaff8' } : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.08)', color: '#4a5a7a' })
+                style={{ padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
+                  ...(isActive ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
                 }}>{f}</button>
             );
           })}
@@ -2003,7 +2003,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
         <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bets…"
           className={`rounded-lg px-3 py-1.5 text-xs ${inp}`} style={{...inpStyle, width: 140, fontSize: 11}} onFocus={inpFocus} onBlur={inpBlur} />
         <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-          style={{ background: '#0a0f1e', border: '1px solid #1e2a4a', color: '#64748b', borderRadius: 8, padding: '4px 8px', fontSize: 10, outline: 'none' }}>
+          style={{ background: '#111118', border: '1px solid #1E1E2E', color: '#6B6B8A', borderRadius: 8, padding: '4px 8px', fontSize: 10, outline: 'none' }}>
           <option value="date">Newest</option>
           <option value="odds">Odds</option>
           <option value="stake">Stake</option>
@@ -2026,51 +2026,51 @@ function SportsBettingTab({ tier, activeSubTab }) {
             if (sortBy === 'pnl') return (b.pnl||0) - (a.pnl||0);
             return new Date(b.created_at) - new Date(a.created_at);
           }).map(b => {
-          const borderColor = b.result === 'win' ? '#22c55e' : b.result === 'loss' ? '#ef4444' : b.result === 'push' ? '#64748b' : '#4f8ef7';
+          const borderColor = b.result === 'win' ? '#00E5B4' : b.result === 'loss' ? '#FF4560' : b.result === 'push' ? '#6B6B8A' : '#6C63FF';
           const sportIcons = { NBA:'🏀', NFL:'🏈', MLB:'⚾', NHL:'🏒', Soccer:'⚽', UFC:'🥊', Tennis:'🎾', Golf:'⛳' };
           const o = parseFloat(b.odds), s = parseFloat(b.stake);
           const toWin = o && s ? (o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100)) : 0;
           return (
-            <div key={b.id} style={{ background: '#0f1729', border: '1px solid #1e2a4a', borderLeft: `3px solid ${borderColor}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}
+            <div key={b.id} style={{ background: '#111118', border: '1px solid #1E1E2E', borderLeft: `3px solid ${borderColor}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
               <div style={{ fontSize: 20, flexShrink: 0 }}>{sportIcons[b.sport] || '🎯'}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.match}</div>
-                <div style={{ fontSize: 11, color: '#4a5a7a', marginTop: 2 }}>{b.type} · {b.odds} · ${s?.toFixed(0)} ({(s/unitSize).toFixed(1)}u) · {b.sportsbook || 'Book'}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.match}</div>
+                <div style={{ fontSize: 11, color: '#4E4E63', marginTop: 2 }}>{b.type} · {b.odds} · ${s?.toFixed(0)} ({(s/unitSize).toFixed(1)}u) · {b.sportsbook || 'Book'}</div>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 {b.result === 'pending' ? (
                   markingBet === b.id ? (
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {[['W','win','#22c55e'],['L','loss','#ef4444'],['P','push','#64748b']].map(([label, res, color]) => (
+                      {[['W','win','#00E5B4'],['L','loss','#FF4560'],['P','push','#6B6B8A']].map(([label, res, color]) => (
                         <button key={res} onClick={() => markResult(b.id, res)}
-                          style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 6, background: color + '20', border: `1px solid ${color}40`, color, cursor: 'pointer' }}>{label}</button>
+                          style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '4px 10px', borderRadius: 6, background: color + '20', border: `1px solid ${color}40`, color, cursor: 'pointer' }}>{label}</button>
                       ))}
                     </div>
                   ) : (
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8' }}>+${toWin.toFixed(0)}</div>
-                      <button onClick={() => setMarkingBet(b.id)} style={{ fontSize: 10, color: '#4f8ef7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, marginTop: 2 }}>Mark result</button>
+                      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#94a3b8' }}>+${toWin.toFixed(0)}</div>
+                      <button onClick={() => setMarkingBet(b.id)} style={{ fontSize: 10, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', marginTop: 2 }}>Mark result</button>
                     </div>
                   )
                 ) : (
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: b.pnl >= 0 ? '#22c55e' : '#ef4444' }}>{b.pnl >= 0 ? '+' : ''}${(b.pnl||0).toFixed(0)}</div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: borderColor, textTransform: 'uppercase' }}>{b.result}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: b.pnl >= 0 ? '#00E5B4' : '#FF4560' }}>{b.pnl >= 0 ? '+' : ''}${(b.pnl||0).toFixed(0)}</div>
+                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.02em', color: borderColor, textTransform: 'uppercase' }}>{b.result}</div>
                   </div>
                 )}
               </div>
-              <button onClick={() => deleteBet(b.id)} style={{ color: '#1e2a4a', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}
-                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                onMouseLeave={e => e.currentTarget.style.color = '#1e2a4a'}>✕</button>
+              <button onClick={() => deleteBet(b.id)} style={{ color: '#1E1E2E', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}
+                onMouseEnter={e => e.currentTarget.style.color = '#FF4560'}
+                onMouseLeave={e => e.currentTarget.style.color = '#1E1E2E'}>✕</button>
             </div>
           );
         })}
         {bets.length === 0 && (
-          <div style={{ background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 14, padding: 40, textAlign: 'center' }}>
+          <div style={{ background: '#111118', border: '1px solid #1E1E2E', borderRadius: 14, padding: 40, textAlign: 'center' }}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>📝</div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#4a5a7a' }}>No bets yet — snap a bet slip or log manually</div>
+            <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#4E4E63' }}>No bets yet — snap a bet slip or log manually</div>
           </div>
         )}
       </div>
@@ -2078,13 +2078,13 @@ function SportsBettingTab({ tier, activeSubTab }) {
       {/* Export + AI */}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => exportBetsCSV(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>Export CSV</button>
+          <button onClick={() => exportBetsCSV(bets)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', cursor: 'pointer' }}>Export CSV</button>
           {(tier === 'pro' || tier === 'elite') && (
-            <button onClick={() => exportBetsPDF(bets)} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>Export PDF</button>
+            <button onClick={() => exportBetsPDF(bets)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>Export PDF</button>
           )}
         </div>
         <button onClick={() => sendPrompt('Analyze my sports betting history. Which sports and bet types are profitable?')}
-          style={{ fontSize: 11, color: '#4f8ef7', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+          style={{ fontSize: 11, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em' }}>
           Ask AI to analyze ↗
         </button>
       </div>
@@ -2108,7 +2108,7 @@ function EVCalcTab() {
   const roi    = (ev / ba * 100).toFixed(1);
   const edge   = (tp - mp).toFixed(1);
 
-  const gc = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease' };
+  const gc = { background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 16, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease' };
 
   const SLIDERS = [
     ['Market / book price', mp, setMp, 1, 99, 1, '%'],
@@ -2118,28 +2118,28 @@ function EVCalcTab() {
   ];
 
   const RESULTS = [
-    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#22c55e' : '#ef4444'],
-    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#22c55e' : '#ef4444'],
-    ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#7aaff8' : '#4a5a7a'],
-    ['Max Payout', '$' + (ba + payout).toFixed(0), '#F5F5FA'],
-    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#22c55e' : parseFloat(edge) < 0 ? '#ef4444' : '#4a5a7a'],
+    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#00E5B4' : '#FF4560'],
+    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+    ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#867fff' : '#4E4E63'],
+    ['Max Payout', '$' + (ba + payout).toFixed(0), '#F0F0FF'],
+    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#00E5B4' : parseFloat(edge) < 0 ? '#FF4560' : '#4E4E63'],
   ];
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Inputs */}
       <div style={{ ...gc, padding: 32 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 20 }}>Calculator</div>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 20 }}>Calculator</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {SLIDERS.map(([label, val, set, min, max, step, unit]) => (
             <div key={label}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
                 <span style={{ fontSize: 13, fontWeight: 500, color: '#6a7a9a' }}>{label}</span>
-                <span style={{ fontSize: 20, fontWeight: 700, color: '#F5F5FA' }}>{unit === '$' ? '$' + val.toLocaleString() : val + '%'}</span>
+                <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>{unit === '$' ? '$' + val.toLocaleString() : val + '%'}</span>
               </div>
               <input type="range" min={min} max={max} step={step} value={val}
                 onChange={e => set(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#4f8ef7', cursor: 'pointer' }} />
+                style={{ width: '100%', accentColor: '#6C63FF', cursor: 'pointer' }} />
             </div>
           ))}
         </div>
@@ -2147,30 +2147,30 @@ function EVCalcTab() {
 
       {/* Hero EV */}
       <div style={{ ...gc, padding: 32, textAlign: 'center' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 12 }}>Expected Value</div>
-        <div style={{ fontSize: 48, fontWeight: 900, color: ev >= 0 ? '#22c55e' : '#ef4444', letterSpacing: '-0.02em', lineHeight: 1 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 12 }}>Expected Value</div>
+        <div style={{ fontSize: 48, fontWeight: 900, color: ev >= 0 ? '#00E5B4' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1 }}>
           {(ev >= 0 ? '+' : '') + '$' + ev.toFixed(2)}
         </div>
       </div>
       {/* Edge hero */}
-      <div style={{ ...gc, padding: 24, textAlign: 'center', borderLeft: `3px solid ${parseFloat(edge) > 5 ? '#22c55e' : parseFloat(edge) > 0 ? '#f59e0b' : '#ef4444'}` }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a', marginBottom: 8 }}>Edge</div>
-        <div style={{ fontSize: 36, fontWeight: 800, color: parseFloat(edge) > 5 ? '#22c55e' : parseFloat(edge) > 0 ? '#f59e0b' : '#ef4444', lineHeight: 1 }}>
+      <div style={{ ...gc, padding: 24, textAlign: 'center', borderLeft: `3px solid ${parseFloat(edge) > 5 ? '#00E5B4' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560'}` }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 8 }}>Edge</div>
+        <div style={{ fontSize: 36, fontWeight: 800, color: parseFloat(edge) > 5 ? '#00E5B4' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560', lineHeight: 1 }}>
           {(parseFloat(edge) > 0 ? '+' : '') + edge + '%'}
         </div>
-        <div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 8 }}>Breakeven: {mp}% · Your estimate: {tp}%</div>
+        <div style={{ fontSize: 12, color: '#4E4E63', marginTop: 8 }}>Breakeven: {mp}% · Your estimate: {tp}%</div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {[
-          ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#22c55e' : '#ef4444'],
-          ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#7aaff8' : '#4a5a7a'],
-          ['Max Payout', '$' + (ba + payout).toFixed(0), '#F5F5FA'],
-          ['Breakeven Odds', mp + '%', '#94A3B8'],
+          ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+          ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#867fff' : '#4E4E63'],
+          ['Max Payout', '$' + (ba + payout).toFixed(0), '#F0F0FF'],
+          ['Breakeven Odds', mp + '%', '#6B6B8A'],
         ].map(([label, value, color]) => (
           <div key={label} style={{ ...gc, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16, minHeight: 110, transition: 'all 0.2s ease' }}
             onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4a5a7a' }}>{label}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63' }}>{label}</div>
             <div style={{ fontSize: 28, fontWeight: 800, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
           </div>
         ))}
@@ -2301,14 +2301,14 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12 }}>
         {!hasMessages ? (
           <div style={{ textAlign: 'center', width: '100%', paddingTop: 20 }}>
-            <div style={{ width: 56, height: 56, background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>🔬</div>
+            <div style={{ width: 56, height: 56, background: 'rgba(108,99,255,0.12)', border: '1px solid rgba(108,99,255,0.25)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>🔬</div>
             <h1 style={{ fontSize: 24, fontWeight: 900, color: '#f0f4ff', margin: '0 0 6px', letterSpacing: '-0.5px' }}>Sharpr Research</h1>
             <p style={{ fontSize: 13, color: '#2a3a5a', margin: 0 }}>AI-powered analysis for prediction markets, trading, and sports betting</p>
           </div>
         ) : (
           <>
             <div style={{ fontSize: 16, fontWeight: 800, color: '#f0f4ff' }}>🔬 Sharpr Research</div>
-            <button onClick={() => setMessages([])} style={{ fontSize: 11, fontWeight: 600, padding: '5px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#4a5a7a', cursor: 'pointer' }}>New Chat</button>
+            <button onClick={() => setMessages([])} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', cursor: 'pointer' }}>New Chat</button>
           </>
         )}
       </div>
@@ -2318,9 +2318,9 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
         {CATS.map(c => (
           <button key={c.key} onClick={() => setCategory(c.key)}
             style={{
-              padding: hasMessages ? '4px 10px' : '10px 14px', borderRadius: hasMessages ? 8 : 12, fontSize: hasMessages ? 11 : 12, fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.15s',
-              background: category === c.key ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.03)',
-              color: category === c.key ? '#7aaff8' : '#4a5a7a',
+              padding: hasMessages ? '4px 10px' : '10px 14px', borderRadius: hasMessages ? 8 : 12, fontSize: hasMessages ? 11 : 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: 'none', transition: 'all 0.15s',
+              background: category === c.key ? 'rgba(108,99,255,0.15)' : '#111118',
+              color: category === c.key ? '#867fff' : '#4E4E63',
             }}>
             {hasMessages ? c.label : `${c.emoji} ${c.label}`}
           </button>
@@ -2334,9 +2334,9 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 12 }}>
             {(SUGGESTIONS[category] || []).map(s => (
               <button key={s} onClick={() => setInput(s)}
-                style={{ fontSize: 11, padding: '6px 14px', borderRadius: 100, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', color: '#4a5a7a', cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(79,142,247,0.3)'; e.currentTarget.style.color = '#7aaff8'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = '#4a5a7a'; }}>
+                style={{ fontSize: 11, padding: '6px 14px', borderRadius: 100, background: '#111118', border: '1px solid rgba(255,255,255,0.07)', color: '#4E4E63', cursor: 'pointer', transition: 'all 0.15s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; e.currentTarget.style.color = '#867fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = '#4E4E63'; }}>
                 {s}
               </button>
             ))}
@@ -2348,29 +2348,29 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           <div key={m.id} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
             <div style={{
               maxWidth: '82%', padding: '12px 16px', borderRadius: 16,
-              background: m.role === 'user' ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${m.role === 'user' ? 'rgba(79,142,247,0.3)' : 'rgba(255,255,255,0.07)'}`,
+              background: m.role === 'user' ? 'rgba(108,99,255,0.15)' : '#1A1A24',
+              border: `1px solid ${m.role === 'user' ? 'rgba(108,99,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
               borderBottomRightRadius: m.role === 'user' ? 4 : 16,
               borderBottomLeftRadius: m.role === 'assistant' ? 4 : 16,
             }}>
               {m.role === 'user' ? (
-                <div style={{ fontSize: 13, color: '#7aaff8', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{m.content}</div>
+                <div style={{ fontSize: 13, color: '#867fff', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{m.content}</div>
               ) : (
-                <div style={{ fontSize: 13, color: m.isError ? '#ef4444' : '#8899bb', lineHeight: 1.7 }}>
+                <div style={{ fontSize: 13, color: m.isError ? '#FF4560' : '#8899bb', lineHeight: 1.7 }}>
                   <ReactMarkdown components={{
-                    strong: ({ children }) => <strong style={{ color: '#f0f4ff', fontWeight: 700 }}>{children}</strong>,
-                    em: ({ children }) => <em style={{ color: '#7aaff8' }}>{children}</em>,
-                    h2: ({ children }) => <div style={{ fontSize: 14, fontWeight: 700, color: '#f0f4ff', margin: '8px 0 4px' }}>{children}</div>,
-                    h3: ({ children }) => <div style={{ fontSize: 13, fontWeight: 700, color: '#7aaff8', margin: '6px 0 2px' }}>{children}</div>,
+                    strong: ({ children }) => <strong style={{ color: '#f0f4ff', fontWeight: 800, letterSpacing: '-0.03em' }}>{children}</strong>,
+                    em: ({ children }) => <em style={{ color: '#867fff' }}>{children}</em>,
+                    h2: ({ children }) => <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f4ff', margin: '8px 0 4px' }}>{children}</div>,
+                    h3: ({ children }) => <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff', margin: '6px 0 2px' }}>{children}</div>,
                     ul: ({ children }) => <ul style={{ margin: '4px 0', paddingLeft: 16 }}>{children}</ul>,
                     ol: ({ children }) => <ol style={{ margin: '4px 0', paddingLeft: 16 }}>{children}</ol>,
                     li: ({ children }) => <li style={{ marginBottom: 2 }}>{children}</li>,
                     p: ({ children }) => <p style={{ margin: '4px 0' }}>{children}</p>,
-                    hr: () => <div style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', margin: '8px 0' }} />,
-                    code: ({ children }) => <code style={{ background: 'rgba(79,142,247,0.1)', padding: '1px 4px', borderRadius: 4, fontSize: 12, color: '#7aaff8' }}>{children}</code>,
+                    hr: () => <div style={{ borderBottom: '1px solid #1E1E2E', margin: '8px 0' }} />,
+                    code: ({ children }) => <code style={{ background: 'rgba(108,99,255,0.1)', padding: '1px 4px', borderRadius: 4, fontSize: 12, color: '#867fff' }}>{children}</code>,
                   }}>{m.content}</ReactMarkdown>
                   {streaming && m.id === messages[messages.length - 1]?.id && (
-                    <span style={{ display: 'inline-block', width: 6, height: 14, background: '#4f8ef7', marginLeft: 2, animation: 'pulse 0.8s infinite', verticalAlign: 'text-bottom' }} />
+                    <span style={{ display: 'inline-block', width: 6, height: 14, background: '#6C63FF', marginLeft: 2, animation: 'pulse 0.8s infinite', verticalAlign: 'text-bottom' }} />
                   )}
                 </div>
               )}
@@ -2381,9 +2381,9 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
 
         {loading && !streaming && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <div style={{ padding: '12px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderBottomLeftRadius: 4 }}>
+            <div style={{ padding: '12px 16px', borderRadius: 16, background: '#1A1A24', border: '1px solid rgba(255,255,255,0.07)', borderBottomLeftRadius: 4 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ display: 'flex', gap: 4 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#4f8ef7', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
+                <div style={{ display: 'flex', gap: 4 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#6C63FF', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
                 <span style={{ fontSize: 11, color: '#2a3a5a' }}>Searching...</span>
               </div>
             </div>
@@ -2392,13 +2392,13 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
       </div>
 
       {/* Input bar */}
-      <div style={{ padding: '12px 0 0', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+      <div style={{ padding: '12px 0 0', borderTop: '1px solid #1E1E2E', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey}
           placeholder={`Ask about ${CATS.find(c => c.key === category)?.label.toLowerCase() || 'anything'}...`}
           rows={1}
-          style={{ flex: 1, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '10px 14px', color: '#f0f4ff', fontSize: 14, outline: 'none', resize: 'none', minHeight: 42, maxHeight: 120, lineHeight: 1.4 }} />
+          style={{ flex: 1, background: '#1A1A24', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '10px 14px', color: '#f0f4ff', fontSize: 14, outline: 'none', resize: 'none', minHeight: 42, maxHeight: 120, lineHeight: 1.4 }} />
         <button onClick={send} disabled={loading || !input.trim()}
-          style={{ width: 42, height: 42, borderRadius: 12, background: input.trim() ? '#4f8ef7' : 'rgba(79,142,247,0.2)', border: 'none', color: '#fff', fontSize: 16, cursor: input.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          style={{ width: 42, height: 42, borderRadius: 12, background: input.trim() ? '#6C63FF' : 'rgba(108,99,255,0.2)', border: 'none', color: '#fff', fontSize: 16, cursor: input.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           ↑
         </button>
       </div>
@@ -2442,7 +2442,7 @@ function NewsTab() {
     UFC: 'linear-gradient(135deg,#2a0a0a,#4a1a0a)',
     Golf: 'linear-gradient(135deg,#0a2010,#1a4020)',
     Tennis: 'linear-gradient(135deg,#2a1a00,#4a3000)',
-    default: 'linear-gradient(135deg,#1e2a4a,#0a0f1e)',
+    default: 'linear-gradient(135deg,#1E1E2E,#111118)',
   };
 
   // Auto-load NBA on mount
@@ -2502,7 +2502,7 @@ function NewsTab() {
   }
 
   function borderColor(sentiment) {
-    return sentiment === 'positive' ? '#22c55e' : sentiment === 'negative' ? '#ef4444' : '#2563EB';
+    return sentiment === 'positive' ? '#00E5B4' : sentiment === 'negative' ? '#FF4560' : '#6C63FF';
   }
 
   // Calendar filters
@@ -2510,14 +2510,14 @@ function NewsTab() {
   const econFiltered = econView === 'today' ? econ.filter(e => e.date?.startsWith(todayStr)) : econ;
 
   const IMPACT_ROW = {
-    High:   { background: 'rgba(42,10,10,0.8)',   borderLeft: '3px solid #ef4444' },
+    High:   { background: 'rgba(42,10,10,0.8)',   borderLeft: '3px solid #FF4560' },
     Medium: { background: 'rgba(42,20,0,0.8)',    borderLeft: '3px solid #f59e0b' },
-    Low:    { background: 'transparent',          borderLeft: '3px solid #1e2a4a' },
+    Low:    { background: 'transparent',          borderLeft: '3px solid #1E1E2E' },
   };
   const IMPACT_BADGE = {
-    High:   { color: '#ef4444', bg: 'rgba(239,68,68,0.15)' },
+    High:   { color: '#FF4560', bg: 'rgba(239,68,68,0.15)' },
     Medium: { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-    Low:    { color: '#64748b', bg: 'rgba(100,116,139,0.12)' },
+    Low:    { color: '#6B6B8A', bg: 'rgba(100,116,139,0.12)' },
   };
 
   const HIGH_IMPACT_EVENTS = /NFP|FOMC|CPI|GDP|Non-Farm|Fed|Nonfarm|Employment/i;
@@ -2529,9 +2529,9 @@ function NewsTab() {
         {['sports','trading'].map(s => (
           <button key={s} onClick={() => setSection(s)}
             className="text-sm px-4 py-2 rounded-xl font-medium transition-all"
-            style={section===s ? {background: '#2563EB', color: '#fff', border: '1px solid #2563EB'} : {border: '1px solid #1e2a4a', color: '#94A3B8'}}
-            onMouseEnter={e => { if (section!==s) { e.currentTarget.style.borderColor='#2563EB'; e.currentTarget.style.color='#F5F5FA'; } }}
-            onMouseLeave={e => { if (section!==s) { e.currentTarget.style.borderColor='#1e2a4a'; e.currentTarget.style.color='#94A3B8'; } }}>
+            style={section===s ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'} : {border: '1px solid #1E1E2E', color: '#6B6B8A'}}
+            onMouseEnter={e => { if (section!==s) { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#F0F0FF'; } }}
+            onMouseLeave={e => { if (section!==s) { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; } }}>
             {s === 'sports' ? '🏈 Sports News' : '📈 Trading News'}
           </button>
         ))}
@@ -2544,26 +2544,26 @@ function NewsTab() {
           <div className="flex gap-2 flex-wrap items-center">
             {SPORT_PILLS.map(s => (
               <button key={s} onClick={() => setSport(s)}
-                className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
-                style={sport===s ? {background: '#2563EB', color: '#fff', border: '1px solid #2563EB'} : {border: '1px solid #1e2a4a', color: '#94A3B8'}}>
+                className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
+                style={sport===s ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'} : {border: '1px solid #1E1E2E', color: '#6B6B8A'}}>
                 {SPORT_EMOJIS[s]} {s}
               </button>
             ))}
             <button onClick={fetchSports} disabled={sportsLoad}
               className="ml-auto text-xs px-3 py-1.5 rounded-lg transition-all disabled:opacity-40"
-              style={{border: '1px solid #1e2a4a', color: '#64748b', background: 'transparent'}}
-              onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.borderColor='#2563EB'; e.currentTarget.style.color='#93c5fd'; } }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor='#1e2a4a'; e.currentTarget.style.color='#64748b'; }}>
+              style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
+              onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#93c5fd'; } }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; }}>
               {sportsLoad ? '…' : '↻ Refresh'}
             </button>
-            {sportsTs && <span className="text-xs" style={{color: '#475569'}}>{timeAgo(sportsTs)}</span>}
+            {sportsTs && <span className="text-xs" style={{color: '#6B6B8A'}}>{timeAgo(sportsTs)}</span>}
           </div>
 
           {/* Loading skeletons */}
           {sportsLoad && (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="rounded-2xl overflow-hidden" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
+                <div key={i} className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
                   <div className="skeleton" style={{height: 140}} />
                   <div className="p-4 flex flex-col gap-2">
                     <div className="skeleton" style={{height: 14, width: '80%'}} />
@@ -2577,10 +2577,10 @@ function NewsTab() {
 
           {/* Unavailable */}
           {!sportsLoad && sportsErr && (
-            <div className="rounded-2xl p-8 flex flex-col items-center gap-2" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
+            <div className="rounded-2xl p-8 flex flex-col items-center gap-2" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
               <span style={{fontSize: 28}}>📡</span>
-              <p className="text-sm font-medium" style={{color: '#94A3B8'}}>News temporarily unavailable — check back soon</p>
-              <button onClick={fetchSports} className="text-xs px-3 py-1.5 rounded-lg mt-1" style={{border: '1px solid #1e2a4a', color: '#64748b'}}>Try again</button>
+              <p className="text-sm font-medium" style={{color: '#6B6B8A'}}>News temporarily unavailable — check back soon</p>
+              <button onClick={fetchSports} className="text-xs px-3 py-1.5 rounded-lg mt-1" style={{border: '1px solid #1E1E2E', color: '#6B6B8A'}}>Try again</button>
             </div>
           )}
 
@@ -2590,9 +2590,9 @@ function NewsTab() {
               {sportsItems.map((item, i) => (
                 <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
                   className="rounded-2xl overflow-hidden flex flex-col transition-all cursor-pointer"
-                  style={{background: '#0f1729', border: `1px solid #1e2a4a`, borderLeft: `4px solid ${borderColor(item.sentiment)}`, textDecoration: 'none'}}
+                  style={{background: '#111118', border: `1px solid #1E1E2E`, borderLeft: `4px solid ${borderColor(item.sentiment)}`, textDecoration: 'none'}}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow='0 0 20px rgba(37,99,235,0.1)'; e.currentTarget.style.borderColor='rgba(37,99,235,0.3)'; e.currentTarget.style.borderLeftColor=borderColor(item.sentiment); }}
-                  onMouseLeave={e => { e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='#1e2a4a'; e.currentTarget.style.borderLeftColor=borderColor(item.sentiment); }}>
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.borderLeftColor=borderColor(item.sentiment); }}>
                   {/* Image */}
                   <div style={{height: 140, overflow: 'hidden', position: 'relative', flexShrink: 0}}>
                     {item.image ? (
@@ -2605,24 +2605,24 @@ function NewsTab() {
                     )}
                     {/* Overlays */}
                     <div style={{position: 'absolute', top: 8, left: 8}}>
-                      <span style={{fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', color: '#fff'}}>
+                      <span style={{fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '3px 8px', borderRadius: 20, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', color: '#fff'}}>
                         {SPORT_EMOJIS[item.sport]} {item.sport}
                       </span>
                     </div>
                     <div style={{position: 'absolute', top: 8, right: 8}}>
-                      <span style={{fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20, background: item.impact === 'HIGH' ? 'rgba(239,68,68,0.85)' : item.impact === 'MED' ? 'rgba(245,158,11,0.85)' : 'rgba(30,42,74,0.85)', backdropFilter: 'blur(4px)', color: '#fff'}}>
+                      <span style={{fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '3px 8px', borderRadius: 20, background: item.impact === 'HIGH' ? 'rgba(239,68,68,0.85)' : item.impact === 'MED' ? 'rgba(245,158,11,0.85)' : 'rgba(30,42,74,0.85)', backdropFilter: 'blur(4px)', color: '#fff'}}>
                         {item.impact}
                       </span>
                     </div>
                   </div>
                   {/* Content */}
                   <div style={{padding: '12px 14px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6}}>
-                    <p style={{fontSize: 13, fontWeight: 600, color: '#F5F5FA', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{item.title}</p>
+                    <p style={{fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{item.title}</p>
                     {item.description && (
-                      <p style={{fontSize: 11, color: '#94A3B8', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{item.description}</p>
+                      <p style={{fontSize: 11, color: '#6B6B8A', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{item.description}</p>
                     )}
                     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: 6}}>
-                      <span style={{fontSize: 10, color: '#475569', fontWeight: 500}}>{item.source} · {timeAgo(item.pubDate)}</span>
+                      <span style={{fontSize: 10, color: '#6B6B8A', fontWeight: 500}}>{item.source} · {timeAgo(item.pubDate)}</span>
                       <button onClick={e => { e.preventDefault(); e.stopPropagation(); window.dispatchEvent(new CustomEvent('bet-prefill', { detail: { topic: item.title.substring(0,60) } })); }}
                         className="glass-btn text-xs px-2.5 py-1" style={{borderRadius: 8, fontSize: 11}}>
                         Log bet
@@ -2644,23 +2644,23 @@ function NewsTab() {
       {section === 'trading' && (
         <div className="flex flex-col gap-5">
           {/* Economic calendar */}
-          <div className="rounded-2xl overflow-hidden" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-            <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom: '1px solid #1e2a4a'}}>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Economic Calendar</div>
+          <div className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+            <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom: '1px solid #1E1E2E'}}>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#6B6B8A'}}>Economic Calendar</div>
               <div className="flex gap-1">
                 {[['today','Today'],['week','This Week']].map(([v, label]) => (
                   <button key={v} onClick={() => setEconView(v)}
                     className="text-xs px-3 py-1 rounded-lg font-medium transition-all"
-                    style={econView===v ? {background: '#2563EB', color: '#fff'} : {background: 'transparent', color: '#64748b', border: '1px solid #1e2a4a'}}>
+                    style={econView===v ? {background: '#6C63FF', color: '#fff'} : {background: 'transparent', color: '#6B6B8A', border: '1px solid #1E1E2E'}}>
                     {label}
                   </button>
                 ))}
               </div>
             </div>
             {econLoad && <div className="px-5 py-6"><div className="skeleton" style={{height: 100}} /></div>}
-            {econErr  && <div className="px-5 py-6 text-center text-sm" style={{color: '#94A3B8'}}>Calendar temporarily unavailable — check back soon</div>}
+            {econErr  && <div className="px-5 py-6 text-center text-sm" style={{color: '#6B6B8A'}}>Calendar temporarily unavailable — check back soon</div>}
             {!econLoad && !econErr && econFiltered.length === 0 && (
-              <div className="px-5 py-8 text-center text-sm" style={{color: '#94A3B8'}}>
+              <div className="px-5 py-8 text-center text-sm" style={{color: '#6B6B8A'}}>
                 {econView === 'today' ? 'No events today.' : 'No events this week.'}
               </div>
             )}
@@ -2668,7 +2668,7 @@ function NewsTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-xs font-medium uppercase tracking-wide" style={{borderBottom: '1px solid #1e2a4a', background: '#0a0f1e', color: '#64748b'}}>
+                    <tr className="text-xs font-medium uppercase tracking-wide" style={{borderBottom: '1px solid #1E1E2E', background: '#111118', color: '#6B6B8A'}}>
                       {['Time','Currency','Event','Impact','Forecast','Prev','Actual'].map(h => (
                         <th key={h} className="text-left px-4 py-3 whitespace-nowrap">{h}</th>
                       ))}
@@ -2682,18 +2682,18 @@ function NewsTab() {
                       const isFire     = HIGH_IMPACT_EVENTS.test(e.title);
                       return (
                         <tr key={i} style={{...rowStyle, borderBottom: '1px solid rgba(30,42,74,0.5)', opacity: isPast ? 0.55 : 1}}>
-                          <td className="px-4 py-3 whitespace-nowrap text-xs" style={{color: '#64748b'}}>{e.time||'—'}</td>
-                          <td className="px-4 py-3 font-bold text-xs" style={{color: '#F5F5FA'}}>{e.currency}</td>
+                          <td className="px-4 py-3 whitespace-nowrap text-xs" style={{color: '#6B6B8A'}}>{e.time||'—'}</td>
+                          <td className="px-4 py-3 font-bold text-xs" style={{color: '#F0F0FF'}}>{e.currency}</td>
                           <td className="px-4 py-3 max-w-[220px] text-xs" style={{color: '#cbd5e1'}}>
                             {isFire && <span style={{marginRight: 4}}>🔥</span>}{e.title}
                           </td>
                           <td className="px-4 py-3">
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-lg"
                               style={{color: badgeStyle.color, background: badgeStyle.bg}}>{e.impact}</span>
                           </td>
-                          <td className="px-4 py-3 text-xs" style={{color: '#64748b'}}>{e.forecast||'—'}</td>
-                          <td className="px-4 py-3 text-xs" style={{color: '#64748b'}}>{e.previous||'—'}</td>
-                          <td className="px-4 py-3 font-bold text-xs" style={{color: isPast ? '#F5F5FA' : '#334155'}}>{e.actual||'—'}</td>
+                          <td className="px-4 py-3 text-xs" style={{color: '#6B6B8A'}}>{e.forecast||'—'}</td>
+                          <td className="px-4 py-3 text-xs" style={{color: '#6B6B8A'}}>{e.previous||'—'}</td>
+                          <td className="px-4 py-3 font-bold text-xs" style={{color: isPast ? '#F0F0FF' : '#334155'}}>{e.actual||'—'}</td>
                         </tr>
                       );
                     })}
@@ -2704,16 +2704,16 @@ function NewsTab() {
           </div>
 
           {/* Market news from RSS */}
-          <div className="rounded-2xl overflow-hidden" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
-            <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom: '1px solid #1e2a4a'}}>
-              <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#64748b'}}>Market News</div>
+          <div className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+            <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom: '1px solid #1E1E2E'}}>
+              <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#6B6B8A'}}>Market News</div>
               <div className="flex items-center gap-3">
-                {mktTs && <span className="text-xs" style={{color: '#475569'}}>{timeAgo(mktTs)}</span>}
+                {mktTs && <span className="text-xs" style={{color: '#6B6B8A'}}>{timeAgo(mktTs)}</span>}
                 <button onClick={fetchMarket} disabled={mktLoad}
                   className="text-xs px-2.5 py-1 rounded-lg transition-all disabled:opacity-40"
-                  style={{border: '1px solid #1e2a4a', color: '#64748b', background: 'transparent'}}
+                  style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
                   onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.color='#93c5fd'; }}
-                  onMouseLeave={e => e.currentTarget.style.color='#64748b'}>
+                  onMouseLeave={e => e.currentTarget.style.color='#6B6B8A'}>
                   ↻
                 </button>
               </div>
@@ -2722,24 +2722,24 @@ function NewsTab() {
             {!mktLoad && mktErr && (
               <div className="px-5 py-8 flex flex-col items-center gap-2">
                 <span style={{fontSize: 24}}>📡</span>
-                <p className="text-sm" style={{color: '#94A3B8'}}>News temporarily unavailable — check back soon</p>
+                <p className="text-sm" style={{color: '#6B6B8A'}}>News temporarily unavailable — check back soon</p>
               </div>
             )}
             {!mktLoad && mktItems.length > 0 && (
               <div className="flex flex-col">
                 {mktItems.slice(0, 20).map((item, i) => {
                   const dir      = /gain|surge|rise|rally|up\b|higher|bull|positive/i.test(item.title) ? '↑' : /fall|drop|decline|down\b|lower|bear|negative/i.test(item.title) ? '↓' : '→';
-                  const dirColor = dir === '↑' ? '#22c55e' : dir === '↓' ? '#ef4444' : '#94A3B8';
+                  const dirColor = dir === '↑' ? '#00E5B4' : dir === '↓' ? '#FF4560' : '#6B6B8A';
                   return (
                     <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
                       className="px-5 py-3.5 flex items-start gap-3 transition-all"
                       style={{borderBottom: i < mktItems.length - 1 ? '1px solid rgba(30,42,74,0.5)' : 'none', textDecoration: 'none'}}
                       onMouseEnter={e => e.currentTarget.style.background='rgba(30,42,74,0.4)'}
                       onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                      <span style={{fontSize: 15, fontWeight: 700, color: dirColor, flexShrink: 0, marginTop: 1, width: 18, textAlign: 'center'}}>{dir}</span>
+                      <span style={{fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: dirColor, flexShrink: 0, marginTop: 1, width: 18, textAlign: 'center'}}>{dir}</span>
                       <div style={{flex: 1, minWidth: 0}}>
                         <p style={{fontSize: 13, color: '#cbd5e1', margin: 0, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{item.title}</p>
-                        <span style={{fontSize: 11, color: '#475569'}}>{item.source} · {timeAgo(item.pubDate)}</span>
+                        <span style={{fontSize: 11, color: '#6B6B8A'}}>{item.source} · {timeAgo(item.pubDate)}</span>
                       </div>
                     </a>
                   );
@@ -2805,23 +2805,23 @@ function PreMarketPanel() {
     ['vwap', 'VWAP'],        ['orh', 'OR High (9:35)'], ['orl', 'OR Low (9:35)'],
   ];
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* High-impact events today */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           🗓️ High-Impact Events Today
         </div>
         {econLoad ? <div className="skeleton" style={{ height: 40 }} /> :
-         econ.length === 0 ? <div style={{ fontSize: 13, color: '#475569' }}>No high-impact events scheduled today</div> :
+         econ.length === 0 ? <div style={{ fontSize: 13, color: '#6B6B8A' }}>No high-impact events scheduled today</div> :
          econ.map((e, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < econ.length - 1 ? '1px solid #1e2a4a' : 'none' }}>
-            <div style={{ width: 2, height: 32, background: '#ef4444', borderRadius: 2, flexShrink: 0 }} />
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: i < econ.length - 1 ? '1px solid #1E1E2E' : 'none' }}>
+            <div style={{ width: 2, height: 32, background: '#FF4560', borderRadius: 2, flexShrink: 0 }} />
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA' }}>{e.title}</div>
-              <div style={{ fontSize: 11, color: '#64748b' }}>{e.currency} · {e.time || 'TBD'} ET {e.forecast !== '—' && `· Forecast: ${e.forecast}`}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{e.title}</div>
+              <div style={{ fontSize: 11, color: '#6B6B8A' }}>{e.currency} · {e.time || 'TBD'} ET {e.forecast !== '—' && `· Forecast: ${e.forecast}`}</div>
             </div>
           </div>
         ))}
@@ -2829,13 +2829,13 @@ function PreMarketPanel() {
 
       {/* MNQ/NQ Levels */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           📊 NQ / MNQ Key Levels
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
           {NQ_FIELDS.map(([k, label]) => (
             <div key={k}>
-              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>{label}</div>
+              <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>{label}</div>
               <input value={nqLevels[k]} onChange={e => setNqLevels(p => ({ ...p, [k]: e.target.value }))}
                 placeholder="—" type="number" step="0.25"
                 className={inp} style={{ ...inpStyle, padding: '8px 10px', fontSize: 13, width: '100%', borderRadius: 10 }}
@@ -2847,17 +2847,17 @@ function PreMarketPanel() {
 
       {/* Bias + thesis */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           🧠 Today's Bias
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
           {['LONG', 'SHORT', 'NEUTRAL'].map(b => (
             <button key={b} onClick={() => setBias(b)}
               style={{
-                padding: '8px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '1px solid',
-                background: bias === b ? (b === 'LONG' ? '#22c55e20' : b === 'SHORT' ? '#ef444420' : '#2563EB20') : 'transparent',
-                borderColor: bias === b ? (b === 'LONG' ? '#22c55e' : b === 'SHORT' ? '#ef4444' : '#2563EB') : '#1e2a4a',
-                color: bias === b ? (b === 'LONG' ? '#22c55e' : b === 'SHORT' ? '#ef4444' : '#60a5fa') : '#64748b',
+                padding: '8px 20px', borderRadius: 10, fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
+                background: bias === b ? (b === 'LONG' ? '#00E5B420' : b === 'SHORT' ? '#FF456020' : '#6C63FF20') : 'transparent',
+                borderColor: bias === b ? (b === 'LONG' ? '#00E5B4' : b === 'SHORT' ? '#FF4560' : '#6C63FF') : '#1E1E2E',
+                color: bias === b ? (b === 'LONG' ? '#00E5B4' : b === 'SHORT' ? '#FF4560' : '#60a5fa') : '#6B6B8A',
               }}>
               {b === 'LONG' ? '📈' : b === 'SHORT' ? '📉' : '➡️'} {b}
             </button>
@@ -2871,16 +2871,16 @@ function PreMarketPanel() {
 
       {/* Market session status */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           🌍 Market Sessions
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {SESSIONS.map(s => (
-            <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: '#0a0f1e' }}>
+            <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: '#111118' }}>
               <span style={{ fontSize: 16 }}>{s.status}</span>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: '#F5F5FA' }}>{s.name}</div>
-                <div style={{ fontSize: 11, color: '#64748b' }}>{s.open} – {s.close}</div>
+                <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{s.name}</div>
+                <div style={{ fontSize: 11, color: '#6B6B8A' }}>{s.open} – {s.close}</div>
               </div>
             </div>
           ))}
@@ -2888,7 +2888,7 @@ function PreMarketPanel() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, alignItems: 'center' }}>
-        {saved && <span style={{ fontSize: 12, color: '#22c55e' }}>Saved!</span>}
+        {saved && <span style={{ fontSize: 12, color: '#00E5B4' }}>Saved!</span>}
         <button onClick={save} className="glass-btn-blue" style={{ padding: '9px 22px', fontSize: 13, borderRadius: 10 }}>
           Save prep notes
         </button>
@@ -2917,25 +2917,25 @@ function RiskCalcPanel() {
   const mnqContr = stopDist > 0 ? Math.floor(riskDollars / (stopDist * 2)) : 0; // MNQ tick value ~$2
   const rr       = targetN && stopDist ? ((Math.abs(targetN - entryN) / stopDist)).toFixed(2) : null;
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
-  const out  = { background: '#0a0f1e', border: '1px solid #1e2a4a', borderRadius: 12, padding: '14px 16px' };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const out  = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 12, padding: '14px 16px' };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 14 }}>
           ⚙️ Inputs
         </div>
 
         {/* Quick risk presets */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 14, alignItems: 'center' }}>
-          <span style={{ fontSize: 12, color: '#64748b' }}>Risk %</span>
+          <span style={{ fontSize: 12, color: '#6B6B8A' }}>Risk %</span>
           {[0.5, 1, 1.5, 2].map(r => (
             <button key={r} onClick={() => setRisk(r)}
-              style={{ padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', transition: 'all 0.15s',
+              style={{ padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid', transition: 'all 0.15s',
                 background: risk === r ? 'rgba(37,99,235,0.25)' : 'transparent',
-                borderColor: risk === r ? '#2563EB' : '#1e2a4a',
-                color: risk === r ? '#93c5fd' : '#64748b' }}>
+                borderColor: risk === r ? '#6C63FF' : '#1E1E2E',
+                color: risk === r ? '#93c5fd' : '#6B6B8A' }}>
               {r}%
             </button>
           ))}
@@ -2944,7 +2944,7 @@ function RiskCalcPanel() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
           {[['Account size ($)', acct, setAcct, 'number'], ['Risk per trade (%)', risk, setRisk, 'number'], ['Entry price', entry, setEntry, 'number'], ['Stop loss', stop, setStop, 'number'], ['Target (optional)', target, setTarget, 'number']].map(([l, v, set, t]) => (
             <div key={l}>
-              <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>{l}</div>
+              <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>{l}</div>
               <input type={t} value={v} onChange={e => set(t === 'number' && !['entry','stop','target'].includes(l.split(' ')[0].toLowerCase()) ? parseFloat(e.target.value)||0 : e.target.value)}
                 step={l.includes('price') || l.includes('loss') || l.includes('Target') ? '0.25' : l.includes('%') ? '0.1' : '1000'}
                 className={inp} style={{ ...inpStyle, padding: '9px 12px', fontSize: 13, width: '100%', borderRadius: 10 }}
@@ -2952,14 +2952,14 @@ function RiskCalcPanel() {
             </div>
           ))}
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Direction</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Direction</div>
             <div style={{ display: 'flex', gap: 6 }}>
               {['LONG','SHORT'].map(d => (
                 <button key={d} onClick={() => setDir(d)}
-                  style={{ flex: 1, padding: '9px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: '1px solid',
-                    background: dir === d ? (d === 'LONG' ? '#22c55e20' : '#ef444420') : 'transparent',
-                    borderColor: dir === d ? (d === 'LONG' ? '#22c55e' : '#ef4444') : '#1e2a4a',
-                    color: dir === d ? (d === 'LONG' ? '#22c55e' : '#ef4444') : '#64748b' }}>
+                  style={{ flex: 1, padding: '9px', borderRadius: 10, fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
+                    background: dir === d ? (d === 'LONG' ? '#00E5B420' : '#FF456020') : 'transparent',
+                    borderColor: dir === d ? (d === 'LONG' ? '#00E5B4' : '#FF4560') : '#1E1E2E',
+                    color: dir === d ? (d === 'LONG' ? '#00E5B4' : '#FF4560') : '#6B6B8A' }}>
                   {d}
                 </button>
               ))}
@@ -2972,14 +2972,14 @@ function RiskCalcPanel() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
         {[
           ['Dollar risk',      `$${riskDollars.toFixed(0)}`, '#f59e0b'],
-          ['Stop distance',    stopDist > 0 ? `$${stopDist.toFixed(2)}` : '—', '#94A3B8'],
-          ['Max shares',       shares > 0 ? shares.toLocaleString() : '—', '#F5F5FA'],
+          ['Stop distance',    stopDist > 0 ? `$${stopDist.toFixed(2)}` : '—', '#6B6B8A'],
+          ['Max shares',       shares > 0 ? shares.toLocaleString() : '—', '#F0F0FF'],
           ['MNQ contracts',    mnqContr > 0 ? mnqContr : '—', '#60a5fa'],
-          ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#22c55e' : '#f59e0b']] : []),
+          ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#00E5B4' : '#f59e0b']] : []),
         ].map(([l, v, c]) => (
           <div key={l} style={out}>
-            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 6 }}>{l}</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: c }}>{v}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 6 }}>{l}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color: c }}>{v}</div>
           </div>
         ))}
       </div>
@@ -3026,8 +3026,8 @@ function ReportsPanel({ trades }) {
     responsive: true, maintainAspectRatio: false,
     plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `$${ctx.raw.toFixed(0)}` } } },
     scales: {
-      x: { grid: { color: 'rgba(30,42,74,0.5)' }, ticks: { color: '#64748b', font: { size: 10 } } },
-      y: { grid: { color: 'rgba(30,42,74,0.5)' }, ticks: { color: '#64748b', font: { size: 10 }, callback: v => '$'+v } },
+      x: { grid: { color: 'rgba(30,42,74,0.5)' }, ticks: { color: '#6B6B8A', font: { size: 10 } } },
+      y: { grid: { color: 'rgba(30,42,74,0.5)' }, ticks: { color: '#6B6B8A', font: { size: 10 }, callback: v => '$'+v } },
     },
   });
 
@@ -3036,7 +3036,7 @@ function ReportsPanel({ trades }) {
     datasets: [{
       data: weekPnl.length ? weekPnl : [0],
       backgroundColor: weekPnl.map(v => v >= 0 ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)'),
-      borderColor:     weekPnl.map(v => v >= 0 ? '#22c55e' : '#ef4444'),
+      borderColor:     weekPnl.map(v => v >= 0 ? '#00E5B4' : '#FF4560'),
       borderWidth: 1, borderRadius: 4,
     }],
   };
@@ -3046,23 +3046,23 @@ function ReportsPanel({ trades }) {
     datasets: [{
       data: setupPnl.length ? setupPnl : [0],
       backgroundColor: setupPnl.map(v => v >= 0 ? 'rgba(37,99,235,0.5)' : 'rgba(239,68,68,0.4)'),
-      borderColor:     setupPnl.map(v => v >= 0 ? '#2563EB' : '#ef4444'),
+      borderColor:     setupPnl.map(v => v >= 0 ? '#6C63FF' : '#FF4560'),
       borderWidth: 1, borderRadius: 4,
     }],
   };
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
 
   if (closed.length === 0) {
     return (
       <div className="glass-card" style={{ padding: 40, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
         <svg width="64" height="44" viewBox="0 0 64 44" fill="none">
-          <rect x="0"  y="30" width="13" height="14" rx="2" fill="rgba(79,142,247,0.3)"/>
-          <rect x="17" y="20" width="13" height="24" rx="2" fill="rgba(79,142,247,0.3)"/>
-          <rect x="34" y="11" width="13" height="33" rx="2" fill="rgba(79,142,247,0.3)"/>
-          <rect x="51" y="4"  width="13" height="40" rx="2" fill="rgba(79,142,247,0.3)"/>
+          <rect x="0"  y="30" width="13" height="14" rx="2" fill="rgba(108,99,255,0.3)"/>
+          <rect x="17" y="20" width="13" height="24" rx="2" fill="rgba(108,99,255,0.3)"/>
+          <rect x="34" y="11" width="13" height="33" rx="2" fill="rgba(108,99,255,0.3)"/>
+          <rect x="51" y="4"  width="13" height="40" rx="2" fill="rgba(108,99,255,0.3)"/>
         </svg>
-        <h3 style={{ fontSize: 16, fontWeight: 600, color: '#4a5a7a', margin: 0 }}>Your performance reports will appear here</h3>
+        <h3 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', color: '#4E4E63', margin: 0 }}>Your performance reports will appear here</h3>
         <p style={{ fontSize: 13, color: '#2a3a5a', margin: 0 }}>Log and close trades to unlock weekly charts, win rate analysis, and profit factor</p>
       </div>
     );
@@ -3073,21 +3073,21 @@ function ReportsPanel({ trades }) {
       {/* Summary stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {[
-          ['Total closed', closed.length, '#F5F5FA'],
-          ['LONG win rate', longWR+'%', longWR >= 50 ? '#22c55e' : '#ef4444'],
-          ['SHORT win rate', shortWR+'%', shortWR >= 50 ? '#22c55e' : '#ef4444'],
-          ['Total P&L', '$'+closed.reduce((s,t) => s+(t.pnl||0), 0).toFixed(0), closed.reduce((s,t) => s+(t.pnl||0), 0) >= 0 ? '#22c55e' : '#ef4444'],
+          ['Total closed', closed.length, '#F0F0FF'],
+          ['LONG win rate', longWR+'%', longWR >= 50 ? '#00E5B4' : '#FF4560'],
+          ['SHORT win rate', shortWR+'%', shortWR >= 50 ? '#00E5B4' : '#FF4560'],
+          ['Total P&L', '$'+closed.reduce((s,t) => s+(t.pnl||0), 0).toFixed(0), closed.reduce((s,t) => s+(t.pnl||0), 0) >= 0 ? '#00E5B4' : '#FF4560'],
         ].map(([l,v,c]) => (
           <div key={l} style={card}>
-            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 8 }}>{l}</div>
-            <div style={{ fontSize: 22, fontWeight: 700, color: c }}>{v}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 8 }}>{l}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color: c }}>{v}</div>
           </div>
         ))}
       </div>
 
       {/* Weekly P&L chart */}
       <div style={card}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 14 }}>Weekly P&L</div>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 14 }}>Weekly P&L</div>
         <div style={{ height: 160 }}>
           <Bar data={weekData} options={chartOpts('$')} />
         </div>
@@ -3095,7 +3095,7 @@ function ReportsPanel({ trades }) {
 
       {/* P&L by setup */}
       <div style={card}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 14 }}>P&L by Setup</div>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 14 }}>P&L by Setup</div>
         <div style={{ height: 160 }}>
           <Bar data={setupData} options={chartOpts('$')} />
         </div>
@@ -3104,15 +3104,15 @@ function ReportsPanel({ trades }) {
       {/* Best/worst trades */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {[
-          { label: '🏆 Best trades', items: [...closed].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#22c55e' },
-          { label: '💔 Worst trades', items: [...closed].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#ef4444' },
+          { label: '🏆 Best trades', items: [...closed].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#00E5B4' },
+          { label: '💔 Worst trades', items: [...closed].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#FF4560' },
         ].map(({ label, items, color }) => (
           <div key={label} style={card}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>{label}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>{label}</div>
             {items.map((t, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < items.length - 1 ? '1px solid #1e2a4a' : 'none' }}>
-                <span style={{ fontSize: 13, color: '#F5F5FA' }}>{t.ticker} {t.direction}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color }}>{(t.pnl >= 0 ? '+' : '')}${(t.pnl||0).toFixed(0)}</span>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < items.length - 1 ? '1px solid #1E1E2E' : 'none' }}>
+                <span style={{ fontSize: 13, color: '#F0F0FF' }}>{t.ticker} {t.direction}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color }}>{(t.pnl >= 0 ? '+' : '')}${(t.pnl||0).toFixed(0)}</span>
               </div>
             ))}
           </div>
@@ -3153,57 +3153,57 @@ function ArbitragePanel() {
   const stake1     = hasArb ? (stake / (d1 * impliedSum)).toFixed(2) : null;
   const stake2     = hasArb ? (stake / (d2 * impliedSum)).toFixed(2) : null;
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520 }}>
       <div style={card}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 4 }}>⚖️ Arbitrage Finder</div>
-        <div style={{ fontSize: 12, color: '#64748b', marginBottom: 16 }}>Enter odds from two different books for the same event to check for an arb opportunity.</div>
+        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 4 }}>⚖️ Arbitrage Finder</div>
+        <div style={{ fontSize: 12, color: '#6B6B8A', marginBottom: 16 }}>Enter odds from two different books for the same event to check for an arb opportunity.</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Book 1</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Book 1</div>
             <input value={book1} onChange={e => setBook1(e.target.value)} placeholder="e.g. DraftKings"
               className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%', marginBottom: 8 }} onFocus={inpFocus} onBlur={inpBlur} />
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Odds (American)</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Odds (American)</div>
             <input value={odds1} onChange={e => setOdds1(e.target.value)} placeholder="-110"
               className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Book 2</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Book 2</div>
             <input value={book2} onChange={e => setBook2(e.target.value)} placeholder="e.g. FanDuel"
               className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%', marginBottom: 8 }} onFocus={inpFocus} onBlur={inpBlur} />
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Odds (American)</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Odds (American)</div>
             <input value={odds2} onChange={e => setOdds2(e.target.value)} placeholder="+130"
               className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Total stake ($)</div>
+          <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Total stake ($)</div>
           <input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value)||0)}
             className={inp} style={{ ...inpStyle, padding: '9px 12px', borderRadius: 10, width: '100%' }} onFocus={inpFocus} onBlur={inpBlur} />
         </div>
       </div>
 
       {impliedSum && (
-        <div style={{ ...card, border: `1px solid ${hasArb ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.3)'}`, background: hasArb ? 'rgba(34,197,94,0.05)' : '#0f1729' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: hasArb ? '#22c55e' : '#ef4444', marginBottom: 12 }}>
+        <div style={{ ...card, border: `1px solid ${hasArb ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.3)'}`, background: hasArb ? 'rgba(34,197,94,0.05)' : '#111118' }}>
+          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: hasArb ? '#00E5B4' : '#FF4560', marginBottom: 12 }}>
             {hasArb ? '✅ Arbitrage opportunity found!' : '❌ No arbitrage — books have edge'}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {[
-              ['Implied sum', (impliedSum * 100).toFixed(2)+'%', impliedSum < 1 ? '#22c55e' : '#ef4444'],
-              ['Book edge', ((impliedSum - 1) * 100).toFixed(2)+'%', '#94A3B8'],
+              ['Implied sum', (impliedSum * 100).toFixed(2)+'%', impliedSum < 1 ? '#00E5B4' : '#FF4560'],
+              ['Book edge', ((impliedSum - 1) * 100).toFixed(2)+'%', '#6B6B8A'],
               ...(hasArb ? [
-                [`Bet on ${book1 || 'Book 1'}`, '$'+stake1, '#F5F5FA'],
-                [`Bet on ${book2 || 'Book 2'}`, '$'+stake2, '#F5F5FA'],
-                ['Guaranteed profit', '$'+profit.toFixed(2), '#22c55e'],
-                ['Profit %', profitPct+'%', '#22c55e'],
+                [`Bet on ${book1 || 'Book 1'}`, '$'+stake1, '#F0F0FF'],
+                [`Bet on ${book2 || 'Book 2'}`, '$'+stake2, '#F0F0FF'],
+                ['Guaranteed profit', '$'+profit.toFixed(2), '#00E5B4'],
+                ['Profit %', profitPct+'%', '#00E5B4'],
               ] : []),
             ].map(([l, v, c]) => (
-              <div key={l} style={{ background: '#0a0f1e', borderRadius: 10, padding: '12px 14px' }}>
-                <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>{l}</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: c }}>{v}</div>
+              <div key={l} style={{ background: '#111118', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>{l}</div>
+                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', color: c }}>{v}</div>
               </div>
             ))}
           </div>
@@ -3233,23 +3233,23 @@ function ParlayPanel() {
   const impliedProb = hasOdds ? (1 / decimal) * 100 : 0;
   const filledLegs = legs.filter(l => l.trim());
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520 }}>
       {/* Legs */}
       <div style={card}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', marginBottom: 12 }}>🎰 Parlay Builder</div>
+        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 12 }}>🎰 Parlay Builder</div>
         {legs.map((leg, i) => (
           <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
-            <div style={{ fontSize: 12, color: '#64748b', minWidth: 20 }}>#{i + 1}</div>
+            <div style={{ fontSize: 12, color: '#6B6B8A', minWidth: 20 }}>#{i + 1}</div>
             <input value={leg} onChange={e => updateLeg(i, e.target.value)}
               placeholder="e.g. Lakers ML, Chiefs -3.5, Over 220.5" className={inp}
               style={{ ...inpStyle, flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 12 }} onFocus={inpFocus} onBlur={inpBlur} />
             {legs.length > 2 && (
-              <button onClick={() => removeLeg(i)} style={{ color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}
-                onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                onMouseLeave={e => e.currentTarget.style.color = '#64748b'}>✕</button>
+              <button onClick={() => removeLeg(i)} style={{ color: '#6B6B8A', background: 'none', border: 'none', cursor: 'pointer', fontSize: 16 }}
+                onMouseEnter={e => e.currentTarget.style.color = '#FF4560'}
+                onMouseLeave={e => e.currentTarget.style.color = '#6B6B8A'}>✕</button>
             )}
           </div>
         ))}
@@ -3260,25 +3260,25 @@ function ParlayPanel() {
       <div style={card}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Final parlay odds (American)</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Final parlay odds (American)</div>
             <input value={odds} onChange={e => setOdds(e.target.value)} placeholder="e.g. +650"
-              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
+              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em' }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
           <div>
-            <div style={{ fontSize: 11, color: '#64748b', marginBottom: 5 }}>Stake ($)</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 5 }}>Stake ($)</div>
             <input type="number" value={stake} onChange={e => setStake(parseFloat(e.target.value) || 0)}
-              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 700 }} onFocus={inpFocus} onBlur={inpBlur} />
+              className={inp} style={{ ...inpStyle, padding: '12px 14px', borderRadius: 10, width: '100%', fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em' }} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
         </div>
       </div>
 
       {/* Payout display */}
       {hasOdds ? (
-        <div style={{ ...card, textAlign: 'center', background: 'linear-gradient(135deg, rgba(79,142,247,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '2px solid rgba(79,142,247,0.3)', padding: 32 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#4f8ef7', marginBottom: 8 }}>
+        <div style={{ ...card, textAlign: 'center', background: 'linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '2px solid rgba(108,99,255,0.3)', padding: 32 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#6C63FF', marginBottom: 8 }}>
             {filledLegs.length > 0 ? `${filledLegs.length}-Leg Parlay` : 'Payout if Win'}
           </div>
-          <div style={{ fontSize: 56, fontWeight: 900, color: '#22c55e', letterSpacing: '-0.02em', lineHeight: 1 }}>
+          <div style={{ fontSize: 56, fontWeight: 900, color: '#00E5B4', letterSpacing: '-0.02em', lineHeight: 1 }}>
             ${payout.toFixed(2)}
           </div>
           <div style={{ fontSize: 14, color: '#94a3b8', marginTop: 10 }}>
@@ -3286,22 +3286,22 @@ function ParlayPanel() {
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 16 }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Odds</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{o > 0 ? '+' : ''}{o}</div>
+              <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 2 }}>Odds</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#F0F0FF' }}>{o > 0 ? '+' : ''}{o}</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Decimal</div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#F5F5FA' }}>{decimal.toFixed(2)}x</div>
+              <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 2 }}>Decimal</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#F0F0FF' }}>{decimal.toFixed(2)}x</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 10, color: '#4a5a7a', marginBottom: 2 }}>Implied prob</div>
+              <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 2 }}>Implied prob</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#60a5fa' }}>{impliedProb.toFixed(1)}%</div>
             </div>
           </div>
         </div>
       ) : (
         <div style={{ ...card, textAlign: 'center', padding: 24 }}>
-          <div style={{ fontSize: 13, color: '#4a5a7a' }}>Enter parlay odds to see payout</div>
+          <div style={{ fontSize: 13, color: '#4E4E63' }}>Enter parlay odds to see payout</div>
         </div>
       )}
     </div>
@@ -3338,48 +3338,48 @@ function BettingAnalyticsPanel({ bets }) {
     return { type: t, wr: tb.length ? Math.round(wins.length/tb.length*100) : 0, pnl: tb.reduce((sum,b) => sum+(b.pnl||0), 0), n: tb.length };
   });
 
-  const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
 
   if (settled.length === 0) {
-    const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: 16, padding: 20 };
+    const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Onboarding card */}
         <div className="glass-card" style={{ padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
           <div style={{ fontSize: 40 }}>📊</div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#F5F5FA', margin: 0 }}>Log your first bet to start tracking performance</h3>
-          <p style={{ fontSize: 13, color: '#4a5a7a', margin: 0, maxWidth: 400 }}>Use Quick Log below or upload a screenshot. Once you settle bets, you'll see win rate, P&L breakdowns, and performance trends here.</p>
+          <h3 style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', margin: 0 }}>Log your first bet to start tracking performance</h3>
+          <p style={{ fontSize: 13, color: '#4E4E63', margin: 0, maxWidth: 400 }}>Use Quick Log below or upload a screenshot. Once you settle bets, you'll see win rate, P&L breakdowns, and performance trends here.</p>
           <button onClick={() => { const el = document.querySelector('[data-bet-form]'); if (el) el.scrollIntoView({ behavior: 'smooth' }); }}
-            style={{ background: '#4f8ef7', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 600, cursor: 'pointer', marginTop: 4 }}>
+            style={{ background: '#6C63FF', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', marginTop: 4 }}>
             Log your first bet ↓
           </button>
         </div>
         {/* Demo stat cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, opacity: 0.35, pointerEvents: 'none' }}>
           <div style={card}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>Win Rate by Sport</div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>Win Rate by Sport</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {['NBA', 'NFL', 'MLB'].map(s => (
                 <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, color: '#64748b', width: 30 }}>{s}</span>
-                  <div style={{ flex: 1, height: 12, background: '#1e2a4a', borderRadius: 4, overflow: 'hidden' }}>
+                  <span style={{ fontSize: 11, color: '#6B6B8A', width: 30 }}>{s}</span>
+                  <div style={{ flex: 1, height: 12, background: '#1E1E2E', borderRadius: 4, overflow: 'hidden' }}>
                     <div style={{ width: '55%', height: '100%', background: 'rgba(34,197,94,0.4)', borderRadius: 4 }} />
                   </div>
-                  <span style={{ fontSize: 11, color: '#64748b' }}>55%</span>
+                  <span style={{ fontSize: 11, color: '#6B6B8A' }}>55%</span>
                 </div>
               ))}
             </div>
           </div>
           <div style={card}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>P&L by Sport ($)</div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>P&L by Sport ($)</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[['NBA', '+$120'], ['NFL', '-$45'], ['MLB', '+$80']].map(([s, v]) => (
                 <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 11, color: '#64748b', width: 30 }}>{s}</span>
-                  <div style={{ flex: 1, height: 12, background: '#1e2a4a', borderRadius: 4, overflow: 'hidden' }}>
+                  <span style={{ fontSize: 11, color: '#6B6B8A', width: 30 }}>{s}</span>
+                  <div style={{ flex: 1, height: 12, background: '#1E1E2E', borderRadius: 4, overflow: 'hidden' }}>
                     <div style={{ width: v.startsWith('+') ? '60%' : '30%', height: '100%', background: v.startsWith('+') ? 'rgba(37,99,235,0.4)' : 'rgba(239,68,68,0.3)', borderRadius: 4 }} />
                   </div>
-                  <span style={{ fontSize: 11, color: '#64748b' }}>{v}</span>
+                  <span style={{ fontSize: 11, color: '#6B6B8A' }}>{v}</span>
                 </div>
               ))}
             </div>
@@ -3393,8 +3393,8 @@ function BettingAnalyticsPanel({ bets }) {
     responsive: true, maintainAspectRatio: false, indexAxis: 'y',
     plugins: { legend: { display: false } },
     scales: {
-      x: { grid: { color: 'rgba(30,42,74,0.5)' }, ticks: { color: '#64748b', font: { size: 10 } } },
-      y: { grid: { display: false }, ticks: { color: '#94A3B8', font: { size: 11 } } },
+      x: { grid: { color: 'rgba(30,42,74,0.5)' }, ticks: { color: '#6B6B8A', font: { size: 10 } } },
+      y: { grid: { display: false }, ticks: { color: '#6B6B8A', font: { size: 11 } } },
     },
   };
 
@@ -3411,31 +3411,31 @@ function BettingAnalyticsPanel({ bets }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>Win Rate by Sport</div>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>Win Rate by Sport</div>
           <div style={{ height: 140 }}><Bar data={wrBySport} options={barOpts} /></div>
         </div>
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>P&L by Sport ($)</div>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>P&L by Sport ($)</div>
           <div style={{ height: 140 }}><Bar data={pnlBySport} options={{...barOpts, plugins: {...barOpts.plugins, tooltip:{callbacks:{label:ctx=>'$'+ctx.raw.toFixed(0)}}}}} /></div>
         </div>
       </div>
 
       {/* Bet type breakdown */}
       <div style={card}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>Breakdown by Bet Type</div>
+        <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>Breakdown by Bet Type</div>
         <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ color: '#64748b', fontSize: 11 }}>
-              {['Type','Bets','Win Rate','P&L'].map(h => <th key={h} style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600 }}>{h}</th>)}
+            <tr style={{ color: '#6B6B8A', fontSize: 11 }}>
+              {['Type','Bets','Win Rate','P&L'].map(h => <th key={h} style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 800, letterSpacing: '-0.02em' }}>{h}</th>)}
             </tr>
           </thead>
           <tbody>
             {typeData.map(d => (
-              <tr key={d.type} style={{ borderTop: '1px solid #1e2a4a' }}>
-                <td style={{ padding: '8px 0', color: '#F5F5FA', fontWeight: 500 }}>{d.type}</td>
-                <td style={{ padding: '8px 0', color: '#94A3B8' }}>{d.n}</td>
-                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{d.wr}%</td>
-                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(2)}</td>
+              <tr key={d.type} style={{ borderTop: '1px solid #1E1E2E' }}>
+                <td style={{ padding: '8px 0', color: '#F0F0FF', fontWeight: 500 }}>{d.type}</td>
+                <td style={{ padding: '8px 0', color: '#6B6B8A' }}>{d.n}</td>
+                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
+                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -3445,15 +3445,15 @@ function BettingAnalyticsPanel({ bets }) {
       {/* Win rate by book */}
       {bookData.length > 0 && (
         <div style={card}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>Win Rate by Book</div>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>Win Rate by Book</div>
           <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
-            <thead><tr style={{ color: '#64748b', fontSize: 11 }}>{['Book','Bets','Win Rate','P&L'].map(h => <th key={h} style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 600 }}>{h}</th>)}</tr></thead>
+            <thead><tr style={{ color: '#6B6B8A', fontSize: 11 }}>{['Book','Bets','Win Rate','P&L'].map(h => <th key={h} style={{ textAlign: 'left', paddingBottom: 8, fontWeight: 800, letterSpacing: '-0.02em' }}>{h}</th>)}</tr></thead>
             <tbody>{bookData.map(d => (
-              <tr key={d.book} style={{ borderTop: '1px solid #1e2a4a' }}>
-                <td style={{ padding: '8px 0', color: '#F5F5FA', fontWeight: 500 }}>{d.book}</td>
-                <td style={{ padding: '8px 0', color: '#94A3B8' }}>{d.n}</td>
-                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{d.wr}%</td>
-                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#22c55e' : '#ef4444', fontWeight: 600 }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(0)}</td>
+              <tr key={d.book} style={{ borderTop: '1px solid #1E1E2E' }}>
+                <td style={{ padding: '8px 0', color: '#F0F0FF', fontWeight: 500 }}>{d.book}</td>
+                <td style={{ padding: '8px 0', color: '#6B6B8A' }}>{d.n}</td>
+                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
+                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(0)}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -3463,15 +3463,15 @@ function BettingAnalyticsPanel({ bets }) {
       {/* Best/worst bets */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {[
-          { label: '🏆 Best bets', items: [...settled].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#22c55e' },
-          { label: '💔 Worst bets', items: [...settled].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#ef4444' },
+          { label: '🏆 Best bets', items: [...settled].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#00E5B4' },
+          { label: '💔 Worst bets', items: [...settled].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#FF4560' },
         ].map(({ label, items, color }) => (
           <div key={label} style={card}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginBottom: 12 }}>{label}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginBottom: 12 }}>{label}</div>
             {items.map((b, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < items.length - 1 ? '1px solid #1e2a4a' : 'none' }}>
-                <span style={{ fontSize: 12, color: '#F5F5FA', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.match}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color }}>{(b.pnl >= 0 ? '+' : '')}${(b.pnl||0).toFixed(0)}</span>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: i < items.length - 1 ? '1px solid #1E1E2E' : 'none' }}>
+                <span style={{ fontSize: 12, color: '#F0F0FF', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.match}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color }}>{(b.pnl >= 0 ? '+' : '')}${(b.pnl||0).toFixed(0)}</span>
               </div>
             ))}
           </div>
@@ -3492,72 +3492,72 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
   const wrPct     = wrTarget > 0 ? Math.min(100, monthWR/wrTarget*100) : 0;
 
   const barColor = (pct, inv=false) => inv
-    ? (pct < 50 ? '#22c55e' : pct < 80 ? '#f59e0b' : '#ef4444')
-    : (pct >= 100 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#475569');
+    ? (pct < 50 ? '#00E5B4' : pct < 80 ? '#f59e0b' : '#FF4560')
+    : (pct >= 100 ? '#00E5B4' : pct >= 50 ? '#f59e0b' : '#6B6B8A');
 
-  const card = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
-  const track = { background: 'rgba(255,255,255,0.08)' };
+  const card = { background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
+  const track = { background: 'rgba(108,99,255,0.2)' };
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       <div className="rounded-2xl p-5" style={card}>
-        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#64748b'}}>Monthly P&L Goal</div>
+        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#6B6B8A'}}>Monthly P&L Goal</div>
         <div className={`text-2xl font-bold mb-2 ${monthPnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
           {monthPnl >= 0 ? '+' : ''}${monthPnl.toFixed(0)}
         </div>
         <div className="h-1.5 rounded-full overflow-hidden mb-2.5" style={track}>
           <div className="h-full rounded-full transition-all duration-500" style={{width: goalPct+'%', background: barColor(goalPct)}} />
         </div>
-        <div className="flex items-center gap-1.5 text-xs" style={{color: '#64748b'}}>
+        <div className="flex items-center gap-1.5 text-xs" style={{color: '#6B6B8A'}}>
           <span>Goal $</span>
           <input type="number" value={monthGoal} onChange={e => onGoalChange(parseFloat(e.target.value)||0)}
-            className="w-20 text-center outline-none bg-transparent font-medium" style={{borderBottom: '1px solid #1e2a4a', color: '#94A3B8'}} />
-          <span className="ml-auto" style={{color: '#94A3B8'}}>{Math.round(goalPct)}%</span>
+            className="w-20 text-center outline-none bg-transparent font-medium" style={{borderBottom: '1px solid #1E1E2E', color: '#6B6B8A'}} />
+          <span className="ml-auto" style={{color: '#6B6B8A'}}>{Math.round(goalPct)}%</span>
         </div>
       </div>
 
       <div className="rounded-2xl p-5" style={card}>
-        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#64748b'}}>Daily Limit Left</div>
-        <div className={`text-2xl font-bold mb-2 ${limitLeft > dailyLimit*0.2 ? '' : 'text-red-500'}`} style={limitLeft > dailyLimit*0.2 ? {color: '#F5F5FA'} : {}}>
+        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#6B6B8A'}}>Daily Limit Left</div>
+        <div className={`text-2xl font-bold mb-2 ${limitLeft > dailyLimit*0.2 ? '' : 'text-red-500'}`} style={limitLeft > dailyLimit*0.2 ? {color: '#F0F0FF'} : {}}>
           ${limitLeft.toFixed(0)}
         </div>
         <div className="h-1.5 rounded-full overflow-hidden mb-2.5" style={track}>
           <div className="h-full rounded-full transition-all duration-500" style={{width: limitPct+'%', background: barColor(limitPct, true)}} />
         </div>
-        <div className="flex items-center gap-1.5 text-xs" style={{color: '#64748b'}}>
+        <div className="flex items-center gap-1.5 text-xs" style={{color: '#6B6B8A'}}>
           <span>Limit $</span>
           <input type="number" value={dailyLimit} onChange={e => onLimitChange(parseFloat(e.target.value)||0)}
-            className="w-20 text-center outline-none bg-transparent font-medium" style={{borderBottom: '1px solid #1e2a4a', color: '#94A3B8'}} />
-          <span className="ml-auto" style={{color: '#94A3B8'}}>{Math.round(limitPct)}% used</span>
+            className="w-20 text-center outline-none bg-transparent font-medium" style={{borderBottom: '1px solid #1E1E2E', color: '#6B6B8A'}} />
+          <span className="ml-auto" style={{color: '#6B6B8A'}}>{Math.round(limitPct)}% used</span>
         </div>
       </div>
 
       <div className="rounded-2xl p-5" style={card}>
-        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#64748b'}}>Win Rate (Month)</div>
+        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#6B6B8A'}}>Win Rate (Month)</div>
         <div className={`text-2xl font-bold mb-2 ${monthWR >= wrTarget ? 'text-green-500' : 'text-yellow-500'}`}>
           {monthWR}%
         </div>
         <div className="h-1.5 rounded-full overflow-hidden mb-2.5" style={track}>
-          <div className="h-full rounded-full transition-all duration-500" style={{width: wrPct+'%', background: monthWR>=wrTarget?'#22c55e':'#f59e0b'}} />
+          <div className="h-full rounded-full transition-all duration-500" style={{width: wrPct+'%', background: monthWR>=wrTarget?'#00E5B4':'#f59e0b'}} />
         </div>
-        <div className="flex items-center gap-1.5 text-xs" style={{color: '#64748b'}}>
+        <div className="flex items-center gap-1.5 text-xs" style={{color: '#6B6B8A'}}>
           <span>Target</span>
           <input type="number" value={wrTarget} onChange={e => onTargetChange(parseFloat(e.target.value)||0)}
-            className="w-14 text-center outline-none bg-transparent font-medium" style={{borderBottom: '1px solid #1e2a4a', color: '#94A3B8'}} />
+            className="w-14 text-center outline-none bg-transparent font-medium" style={{borderBottom: '1px solid #1E1E2E', color: '#6B6B8A'}} />
           <span>%</span>
-          <span className="ml-auto" style={{color: '#94A3B8'}}>{monthWR >= wrTarget ? '✓ on track' : `${wrTarget - monthWR}% gap`}</span>
+          <span className="ml-auto" style={{color: '#6B6B8A'}}>{monthWR >= wrTarget ? '✓ on track' : `${wrTarget - monthWR}% gap`}</span>
         </div>
       </div>
 
       <div className="rounded-2xl p-5" style={card}>
-        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#64748b'}}>Max Drawdown (Month)</div>
+        <div className="text-xs font-semibold uppercase tracking-wider mb-3" style={{color: '#6B6B8A'}}>Max Drawdown (Month)</div>
         <div className={`text-2xl font-bold mb-2 ${maxDD === 0 ? '' : 'text-red-500'}`} style={maxDD === 0 ? {color: '#334155'} : {}}>
           {maxDD > 0 ? '-$'+maxDD.toFixed(2) : '—'}
         </div>
         <div className="h-1.5 rounded-full overflow-hidden mb-2.5" style={track}>
-          <div className="h-full rounded-full" style={{width: maxDD > 0 ? '100%' : '0%', background: '#ef4444'}} />
+          <div className="h-full rounded-full" style={{width: maxDD > 0 ? '100%' : '0%', background: '#FF4560'}} />
         </div>
-        <div className="text-xs" style={{color: '#64748b'}}>Peak-to-trough this month</div>
+        <div className="text-xs" style={{color: '#6B6B8A'}}>Peak-to-trough this month</div>
       </div>
     </div>
   );
@@ -3568,11 +3568,11 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
 ───────────────────────────────────────── */
 function ViewToggle({ view, setView, options = ['calendar', 'table'] }) {
   return (
-    <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#0a0f1e'}}>
+    <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#111118'}}>
       {options.map(v => (
         <button key={v} onClick={() => setView(v)}
           className="px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
-          style={view===v ? {background: '#2563EB', color: '#fff'} : {color: '#94A3B8'}}>
+          style={view===v ? {background: '#6C63FF', color: '#fff'} : {color: '#6B6B8A'}}>
           {v}
         </button>
       ))}
@@ -3582,16 +3582,16 @@ function ViewToggle({ view, setView, options = ['calendar', 'table'] }) {
 
 function DarkTable({ headers, children, empty }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{background: '#0f1729', border: '1px solid #1e2a4a'}}>
+    <div className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-xs font-medium uppercase tracking-wide" style={{background: '#0a0f1e', borderBottom: '1px solid #1e2a4a', color: '#64748b'}}>
+          <tr className="text-xs font-medium uppercase tracking-wide" style={{background: '#111118', borderBottom: '1px solid #1E1E2E', color: '#6B6B8A'}}>
             {headers.map(h => <th key={h} className="text-left px-5 py-3">{h}</th>)}
           </tr>
         </thead>
         <tbody>
           {!children || (Array.isArray(children) && children.length === 0) ? (
-            <tr><td colSpan={headers.length} className="px-5 py-10 text-center text-sm" style={{color: '#64748b'}}>{empty}</td></tr>
+            <tr><td colSpan={headers.length} className="px-5 py-10 text-center text-sm" style={{color: '#6B6B8A'}}>{empty}</td></tr>
           ) : children}
         </tbody>
       </table>
@@ -3603,9 +3603,9 @@ function AIAnalyzeButton({ topic, type }) {
   return (
     <button onClick={() => window.dispatchEvent(new CustomEvent('ai-prefill', { detail: { topic, type } }))}
       className="text-xs font-medium transition-colors text-left"
-      style={{color: '#475569'}}
-      onMouseEnter={e => e.currentTarget.style.color='#2563EB'}
-      onMouseLeave={e => e.currentTarget.style.color='#475569'}>
+      style={{color: '#6B6B8A'}}
+      onMouseEnter={e => e.currentTarget.style.color='#6C63FF'}
+      onMouseLeave={e => e.currentTarget.style.color='#6B6B8A'}>
       Analyze with AI ↗
     </button>
   );
@@ -3613,10 +3613,10 @@ function AIAnalyzeButton({ topic, type }) {
 
 function LoadingDots({ label }) {
   return (
-    <div className="flex gap-2.5 items-center text-sm py-2" style={{color: '#94A3B8'}}>
+    <div className="flex gap-2.5 items-center text-sm py-2" style={{color: '#6B6B8A'}}>
       <div className="flex gap-1">
         {[0,1,2].map(i => (
-          <div key={i} className="w-1.5 h-1.5 rounded-full animate-pulse" style={{background: '#2563EB', animationDelay: i*150+'ms'}} />
+          <div key={i} className="w-1.5 h-1.5 rounded-full animate-pulse" style={{background: '#6C63FF', animationDelay: i*150+'ms'}} />
         ))}
       </div>
       {label}

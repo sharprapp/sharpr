@@ -128,23 +128,23 @@ export default function SportsOdds({ initialSport, tier }) {
     window.dispatchEvent(new CustomEvent('ai-prefill', { detail: { topic, type: 'sports' } }));
   }
 
-  const gc = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, transition: 'all 0.2s ease' };
+  const gc = { background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 16, transition: 'all 0.2s ease' };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* Sport selector */}
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 12, background: '#0a0f1e', overflowX: 'auto', scrollbarWidth: 'none' }}>
+        <div style={{ display: 'flex', gap: 4, padding: 4, borderRadius: 12, background: '#111118', overflowX: 'auto', scrollbarWidth: 'none' }}>
           {SPORTS.map(s => (
             <button key={s} onClick={() => setSport(s)}
               style={{
-                padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer',
                 border: 'none', whiteSpace: 'nowrap', transition: 'all 0.15s',
-                background: sport === s ? '#2563EB' : 'transparent',
-                color: sport === s ? '#fff' : '#94A3B8',
+                background: sport === s ? '#6C63FF' : 'transparent',
+                color: sport === s ? '#fff' : '#6B6B8A',
               }}
-              onMouseEnter={e => { if (sport !== s) e.currentTarget.style.color = '#F5F5FA'; }}
-              onMouseLeave={e => { if (sport !== s) e.currentTarget.style.color = '#94A3B8'; }}>
+              onMouseEnter={e => { if (sport !== s) e.currentTarget.style.color = '#F0F0FF'; }}
+              onMouseLeave={e => { if (sport !== s) e.currentTarget.style.color = '#6B6B8A'; }}>
               {SPORT_LABELS[s] || s}
             </button>
           ))}
@@ -157,7 +157,7 @@ export default function SportsOdds({ initialSport, tier }) {
           <span style={{ fontSize: 11, color: '#2a3a5a' }}>{!loading && games.length > 0 && `${games.length} games`}</span>
           {!loading && games.length > 0 && (
             <button onClick={() => setSortByEdge(s => !s)}
-              style={{ fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 100, cursor: 'pointer', border: '1px solid', background: sortByEdge ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.03)', borderColor: sortByEdge ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.08)', color: sortByEdge ? '#4ade80' : '#4a5a7a' }}>
+              style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '3px 10px', borderRadius: 100, cursor: 'pointer', border: '1px solid', background: sortByEdge ? 'rgba(34,197,94,0.15)' : '#111118', borderColor: sortByEdge ? 'rgba(34,197,94,0.3)' : 'rgba(108,99,255,0.2)', color: sortByEdge ? '#00E5B4' : '#4E4E63' }}>
               {sortByEdge ? '⚡ Edge sorted' : '⚡ Sort by Edge'}
             </button>
           )}
@@ -165,13 +165,13 @@ export default function SportsOdds({ initialSport, tier }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {lastUpdated && <span style={{ fontSize: 10, color: '#1a2535' }}>Updated {timeAgo(lastUpdated)}</span>}
           <button onClick={fetchGames} disabled={loading}
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '4px 10px', fontSize: 10, color: '#4a5a7a', cursor: 'pointer' }}>
+            style={{ background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 8, padding: '4px 10px', fontSize: 10, color: '#4E4E63', cursor: 'pointer' }}>
             {loading ? '...' : '↻ Refresh'}
           </button>
         </div>
       </div>
 
-      {error && <div style={{ ...gc, padding: 16, borderColor: 'rgba(239,68,68,0.2)', color: '#ef4444', fontSize: 13 }}>{error}</div>}
+      {error && <div style={{ ...gc, padding: 16, borderColor: 'rgba(239,68,68,0.2)', color: '#FF4560', fontSize: 13 }}>{error}</div>}
 
       {loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -182,8 +182,8 @@ export default function SportsOdds({ initialSport, tier }) {
       {!loading && games.length === 0 && !error && (
         <div style={{ ...gc, padding: 40, textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🏟️</div>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#94A3B8' }}>No {SPORT_LABELS[sport] || sport} games right now</div>
-          <div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 4 }}>Check back on game days</div>
+          <div style={{ fontSize: 14, fontWeight: 500, color: '#6B6B8A' }}>No {SPORT_LABELS[sport] || sport} games right now</div>
+          <div style={{ fontSize: 12, color: '#4E4E63', marginTop: 4 }}>Check back on game days</div>
         </div>
       )}
 
@@ -195,22 +195,22 @@ export default function SportsOdds({ initialSport, tier }) {
         return (
           <div key={game.id} style={{ ...gc, overflow: 'hidden', cursor: 'pointer' }}
             onClick={() => setSelectedGame(game)}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(79,142,247,0.3)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.2)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
 
             <div style={{ padding: 20 }}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(79,142,247,0.1)', color: '#7aaff8', textTransform: 'uppercase' }}>{SPORT_LABELS[sport] || sport}</span>
-                  {game.isLive && <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', color: '#ef4444', animation: 'pulse 1.5s infinite' }}>LIVE</span>}
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 8px', borderRadius: 20, background: 'rgba(108,99,255,0.1)', color: '#867fff', textTransform: 'uppercase' }}>{SPORT_LABELS[sport] || sport}</span>
+                  {game.isLive && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', color: '#FF4560', animation: 'pulse 1.5s infinite' }}>LIVE</span>}
                   {edge && edge.score > 30 && (
-                    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 10, background: edge.score >= 81 ? 'rgba(34,197,94,0.15)' : edge.score >= 61 ? 'rgba(245,158,11,0.15)' : 'rgba(251,191,36,0.1)', color: edge.color, border: `1px solid ${edge.color}30` }}>
+                    <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 10, background: edge.score >= 81 ? 'rgba(34,197,94,0.15)' : edge.score >= 61 ? 'rgba(245,158,11,0.15)' : 'rgba(251,191,36,0.1)', color: edge.color, border: `1px solid ${edge.color}30` }}>
                       {edge.score >= 81 ? '⚡ ' : ''}{edge.score} Edge
                     </span>
                   )}
                 </div>
-                <span style={{ fontSize: 11, color: '#4a5a7a' }}>{fmtDate(game.commenceTime)}</span>
+                <span style={{ fontSize: 11, color: '#4E4E63' }}>{fmtDate(game.commenceTime)}</span>
               </div>
 
               {/* Odds grid: 2 rows (away/home) × 3 columns (spread/ml/total) */}
@@ -219,40 +219,40 @@ export default function SportsOdds({ initialSport, tier }) {
                   {/* Column headers */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6, marginBottom: 6 }}>
                     <div />
-                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Spread</div>
-                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Moneyline</div>
-                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Total</div>
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Spread</div>
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Moneyline</div>
+                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Total</div>
                   </div>
                   {/* Away row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6, marginBottom: 4 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <TeamLogo teamName={game.awayTeam} size={24} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', wordBreak: 'break-word' }}>{game.awayTeam}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', wordBreak: 'break-word' }}>{game.awayTeam}</span>
                     </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.awayTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
-                      {formatSpread(game.awaySpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.awaySpreadOdds)})</span>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.awayTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
+                      {formatSpread(game.awaySpread)} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.awaySpreadOdds)})</span>
                     </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.awayTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.awayML > 0 ? '#22c55e' : '#ef4444', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.awayTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.awayML > 0 ? '#00E5B4' : '#FF4560', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
                       {formatOdds(game.awayML)}
                     </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Over', null); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
-                      O {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.overOdds)})</span>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Over', null); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
+                      O {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.overOdds)})</span>
                     </div>
                   </div>
                   {/* Home row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <TeamLogo teamName={game.homeTeam} size={24} />
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', wordBreak: 'break-word' }}>{game.homeTeam}</span>
+                      <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', wordBreak: 'break-word' }}>{game.homeTeam}</span>
                     </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.homeTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
-                      {formatSpread(game.homeSpread)} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.homeSpreadOdds)})</span>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.homeTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
+                      {formatSpread(game.homeSpread)} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.homeSpreadOdds)})</span>
                     </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.homeTeam); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.homeML > 0 ? '#22c55e' : '#ef4444', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.homeTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.homeML > 0 ? '#00E5B4' : '#FF4560', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
                       {formatOdds(game.homeML)}
                     </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Under', null); }} style={{ background: '#0a0f1e', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 700, color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1e2a4a'} onMouseLeave={e => e.currentTarget.style.background='#0a0f1e'}>
-                      U {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4a5a7a' }}>({formatOdds(game.underOdds)})</span>
+                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Under', null); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
+                      U {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.underOdds)})</span>
                     </div>
                   </div>
                 </div>
@@ -260,11 +260,11 @@ export default function SportsOdds({ initialSport, tier }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <TeamLogo teamName={game.awayTeam} size={24} />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA' }}>{game.awayTeam}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{game.awayTeam}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <TeamLogo teamName={game.homeTeam} size={24} />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA' }}>{game.homeTeam}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{game.homeTeam}</span>
                   </div>
                   <div style={{ fontSize: 12, color: '#2a3a5a', marginTop: 4 }}>Odds not yet available</div>
                 </div>
@@ -273,11 +273,11 @@ export default function SportsOdds({ initialSport, tier }) {
               {/* Action row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <button onClick={e => { e.stopPropagation(); betGame(game, 'ML', null); }}
-                  style={{ background: '#2563EB', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 12, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
+                  style={{ background: '#6C63FF', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#fff', cursor: 'pointer' }}>
                   Log bet
                 </button>
                 <button onClick={e => { e.stopPropagation(); analyzeGame(game); }}
-                  style={{ background: 'rgba(79,142,247,0.1)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 600, color: '#60a5fa', cursor: 'pointer' }}>
+                  style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.25)', borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#60a5fa', cursor: 'pointer' }}>
                   Analyze
                 </button>
                 {game.bookmakers?.length > 0 && (

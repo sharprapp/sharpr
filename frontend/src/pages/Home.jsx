@@ -52,17 +52,17 @@ function timeAgo(dateStr) {
 }
 
 /* ── colour helpers ── */
-const card = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: '16px', padding: '20px' };
-const pnlColor = (n) => n == null ? '#94A3B8' : n >= 0 ? '#22c55e' : '#ef4444';
+const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: '16px', padding: '20px' };
+const pnlColor = (n) => n == null ? '#6B6B8A' : n >= 0 ? '#00E5B4' : '#FF4560';
 
 /* ── sport pill colours ── */
-const SPORT_COLORS = { NBA: '#f59e0b', NFL: '#3b82f6', MLB: '#ef4444', NHL: '#06b6d4', Soccer: '#22c55e', UFC: '#a855f7' };
+const SPORT_COLORS = { NBA: '#f59e0b', NFL: '#3b82f6', MLB: '#FF4560', NHL: '#06b6d4', Soccer: '#00E5B4', UFC: '#a855f7' };
 const SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'Soccer', 'UFC'];
 
 /* ── quick action cards ── */
 const ACTIONS = [
-  { label: 'AI Research',   icon: '🤖', color: '#2563EB', tab: 'AI Research' },
-  { label: 'Log a trade',   icon: '📈', color: '#22c55e', tab: 'Day Trading' },
+  { label: 'AI Research',   icon: '🤖', color: '#6C63FF', tab: 'AI Research' },
+  { label: 'Log a trade',   icon: '📈', color: '#00E5B4', tab: 'Day Trading' },
   { label: 'Log a bet',     icon: '🏈', color: '#f59e0b', tab: 'Sports Betting' },
   { label: 'View markets',  icon: '🎯', color: '#a855f7', tab: 'Polymarket' },
 ];
@@ -141,7 +141,7 @@ export default function Home() {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', color: '#F5F5FA' }}>
+    <div style={{ minHeight: '100vh', background: '#080810', color: '#F0F0FF' }}>
 
       {/* ── NAVBAR ── */}
       <nav className="glass-nav" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
@@ -152,19 +152,19 @@ export default function Home() {
               <a key={label}
                 href={label === 'Settings' ? '/settings' : undefined}
                 onClick={e => { if (label !== 'Settings') { e.preventDefault(); goTab(label === 'Markets' ? 'Polymarket' : 'Day Trading'); } }}
-                style={{ fontSize: 14, color: '#94A3B8', cursor: 'pointer', textDecoration: 'none' }}
-                onMouseEnter={e => e.currentTarget.style.color = '#F5F5FA'}
-                onMouseLeave={e => e.currentTarget.style.color = '#94A3B8'}>
+                style={{ fontSize: 14, color: '#6B6B8A', cursor: 'pointer', textDecoration: 'none' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#F0F0FF'}
+                onMouseLeave={e => e.currentTarget.style.color = '#6B6B8A'}>
                 {label}
               </a>
             ))}
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 13, color: '#475569' }}>{user?.email}</span>
+            <span style={{ fontSize: 13, color: '#6B6B8A' }}>{user?.email}</span>
             <button onClick={() => navigate('/dashboard')}
-              style={{ background: '#2563EB', color: '#fff', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+              style={{ background: '#6C63FF', color: '#fff', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer' }}
               onMouseEnter={e => e.currentTarget.style.background = '#1d4ed8'}
-              onMouseLeave={e => e.currentTarget.style.background = '#2563EB'}>
+              onMouseLeave={e => e.currentTarget.style.background = '#6C63FF'}>
               Go to dashboard
             </button>
           </div>
@@ -176,14 +176,14 @@ export default function Home() {
         {/* ── GREETING ── */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.02em', margin: 0, color: '#f0f4ff' }}>
-              {greeting()}, <span style={{ color: '#2563EB' }}>{firstName(user?.email)}</span>
+            <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '-0.02em', margin: 0, color: '#f0f4ff' }}>
+              {greeting()}, <span style={{ color: '#6C63FF' }}>{firstName(user?.email)}</span>
             </h1>
-            <p style={{ fontSize: 14, color: '#4a5a7a', marginTop: 4 }}>Here's your trading overview for today.</p>
+            <p style={{ fontSize: 14, color: '#4E4E63', marginTop: 4 }}>Here's your trading overview for today.</p>
           </div>
           <div style={{ ...card, padding: '10px 18px', borderRadius: 12 }}>
-            <div style={{ fontSize: 12, color: '#64748b' }}>Today</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8', marginTop: 2 }}>{today}</div>
+            <div style={{ fontSize: 12, color: '#6B6B8A' }}>Today</div>
+            <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#6B6B8A', marginTop: 2 }}>{today}</div>
           </div>
         </div>
 
@@ -191,15 +191,15 @@ export default function Home() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           {[
             { label: "Today's P&L", value: fmtPnl(todayPnl), color: pnlColor(todayPnl), loading: tradesLoading },
-            { label: 'Bets today',  value: tradesLoading ? '—' : todayBets.length, color: '#F5F5FA', loading: betsLoading },
-            { label: 'AI queries',  value: tier === 'pro' ? 'Unlimited' : '0 / 5', color: tier === 'pro' ? '#22c55e' : '#94A3B8', loading: false },
+            { label: 'Bets today',  value: tradesLoading ? '—' : todayBets.length, color: '#F0F0FF', loading: betsLoading },
+            { label: 'AI queries',  value: tier === 'pro' ? 'Unlimited' : '0 / 5', color: tier === 'pro' ? '#00E5B4' : '#6B6B8A', loading: false },
             { label: "Month P&L",   value: fmtPnl(monthPnl), color: pnlColor(monthPnl), loading: tradesLoading },
           ].map(({ label, value, color, loading }) => (
-            <div key={label} style={{ ...card, background: 'linear-gradient(180deg, rgba(79,142,247,0.05) 0%, transparent 100%)' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 8 }}>{label}</div>
+            <div key={label} style={{ ...card, background: 'linear-gradient(180deg, rgba(108,99,255,0.05) 0%, transparent 100%)' }}>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 8 }}>{label}</div>
               {loading
-                ? <div style={{ height: 28, borderRadius: 6, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
-                : <div style={{ fontSize: 22, fontWeight: 700, color }}>{value}</div>
+                ? <div style={{ height: 28, borderRadius: 6, background: '#1E1E2E', animation: 'pulse 1.5s infinite' }} />
+                : <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color }}>{value}</div>
               }
             </div>
           ))}
@@ -213,57 +213,57 @@ export default function Home() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
             {/* Top EV Market */}
-            <div style={{ ...card, borderLeft: '3px solid #4f8ef7', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ ...card, borderLeft: '3px solid #6C63FF', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#4f8ef7' }}>Top Market</span>
+                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6C63FF' }}>Top Market</span>
                 {markets[0]?.volume >= 1000000 && (
-                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>High volume</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.12)', color: '#FF4560' }}>High volume</span>
                 )}
               </div>
               {marketsLoading ? (
-                <div style={{ height: 40, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ height: 40, borderRadius: 8, background: '#1E1E2E', animation: 'pulse 1.5s infinite' }} />
               ) : markets[0] ? (
                 <>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>{markets[0].title}</p>
+                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', margin: 0, lineHeight: 1.4 }}>{markets[0].title}</p>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                    <span style={{ fontSize: 24, fontWeight: 900, color: markets[0].yes > 60 ? '#22c55e' : markets[0].yes > 40 ? '#f59e0b' : '#ef4444' }}>{markets[0].yes}%</span>
-                    <span style={{ fontSize: 12, color: '#475569' }}>YES</span>
+                    <span style={{ fontSize: 24, fontWeight: 900, color: markets[0].yes > 60 ? '#00E5B4' : markets[0].yes > 40 ? '#f59e0b' : '#FF4560' }}>{markets[0].yes}%</span>
+                    <span style={{ fontSize: 12, color: '#6B6B8A' }}>YES</span>
                   </div>
                   <button onClick={() => { sessionStorage.setItem('ai-prefill-topic', markets[0].title); sessionStorage.setItem('ai-prefill-type', 'polymarket'); goTab('AI Research'); }}
-                    style={{ background: 'rgba(79,142,247,0.12)', border: '1px solid rgba(79,142,247,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#60a5fa', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(79,142,247,0.2)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(79,142,247,0.12)'}>
+                    style={{ background: 'rgba(108,99,255,0.12)', border: '1px solid rgba(108,99,255,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#60a5fa', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(108,99,255,0.12)'}>
                     Analyze with AI →
                   </button>
                 </>
               ) : (
-                <p style={{ fontSize: 13, color: '#475569' }}>No markets loaded</p>
+                <p style={{ fontSize: 13, color: '#6B6B8A' }}>No markets loaded</p>
               )}
             </div>
 
             {/* Trading Setup */}
-            <div style={{ ...card, borderLeft: '3px solid #22c55e', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#22c55e' }}>Trading Setup</span>
+            <div style={{ ...card, borderLeft: '3px solid #00E5B4', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#00E5B4' }}>Trading Setup</span>
               {(() => {
                 const saved = JSON.parse(localStorage.getItem('premarket_levels') || '{}');
                 if (saved.bias && saved.date === new Date().toDateString()) {
-                  const biasColor = saved.bias === 'LONG' ? '#22c55e' : saved.bias === 'SHORT' ? '#ef4444' : '#f59e0b';
+                  const biasColor = saved.bias === 'LONG' ? '#00E5B4' : saved.bias === 'SHORT' ? '#FF4560' : '#f59e0b';
                   return (
                     <>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                         <span style={{ fontSize: 24, fontWeight: 900, color: biasColor }}>{saved.bias}</span>
-                        <span style={{ fontSize: 12, color: '#475569' }}>bias today</span>
+                        <span style={{ fontSize: 12, color: '#6B6B8A' }}>bias today</span>
                       </div>
                       {saved.thesis && <p style={{ fontSize: 12, color: '#6a7a9a', margin: 0 }}>{saved.thesis}</p>}
-                      {saved.nqLevels?.vwap && <div style={{ fontSize: 11, color: '#475569' }}>VWAP: {saved.nqLevels.vwap}</div>}
+                      {saved.nqLevels?.vwap && <div style={{ fontSize: 11, color: '#6B6B8A' }}>VWAP: {saved.nqLevels.vwap}</div>}
                     </>
                   );
                 }
                 return (
                   <>
-                    <p style={{ fontSize: 14, color: '#475569', margin: 0 }}>No bias set for today</p>
+                    <p style={{ fontSize: 14, color: '#6B6B8A', margin: 0 }}>No bias set for today</p>
                     <button onClick={() => goTab('Day Trading')}
-                      style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#4ade80', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
+                      style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#00E5B4', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.2)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.12)'}>
                       Set your bias in Pre-Market →
@@ -275,27 +275,27 @@ export default function Home() {
 
             {/* Sharp Bet */}
             <div style={{ ...card, borderLeft: '3px solid #f59e0b', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#f59e0b' }}>Sharp Bet</span>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#f59e0b' }}>Sharp Bet</span>
               {gamesLoading ? (
-                <div style={{ height: 40, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
+                <div style={{ height: 40, borderRadius: 8, background: '#1E1E2E', animation: 'pulse 1.5s infinite' }} />
               ) : games.length > 0 ? (
                 <>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F5F5FA', margin: 0, lineHeight: 1.4 }}>
+                  <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', margin: 0, lineHeight: 1.4 }}>
                     {games[0].away?.name || '—'} @ {games[0].home?.name || '—'}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>{sport}</span>
-                    <span style={{ fontSize: 12, color: '#475569' }}>{games[0].status?.detail || fmtDate(games[0].date)}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 8px', borderRadius: 20, background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>{sport}</span>
+                    <span style={{ fontSize: 12, color: '#6B6B8A' }}>{games[0].status?.detail || fmtDate(games[0].date)}</span>
                   </div>
                   <button onClick={() => goTab('Sports Betting')}
-                    style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#f59e0b', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
+                    style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#f59e0b', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.12)'}>
                     View odds →
                   </button>
                 </>
               ) : (
-                <p style={{ fontSize: 13, color: '#475569' }}>No {sport} games today</p>
+                <p style={{ fontSize: 13, color: '#6B6B8A' }}>No {sport} games today</p>
               )}
             </div>
           </div>
@@ -304,8 +304,8 @@ export default function Home() {
         {/* ── LIVE MARKETS ── */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Live prediction markets</h2>
-            <button onClick={() => goTab('Polymarket')} style={{ fontSize: 13, color: '#2563EB', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Live prediction markets</h2>
+            <button onClick={() => goTab('Polymarket')} style={{ fontSize: 13, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer' }}>
               View all 1,500+ markets →
             </button>
           </div>
@@ -314,33 +314,33 @@ export default function Home() {
               {[1,2,3,4,5,6].map(i => <div key={i} style={{ ...card, height: 120, animation: 'pulse 1.5s infinite' }} />)}
             </div>
           ) : markets.length === 0 ? (
-            <div style={{ ...card, textAlign: 'center', color: '#475569', padding: 32 }}>Could not load markets</div>
+            <div style={{ ...card, textAlign: 'center', color: '#6B6B8A', padding: 32 }}>Could not load markets</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
               {markets.map((m, i) => {
                 const pct = m.yes ?? 50;
-                const fill = pct > 60 ? '#22c55e' : pct > 40 ? '#f59e0b' : '#ef4444';
+                const fill = pct > 60 ? '#00E5B4' : pct > 40 ? '#f59e0b' : '#FF4560';
                 return (
                   <div key={`${m.id}-${i}`} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s ease', cursor: 'default' }}
                     onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
                     onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 20, background: '#1e2a4a', color: '#94A3B8' }}>{m.cat || 'Market'}</span>
-                      <span style={{ fontSize: 11, color: '#475569' }}>Vol {m.volume >= 1e6 ? '$'+(m.volume/1e6).toFixed(1)+'M' : m.volume >= 1e3 ? '$'+(m.volume/1e3).toFixed(0)+'k' : '$'+(m.volume||0).toFixed(0)}</span>
+                      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '3px 8px', borderRadius: 20, background: '#1E1E2E', color: '#6B6B8A' }}>{m.cat || 'Market'}</span>
+                      <span style={{ fontSize: 11, color: '#6B6B8A' }}>Vol {m.volume >= 1e6 ? '$'+(m.volume/1e6).toFixed(1)+'M' : m.volume >= 1e3 ? '$'+(m.volume/1e3).toFixed(0)+'k' : '$'+(m.volume||0).toFixed(0)}</span>
                     </div>
-                    <p style={{ fontSize: 13, fontWeight: 500, color: '#F5F5FA', margin: 0, lineHeight: 1.4, flex: 1 }}>{m.title}</p>
+                    <p style={{ fontSize: 13, fontWeight: 500, color: '#F0F0FF', margin: 0, lineHeight: 1.4, flex: 1 }}>{m.title}</p>
                     <div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                        <span style={{ fontSize: 11, color: '#64748b' }}>YES</span>
+                        <span style={{ fontSize: 11, color: '#6B6B8A' }}>YES</span>
                         <span style={{ fontSize: 22, fontWeight: 900, color: fill }}>{pct}%</span>
-                        <span style={{ fontSize: 11, color: '#64748b' }}>NO {m.no ?? 100 - pct}%</span>
+                        <span style={{ fontSize: 11, color: '#6B6B8A' }}>NO {m.no ?? 100 - pct}%</span>
                       </div>
-                      <div style={{ height: 6, borderRadius: 4, background: '#1e2a4a', overflow: 'hidden' }}>
+                      <div style={{ height: 6, borderRadius: 4, background: '#1E1E2E', overflow: 'hidden' }}>
                         <div style={{ height: '100%', borderRadius: 4, background: fill, width: pct + '%' }} />
                       </div>
                     </div>
                     <button onClick={() => { sessionStorage.setItem('ai-prefill-topic', m.title); sessionStorage.setItem('ai-prefill-type', 'polymarket'); goTab('AI Research'); }}
-                      style={{ background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#60a5fa', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
+                      style={{ background: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#60a5fa', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,99,235,0.2)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(37,99,235,0.12)'}>
                       Analyze ↗
@@ -355,7 +355,7 @@ export default function Home() {
         {/* ── MARKET OVERVIEW ── */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Market Overview</h2>
+            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Market Overview</h2>
           </div>
           <TradingViewMarketOverview />
         </section>
@@ -363,15 +363,15 @@ export default function Home() {
         {/* ── TODAY'S GAMES ── */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Today's games</h2>
+            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Today's games</h2>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {SPORTS.map(s => (
                 <button key={s} onClick={() => setSport(s)}
                   style={{
-                    fontSize: 12, fontWeight: 600, padding: '5px 12px', borderRadius: 20, cursor: 'pointer', transition: 'all 0.15s',
-                    background: sport === s ? (SPORT_COLORS[s] || '#2563EB') : 'transparent',
-                    color: sport === s ? '#fff' : '#94A3B8',
-                    border: sport === s ? `1px solid ${SPORT_COLORS[s] || '#2563EB'}` : '1px solid #1e2a4a',
+                    fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 20, cursor: 'pointer', transition: 'all 0.15s',
+                    background: sport === s ? (SPORT_COLORS[s] || '#6C63FF') : 'transparent',
+                    color: sport === s ? '#fff' : '#6B6B8A',
+                    border: sport === s ? `1px solid ${SPORT_COLORS[s] || '#6C63FF'}` : '1px solid #1E1E2E',
                   }}>
                   {s}
                 </button>
@@ -384,7 +384,7 @@ export default function Home() {
               {[1,2,3,4].map(i => <div key={i} style={{ ...card, height: 90, animation: 'pulse 1.5s infinite' }} />)}
             </div>
           ) : games.length === 0 ? (
-            <div style={{ ...card, textAlign: 'center', color: '#475569', padding: 28 }}>
+            <div style={{ ...card, textAlign: 'center', color: '#6B6B8A', padding: 28 }}>
               No {sport} games scheduled today
             </div>
           ) : (
@@ -394,27 +394,27 @@ export default function Home() {
                   onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
                   onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: SPORT_COLORS[sport] || '#94A3B8', letterSpacing: '0.05em' }}>{sport}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', color: SPORT_COLORS[sport] || '#6B6B8A', letterSpacing: '0.05em' }}>{sport}</span>
                     {g.status?.state === 'in' && (
-                      <span style={{ fontSize: 10, fontWeight: 700, color: '#ef4444', animation: 'pulse 1.5s infinite' }}>LIVE</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: '#FF4560', animation: 'pulse 1.5s infinite' }}>LIVE</span>
                     )}
                     {g.status?.completed && (
-                      <span style={{ fontSize: 10, color: '#64748b' }}>Final</span>
+                      <span style={{ fontSize: 10, color: '#6B6B8A' }}>Final</span>
                     )}
                   </div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA', lineHeight: 1.4 }}>
-                    {g.away?.name || '—'} <span style={{ color: '#64748b' }}>@</span> {g.home?.name || '—'}
+                  <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', lineHeight: 1.4 }}>
+                    {g.away?.name || '—'} <span style={{ color: '#6B6B8A' }}>@</span> {g.home?.name || '—'}
                   </div>
                   {(g.away?.score != null || g.home?.score != null) ? (
-                    <div style={{ fontSize: 18, fontWeight: 700, color: '#F5F5FA' }}>
+                    <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>
                       {g.away?.score ?? 0} – {g.home?.score ?? 0}
                     </div>
                   ) : (
-                    <div style={{ fontSize: 12, color: '#64748b' }}>{g.status?.detail || fmtDate(g.date)}</div>
+                    <div style={{ fontSize: 12, color: '#6B6B8A' }}>{g.status?.detail || fmtDate(g.date)}</div>
                   )}
                   {!g.status?.completed && (
                     <button onClick={() => { sessionStorage.setItem('bet-prefill-sport', sport); sessionStorage.setItem('bet-prefill-match', `${g.away?.name} @ ${g.home?.name}`); goTab('Sports Betting'); }}
-                      style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '5px 10px', fontSize: 11, color: '#f59e0b', cursor: 'pointer', fontWeight: 600, textAlign: 'center' }}
+                      style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 8, padding: '5px 10px', fontSize: 11, color: '#f59e0b', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(245,158,11,0.2)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(245,158,11,0.12)'}>
                       Log bet ↗
@@ -429,15 +429,15 @@ export default function Home() {
         {/* ── SHARPR SCORE ── */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Your Sharpr Score</h2>
+            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Your Sharpr Score</h2>
           </div>
           {(() => {
             const allSettled = [...trades.filter(t => t.status !== 'open'), ...bets.filter(b => b.result !== 'pending')];
             if (allSettled.length === 0) {
               return (
                 <div style={{ ...card, textAlign: 'center', padding: 32 }}>
-                  <div style={{ fontSize: 48, fontWeight: 900, color: '#1e2a4a', marginBottom: 8 }}>--</div>
-                  <div style={{ fontSize: 13, color: '#475569' }}>Log trades and bets to calculate your score</div>
+                  <div style={{ fontSize: 48, fontWeight: 900, color: '#1E1E2E', marginBottom: 8 }}>--</div>
+                  <div style={{ fontSize: 13, color: '#6B6B8A' }}>Log trades and bets to calculate your score</div>
                 </div>
               );
             }
@@ -454,20 +454,20 @@ export default function Home() {
             // Discipline component (30 pts) - based on consistency
             const discPts = Math.min(30, Math.round(Math.min(totalSettled, 20) / 20 * 30));
             const score = Math.max(0, Math.min(100, wrPts + roiPts + discPts));
-            const scoreColor = score >= 71 ? '#22c55e' : score >= 41 ? '#f59e0b' : '#ef4444';
+            const scoreColor = score >= 71 ? '#00E5B4' : score >= 41 ? '#f59e0b' : '#FF4560';
             const scoreLabel = score >= 85 ? 'Elite' : score >= 71 ? 'Sharp money' : score >= 41 ? 'Finding your edge' : 'Keep grinding';
             return (
               <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 24 }}>
                 <div style={{ textAlign: 'center', minWidth: 100 }}>
                   <div style={{ fontSize: 48, fontWeight: 900, color: scoreColor, lineHeight: 1 }}>{score}</div>
-                  <div style={{ fontSize: 11, color: '#475569', marginTop: 6 }}>/ 100</div>
+                  <div style={{ fontSize: 11, color: '#6B6B8A', marginTop: 6 }}>/ 100</div>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F5FA', marginBottom: 6 }}>{scoreLabel}</div>
-                  <div style={{ height: 8, borderRadius: 4, background: '#1e2a4a', overflow: 'hidden', marginBottom: 10 }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 6 }}>{scoreLabel}</div>
+                  <div style={{ height: 8, borderRadius: 4, background: '#1E1E2E', overflow: 'hidden', marginBottom: 10 }}>
                     <div style={{ height: '100%', borderRadius: 4, background: scoreColor, width: score + '%', transition: 'width 0.8s ease' }} />
                   </div>
-                  <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#475569' }}>
+                  <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#6B6B8A' }}>
                     <span>Win rate: {wrPts}/40</span>
                     <span>ROI: {roiPts}/30</span>
                     <span>Discipline: {discPts}/30</span>
@@ -484,33 +484,33 @@ export default function Home() {
           {/* Trades summary */}
           <div style={card}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Day Trading</h3>
-              <button onClick={() => goTab('Day Trading')} style={{ fontSize: 12, color: '#2563EB', background: 'none', border: 'none', cursor: 'pointer' }}>Log a trade →</button>
+              <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Day Trading</h3>
+              <button onClick={() => goTab('Day Trading')} style={{ fontSize: 12, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer' }}>Log a trade →</button>
             </div>
             <div style={{ display: 'flex', gap: 20, marginBottom: 16 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Month P&L</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: pnlColor(monthPnl) }}>{fmtPnl(monthPnl)}</div>
+                <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Month P&L</div>
+                <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: pnlColor(monthPnl) }}>{fmtPnl(monthPnl)}</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Win rate</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: '#F5F5FA' }}>{tradeWR}%</div>
+                <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Win rate</div>
+                <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>{tradeWR}%</div>
               </div>
             </div>
             {tradesLoading ? (
-              <div style={{ height: 60, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
+              <div style={{ height: 60, borderRadius: 8, background: '#1E1E2E', animation: 'pulse 1.5s infinite' }} />
             ) : last3Trades.length === 0 ? (
-              <div style={{ fontSize: 13, color: '#475569', textAlign: 'center', padding: '16px 0' }}>No trades yet — log your first</div>
+              <div style={{ fontSize: 13, color: '#6B6B8A', textAlign: 'center', padding: '16px 0' }}>No trades yet — log your first</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {last3Trades.map((t, i) => (
-                  <div key={t.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: '#0a0f1e' }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: '#F5F5FA', minWidth: 60 }}>{t.ticker}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 12, background: t.direction === 'LONG' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: t.direction === 'LONG' ? '#22c55e' : '#ef4444' }}>
+                  <div key={t.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: '#111118' }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', minWidth: 60 }}>{t.ticker}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 7px', borderRadius: 12, background: t.direction === 'LONG' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: t.direction === 'LONG' ? '#00E5B4' : '#FF4560' }}>
                       {t.direction}
                     </span>
-                    <span style={{ fontSize: 13, fontWeight: 600, marginLeft: 'auto', color: pnlColor(t.pnl) }}>
-                      {t.status === 'open' ? <span style={{ color: '#64748b' }}>Open</span> : fmtPnl(t.pnl)}
+                    <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', marginLeft: 'auto', color: pnlColor(t.pnl) }}>
+                      {t.status === 'open' ? <span style={{ color: '#6B6B8A' }}>Open</span> : fmtPnl(t.pnl)}
                     </span>
                   </div>
                 ))}
@@ -521,33 +521,33 @@ export default function Home() {
           {/* Bets summary */}
           <div style={card}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>Sports Betting</h3>
-              <button onClick={() => goTab('Sports Betting')} style={{ fontSize: 12, color: '#2563EB', background: 'none', border: 'none', cursor: 'pointer' }}>Log a bet →</button>
+              <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Sports Betting</h3>
+              <button onClick={() => goTab('Sports Betting')} style={{ fontSize: 12, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer' }}>Log a bet →</button>
             </div>
             <div style={{ display: 'flex', gap: 20, marginBottom: 16 }}>
               <div>
-                <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Month units</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: pnlColor(betMonthUnits) }}>{betMonthUnits >= 0 ? '+' : ''}{betMonthUnits.toFixed(2)}u</div>
+                <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Month units</div>
+                <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: pnlColor(betMonthUnits) }}>{betMonthUnits >= 0 ? '+' : ''}{betMonthUnits.toFixed(2)}u</div>
               </div>
               <div>
-                <div style={{ fontSize: 11, color: '#64748b', marginBottom: 4 }}>Win rate</div>
-                <div style={{ fontSize: 20, fontWeight: 700, color: '#F5F5FA' }}>{betWR}%</div>
+                <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Win rate</div>
+                <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>{betWR}%</div>
               </div>
             </div>
             {betsLoading ? (
-              <div style={{ height: 60, borderRadius: 8, background: '#1e2a4a', animation: 'pulse 1.5s infinite' }} />
+              <div style={{ height: 60, borderRadius: 8, background: '#1E1E2E', animation: 'pulse 1.5s infinite' }} />
             ) : last3Bets.length === 0 ? (
-              <div style={{ fontSize: 13, color: '#475569', textAlign: 'center', padding: '16px 0' }}>No bets yet — log your first</div>
+              <div style={{ fontSize: 13, color: '#6B6B8A', textAlign: 'center', padding: '16px 0' }}>No bets yet — log your first</div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {last3Bets.map((b, i) => {
-                  const resultColor = b.result === 'win' ? '#22c55e' : b.result === 'loss' ? '#ef4444' : '#f59e0b';
+                  const resultColor = b.result === 'win' ? '#00E5B4' : b.result === 'loss' ? '#FF4560' : '#f59e0b';
                   const resultBg    = b.result === 'win' ? 'rgba(34,197,94,0.12)' : b.result === 'loss' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)';
                   return (
-                    <div key={b.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: '#0a0f1e' }}>
-                      <span style={{ fontSize: 12, color: '#F5F5FA', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.match}</span>
-                      <span style={{ fontSize: 11, color: '#64748b', flexShrink: 0 }}>{b.odds > 0 ? '+' : ''}{b.odds}</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 12, background: resultBg, color: resultColor, flexShrink: 0 }}>
+                    <div key={b.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: '#111118' }}>
+                      <span style={{ fontSize: 12, color: '#F0F0FF', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.match}</span>
+                      <span style={{ fontSize: 11, color: '#6B6B8A', flexShrink: 0 }}>{b.odds > 0 ? '+' : ''}{b.odds}</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 7px', borderRadius: 12, background: resultBg, color: resultColor, flexShrink: 0 }}>
                         {b.result}
                       </span>
                     </div>
@@ -561,8 +561,8 @@ export default function Home() {
         {/* ── NEWS PREVIEW ── */}
         <section>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>Economic calendar</h2>
-            <button onClick={() => goTab('News')} style={{ fontSize: 13, color: '#2563EB', background: 'none', border: 'none', cursor: 'pointer' }}>Full news feed →</button>
+            <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Economic calendar</h2>
+            <button onClick={() => goTab('News')} style={{ fontSize: 13, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer' }}>Full news feed →</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
             {econEvents.length === 0 ? (
@@ -573,27 +573,27 @@ export default function Home() {
               ].map((item, i) => (
                 <div key={i} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 20, background: '#1e2a4a', color: '#94A3B8' }}>{item.cat}</span>
-                    <span style={{ fontSize: 11, color: '#475569' }}>{item.time}</span>
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 20, background: '#1E1E2E', color: '#6B6B8A' }}>{item.cat}</span>
+                    <span style={{ fontSize: 11, color: '#6B6B8A' }}>{item.time}</span>
                   </div>
                   <p style={{ fontSize: 13, color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>{item.headline}</p>
                 </div>
               ))
             ) : (
               econEvents.map((e, i) => {
-                const impactColor = e.impact === 'High' ? '#ef4444' : e.impact === 'Medium' ? '#f59e0b' : '#64748b';
+                const impactColor = e.impact === 'High' ? '#FF4560' : e.impact === 'Medium' ? '#f59e0b' : '#6B6B8A';
                 return (
                   <div key={i} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 20, background: '#1e2a4a', color: '#94A3B8' }}>
+                      <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '2px 8px', borderRadius: 20, background: '#1E1E2E', color: '#6B6B8A' }}>
                         {e.currency} · {e.impact}
                       </span>
-                      <span style={{ fontSize: 11, color: '#475569' }}>{e.time || e.date}</span>
+                      <span style={{ fontSize: 11, color: '#6B6B8A' }}>{e.time || e.date}</span>
                     </div>
                     <p style={{ fontSize: 13, color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>{e.title}</p>
-                    <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#64748b' }}>
-                      {e.forecast !== '—' && <span>Forecast <strong style={{ color: '#94A3B8' }}>{e.forecast}</strong></span>}
-                      {e.previous !== '—' && <span>Prev <strong style={{ color: '#94A3B8' }}>{e.previous}</strong></span>}
+                    <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#6B6B8A' }}>
+                      {e.forecast !== '—' && <span>Forecast <strong style={{ color: '#6B6B8A' }}>{e.forecast}</strong></span>}
+                      {e.previous !== '—' && <span>Prev <strong style={{ color: '#6B6B8A' }}>{e.previous}</strong></span>}
                       {e.actual && e.actual !== '—' && <span>Actual <strong style={{ color: impactColor }}>{e.actual}</strong></span>}
                     </div>
                   </div>
@@ -605,19 +605,19 @@ export default function Home() {
 
         {/* ── QUICK ACTIONS ── */}
         <section>
-          <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Quick actions</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 14 }}>Quick actions</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
             {ACTIONS.map(({ label, icon, color, tab }) => (
               <button key={label} onClick={() => goTab(tab)}
-                style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', border: '1px solid #1e2a4a', textAlign: 'left', transition: 'border-color 0.15s' }}
+                style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', border: '1px solid #1E1E2E', textAlign: 'left', transition: 'border-color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = color}
-                onMouseLeave={e => e.currentTarget.style.borderColor = '#1e2a4a'}>
+                onMouseLeave={e => e.currentTarget.style.borderColor = '#1E1E2E'}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, background: color + '20', flexShrink: 0 }}>
                   {icon}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#F5F5FA' }}>{label}</div>
-                  <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>Open in dashboard</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{label}</div>
+                  <div style={{ fontSize: 11, color: '#6B6B8A', marginTop: 2 }}>Open in dashboard</div>
                 </div>
               </button>
             ))}
@@ -627,7 +627,7 @@ export default function Home() {
       </div>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid #1e2a4a', padding: '20px 24px', marginTop: 20 }}>
+      <footer style={{ borderTop: '1px solid #1E1E2E', padding: '20px 24px', marginTop: 20 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <Logo size="sm" />
           <span style={{ fontSize: 12, color: '#334155' }}>© {new Date().getFullYear()} Sharpr. Not affiliated with Polymarket, ESPN, or any sportsbook.</span>

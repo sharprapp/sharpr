@@ -8,24 +8,24 @@ import { requestPermission, subscribeToPush, unsubscribeFromPush } from '../lib/
 import { exportBetsCSV, exportTradesCSV, exportBetsPDF, exportTradesPDF } from '../lib/export';
 
 const inp = 'outline-none transition-colors';
-const inpStyle = { background: '#0a0f1e', border: '1px solid #1e2a4a', color: '#F5F5FA', borderRadius: '12px', padding: '10px 14px', fontSize: 14, width: '100%' };
-const inpFocus = e => { e.target.style.borderColor = '#2563EB'; };
-const inpBlur  = e => { e.target.style.borderColor = '#1e2a4a'; };
+const inpStyle = { background: '#111118', border: '1px solid #1E1E2E', color: '#F0F0FF', borderRadius: '12px', padding: '10px 14px', fontSize: 14, width: '100%' };
+const inpFocus = e => { e.target.style.borderColor = '#6C63FF'; };
+const inpBlur  = e => { e.target.style.borderColor = '#1E1E2E'; };
 
-const CARD = { background: '#0f1729', border: '1px solid #1e2a4a', borderRadius: '16px', padding: '24px' };
-const LABEL = { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', marginBottom: 6, display: 'block' };
+const CARD = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: '16px', padding: '24px' };
+const LABEL = { fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 6, display: 'block' };
 
 function Toggle({ value, onChange, label, sub }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
       <div>
-        <div style={{ fontSize: 14, color: '#F5F5FA', fontWeight: 500 }}>{label}</div>
-        {sub && <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{sub}</div>}
+        <div style={{ fontSize: 14, color: '#F0F0FF', fontWeight: 500 }}>{label}</div>
+        {sub && <div style={{ fontSize: 12, color: '#6B6B8A', marginTop: 2 }}>{sub}</div>}
       </div>
       <button onClick={() => onChange(!value)}
         style={{
           width: 42, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: value ? '#2563EB' : '#1e2a4a', position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+          background: value ? '#6C63FF' : '#1E1E2E', position: 'relative', transition: 'background 0.2s', flexShrink: 0,
         }}>
         <span style={{
           position: 'absolute', top: 3, left: value ? 21 : 3, width: 18, height: 18,
@@ -94,32 +94,32 @@ export default function Settings() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', color: '#F5F5FA' }}>
-      <nav style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 24px' }}>
+    <div style={{ minHeight: '100vh', background: '#080810', color: '#F0F0FF' }}>
+      <nav style={{ borderBottom: '1px solid #1E1E2E', padding: '16px 24px' }}>
         <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo size="md" />
-          <Link to="/dashboard" style={{ fontSize: 13, color: '#4f8ef7', textDecoration: 'none' }}>Back to Dashboard</Link>
+          <Link to="/dashboard" style={{ fontSize: 13, color: '#6C63FF', textDecoration: 'none' }}>Back to Dashboard</Link>
         </div>
       </nav>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         {/* Banners */}
         {upgraded && (
-          <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#22c55e', fontWeight: 500 }}>
+          <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#00E5B4', fontWeight: 500 }}>
             You're now on Pro. Welcome!
           </div>
         )}
         {canceled && (
-          <div style={{ background: 'rgba(100,116,139,0.1)', border: '1px solid #1e2a4a', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#94A3B8' }}>
+          <div style={{ background: 'rgba(100,116,139,0.1)', border: '1px solid #1E1E2E', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#6B6B8A' }}>
             Checkout canceled — you haven't been charged.
           </div>
         )}
 
-        <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Settings</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', margin: 0 }}>Settings</h1>
 
         {/* ── Profile ── */}
         <div style={CARD}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Account</div>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, color: '#F0F0FF' }}>Account</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={LABEL}>Display name</label>
@@ -135,33 +135,33 @@ export default function Settings() {
                     setNameSaved(true); setTimeout(() => setNameSaved(false), 3000);
                   } catch (e) { setNameError(e.message || 'Could not save display name'); }
                   setNameSaving(false);
-                }} style={{ background: '#2563EB', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', opacity: nameSaving ? 0.5 : 1 }}>
+                }} style={{ background: '#6C63FF', color: '#fff', border: 'none', borderRadius: 10, padding: '8px 16px', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', whiteSpace: 'nowrap', opacity: nameSaving ? 0.5 : 1 }}>
                   {nameSaving ? 'Saving…' : 'Save'}
                 </button>
               </div>
-              {nameError && <div style={{ fontSize: 12, color: '#ef4444', marginTop: 6 }}>{nameError}</div>}
-              {nameSaved && <div style={{ fontSize: 12, color: '#22c55e', marginTop: 6 }}>Display name saved</div>}
+              {nameError && <div style={{ fontSize: 12, color: '#FF4560', marginTop: 6 }}>{nameError}</div>}
+              {nameSaved && <div style={{ fontSize: 12, color: '#00E5B4', marginTop: 6 }}>Display name saved</div>}
             </div>
             <div>
               <label style={LABEL}>Email</label>
-              <div style={{ ...inpStyle, background: '#0a0f1e', color: '#64748b' }}>{user?.email}</div>
+              <div style={{ ...inpStyle, background: '#111118', color: '#6B6B8A' }}>{user?.email}</div>
             </div>
             <div>
               <label style={LABEL}>Password</label>
               {resetSent ? (
-                <div style={{ fontSize: 13, color: '#22c55e' }}>Password reset email sent — check your inbox</div>
+                <div style={{ fontSize: 13, color: '#00E5B4' }}>Password reset email sent — check your inbox</div>
               ) : (
                 <button onClick={async () => {
                   await supabase.auth.resetPasswordForEmail(user?.email, { redirectTo: window.location.origin + '/settings' });
                   setResetSent(true);
-                }} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#94A3B8', cursor: 'pointer' }}>
+                }} style={{ background: '#1A1A24', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#6B6B8A', cursor: 'pointer' }}>
                   Change password
                 </button>
               )}
             </div>
-            <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14 }}>
+            <div style={{ borderTop: '1px solid #1E1E2E', paddingTop: 14 }}>
               <button onClick={async () => { await signOut(); navigate('/login'); }}
-                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#ef4444', cursor: 'pointer', fontWeight: 600 }}>
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#FF4560', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em' }}>
                 Sign out
               </button>
             </div>
@@ -170,7 +170,7 @@ export default function Settings() {
 
         {/* ── Preferences ── */}
         <div style={CARD}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Preferences</div>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, color: '#F0F0FF' }}>Preferences</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <label style={LABEL}>Default sport</label>
@@ -197,7 +197,7 @@ export default function Settings() {
 
         {/* ── Privacy ── */}
         <div style={CARD}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Journal Privacy</div>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, color: '#F0F0FF' }}>Journal Privacy</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Toggle value={journalPublic} onChange={setJournalPublic}
               label="Make journal public"
@@ -207,7 +207,7 @@ export default function Settings() {
 
         {/* ── Notifications ── */}
         <div style={CARD}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Notifications</div>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, color: '#F0F0FF' }}>Notifications</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Toggle value={alertsOn} onChange={setAlertsOn}
               label="In-app alerts"
@@ -236,15 +236,15 @@ export default function Settings() {
         {/* ── Subscription ── */}
         <div style={CARD}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#F5F5FA' }}>Subscription</div>
-            <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 20, background: tier === 'pro' ? 'rgba(37,99,235,0.25)' : 'rgba(245,158,11,0.12)', border: `1px solid ${tier === 'pro' ? 'rgba(37,99,235,0.4)' : 'rgba(245,158,11,0.3)'}`, color: tier === 'pro' ? '#93c5fd' : '#fbbf24' }}>
+            <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>Subscription</div>
+            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', padding: '4px 12px', borderRadius: 20, background: tier === 'pro' ? 'rgba(37,99,235,0.25)' : 'rgba(245,158,11,0.12)', border: `1px solid ${tier === 'pro' ? 'rgba(37,99,235,0.4)' : 'rgba(245,158,11,0.3)'}`, color: tier === 'pro' ? '#93c5fd' : '#fbbf24' }}>
               {tier === 'pro' ? 'Pro' : 'Free'}
             </span>
           </div>
 
           {tier !== 'pro' ? (
             <div>
-              <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 14, lineHeight: 1.6 }}>
+              <div style={{ fontSize: 13, color: '#6B6B8A', marginBottom: 14, lineHeight: 1.6 }}>
                 Unlock unlimited AI queries, live odds, and unlimited journal entries.
               </div>
               <button onClick={handleUpgrade} disabled={loading}
@@ -255,7 +255,7 @@ export default function Settings() {
           ) : (
             <div>
               {subStatus?.current_period_end && (
-                <div style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>
+                <div style={{ fontSize: 13, color: '#6B6B8A', marginBottom: 14 }}>
                   Renews {new Date(subStatus.current_period_end).toLocaleDateString()}
                 </div>
               )}
@@ -267,12 +267,12 @@ export default function Settings() {
           )}
 
           {/* Plan limits table */}
-          <div style={{ marginTop: 20, borderRadius: 12, overflow: 'hidden', border: '1px solid #1e2a4a' }}>
+          <div style={{ marginTop: 20, borderRadius: 12, overflow: 'hidden', border: '1px solid #1E1E2E' }}>
             <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#0a0f1e' }}>
+                <tr style={{ background: '#111118' }}>
                   {['Feature','Free','Pro'].map(h => (
-                    <th key={h} style={{ padding: '10px 14px', textAlign: h === 'Feature' ? 'left' : 'center', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#64748b', borderBottom: '1px solid #1e2a4a' }}>{h}</th>
+                    <th key={h} style={{ padding: '10px 14px', textAlign: h === 'Feature' ? 'left' : 'center', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', borderBottom: '1px solid #1E1E2E' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -286,9 +286,9 @@ export default function Settings() {
                   ['Leaderboard', '—', '✓'],
                 ].map(([f, fr, pr]) => (
                   <tr key={f} style={{ borderBottom: '1px solid rgba(30,42,74,0.6)' }}>
-                    <td style={{ padding: '10px 14px', color: '#94A3B8' }}>{f}</td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#475569' }}>{fr}</td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#22c55e', fontWeight: 600 }}>{pr}</td>
+                    <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{f}</td>
+                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#6B6B8A' }}>{fr}</td>
+                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em' }}>{pr}</td>
                   </tr>
                 ))}
               </tbody>
@@ -298,28 +298,28 @@ export default function Settings() {
 
         {/* ── Data Export ── */}
         <div style={CARD}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Data Export</div>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, color: '#F0F0FF' }}>Data Export</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div><div style={{ fontSize: 14, color: '#F5F5FA', fontWeight: 500 }}>Betting Journal</div><div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 2 }}>All logged bets</div></div>
+              <div><div style={{ fontSize: 14, color: '#F0F0FF', fontWeight: 500 }}>Betting Journal</div><div style={{ fontSize: 12, color: '#4E4E63', marginTop: 2 }}>All logged bets</div></div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={async () => { try { const { data } = await api.get('/api/bets'); exportBetsCSV(data); } catch { alert('Could not export'); } }}
-                  style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#94A3B8', cursor: 'pointer' }}>CSV</button>
+                  style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '6px 14px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#6B6B8A', cursor: 'pointer' }}>CSV</button>
                 {(tier === 'pro' || tier === 'elite') && (
                   <button onClick={async () => { try { const { data } = await api.get('/api/bets'); exportBetsPDF(data); } catch { alert('Could not export'); } }}
-                    style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>PDF</button>
+                    style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '6px 14px', borderRadius: 8, background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>PDF</button>
                 )}
               </div>
             </div>
-            <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
+            <div style={{ height: 1, background: '#1E1E2E' }} />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div><div style={{ fontSize: 14, color: '#F5F5FA', fontWeight: 500 }}>Trading Journal</div><div style={{ fontSize: 12, color: '#4a5a7a', marginTop: 2 }}>All logged trades</div></div>
+              <div><div style={{ fontSize: 14, color: '#F0F0FF', fontWeight: 500 }}>Trading Journal</div><div style={{ fontSize: 12, color: '#4E4E63', marginTop: 2 }}>All logged trades</div></div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={async () => { try { const { data } = await api.get('/api/trades'); exportTradesCSV(data); } catch { alert('Could not export'); } }}
-                  style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#94A3B8', cursor: 'pointer' }}>CSV</button>
+                  style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '6px 14px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#6B6B8A', cursor: 'pointer' }}>CSV</button>
                 {(tier === 'pro' || tier === 'elite') && (
                   <button onClick={async () => { try { const { data } = await api.get('/api/trades'); exportTradesPDF(data); } catch { alert('Could not export'); } }}
-                    style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', borderRadius: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', color: '#7aaff8', cursor: 'pointer' }}>PDF</button>
+                    style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '6px 14px', borderRadius: 8, background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>PDF</button>
                 )}
               </div>
             </div>
@@ -328,12 +328,12 @@ export default function Settings() {
 
         {/* ── Legal ── */}
         <div style={CARD}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 16, color: '#F5F5FA' }}>Legal</div>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16, color: '#F0F0FF' }}>Legal</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <Link to="/terms" style={{ fontSize: 14, color: '#4f8ef7', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link to="/terms" style={{ fontSize: 14, color: '#6C63FF', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>Terms of Service</span><span style={{ color: '#2a3a5a' }}>→</span>
             </Link>
-            <Link to="/privacy" style={{ fontSize: 14, color: '#4f8ef7', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link to="/privacy" style={{ fontSize: 14, color: '#6C63FF', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>Privacy Policy</span><span style={{ color: '#2a3a5a' }}>→</span>
             </Link>
           </div>
@@ -341,18 +341,18 @@ export default function Settings() {
 
         {/* ── Danger zone ── */}
         <div style={{ ...CARD, border: '1px solid rgba(239,68,68,0.2)' }}>
-          <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 4, color: '#ef4444' }}>Danger zone</div>
-          <div style={{ fontSize: 13, color: '#64748b', marginBottom: 14 }}>Permanently delete your account and all data. This cannot be undone.</div>
+          <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4, color: '#FF4560' }}>Danger zone</div>
+          <div style={{ fontSize: 13, color: '#6B6B8A', marginBottom: 14 }}>Permanently delete your account and all data. This cannot be undone.</div>
           <button
             onClick={() => { if (window.confirm('Are you sure? This cannot be undone.')) alert('Please email support@sharprapp.com to request account deletion. We will process your request within 30 days.'); }}
-            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#ef4444', cursor: 'pointer' }}>
+            style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '8px 16px', fontSize: 13, color: '#FF4560', cursor: 'pointer' }}>
             Delete account
           </button>
         </div>
 
         {/* Save button */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          {saved && <span style={{ fontSize: 13, color: '#22c55e', alignSelf: 'center' }}>Saved!</span>}
+          {saved && <span style={{ fontSize: 13, color: '#00E5B4', alignSelf: 'center' }}>Saved!</span>}
           <button onClick={savePrefs} className="glass-btn-blue" style={{ padding: '10px 28px', fontSize: 14, borderRadius: '12px' }}>
             Save preferences
           </button>

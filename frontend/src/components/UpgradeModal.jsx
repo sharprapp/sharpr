@@ -25,20 +25,20 @@ export default function UpgradeModal({ onClose }) {
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: '#070712', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 32, position: 'relative' }}>
-        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#6a7a9a', cursor: 'pointer', fontSize: 16 }}>✕</button>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 480, background: '#070712', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 20, padding: 32, position: 'relative' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(108,99,255,0.2)', color: '#6a7a9a', cursor: 'pointer', fontSize: 16 }}>✕</button>
 
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{ fontSize: 28, fontWeight: 900, color: '#f0f4ff', marginBottom: 6 }}>Find Your Edge</div>
-          <div style={{ fontSize: 14, color: '#4a5a7a' }}>Upgrade to Pro for the full experience</div>
+          <div style={{ fontSize: 14, color: '#4E4E63' }}>Upgrade to Pro for the full experience</div>
         </div>
 
-        <div style={{ background: 'rgba(79,142,247,0.05)', border: '2px solid rgba(79,142,247,0.3)', borderRadius: 16, padding: 24, position: 'relative' }}>
-          <div style={{ position: 'absolute', top: -10, right: 16, fontSize: 10, fontWeight: 700, padding: '3px 12px', borderRadius: 20, background: '#f59e0b', color: '#000', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Most popular</div>
+        <div style={{ background: 'rgba(108,99,255,0.05)', border: '2px solid rgba(108,99,255,0.3)', borderRadius: 16, padding: 24, position: 'relative' }}>
+          <div style={{ position: 'absolute', top: -10, right: 16, fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '3px 12px', borderRadius: 20, background: '#f59e0b', color: '#000', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Most popular</div>
 
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 20 }}>
-            <span style={{ fontSize: 48, fontWeight: 900, color: '#4f8ef7' }}>$19</span>
-            <span style={{ fontSize: 18, color: '#4a5a7a' }}>/mo</span>
+            <span style={{ fontSize: 48, fontWeight: 900, color: '#6C63FF' }}>$19</span>
+            <span style={{ fontSize: 18, color: '#4E4E63' }}>/mo</span>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
@@ -52,13 +52,13 @@ export default function UpgradeModal({ onClose }) {
               'CSV export',
             ].map(f => (
               <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#8899bb' }}>
-                <span style={{ color: '#4f8ef7', fontSize: 14 }}>✓</span> {f}
+                <span style={{ color: '#6C63FF', fontSize: 14 }}>✓</span> {f}
               </div>
             ))}
           </div>
 
           <button onClick={handleUpgrade} disabled={loading}
-            style={{ width: '100%', background: loading ? 'rgba(79,142,247,0.3)' : '#4f8ef7', border: 'none', borderRadius: 12, padding: '14px 24px', fontSize: 15, fontWeight: 700, color: 'white', cursor: loading ? 'wait' : 'pointer' }}>
+            style={{ width: '100%', background: loading ? 'rgba(108,99,255,0.3)' : '#6C63FF', border: 'none', borderRadius: 12, padding: '14px 24px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: 'white', cursor: loading ? 'wait' : 'pointer' }}>
             {loading ? 'Loading...' : 'Upgrade to Pro — $19/mo'}
           </button>
 

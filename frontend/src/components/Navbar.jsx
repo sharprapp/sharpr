@@ -52,7 +52,7 @@ export default function Navbar() {
       <Logo size="md" />
       <div className="flex items-center gap-3">
         {tier === 'pro' ? (
-          <span style={{fontSize:12, fontWeight:600, padding:'4px 12px', borderRadius:100, background:'rgba(79,142,247,0.15)', border:'1px solid rgba(79,142,247,0.3)', color:'#7aaff8'}}>Pro</span>
+          <span style={{fontSize:12, fontWeight:600, padding:'4px 12px', borderRadius:100, background:'rgba(108,99,255,0.15)', border:'1px solid rgba(108,99,255,0.3)', color:'#867fff'}}>Pro</span>
         ) : (
           <Link to="/settings" className="glass-pill" style={{color:'#fbbf24', background:'rgba(245,158,11,0.1)', borderColor:'rgba(245,158,11,0.25)', textDecoration:'none'}}>
             Free · Upgrade
@@ -61,28 +61,28 @@ export default function Navbar() {
 
         <div className="relative" ref={bellRef}>
           <button onClick={openBell}
-            style={{width:32, height:32, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', background:bellOpen?'rgba(79,142,247,0.15)':'transparent', color:'#4a5a7a', border:'1px solid transparent', cursor:'pointer', position:'relative'}}
-            onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.06)'; }}
+            style={{width:32, height:32, borderRadius:10, display:'flex', alignItems:'center', justifyContent:'center', background:bellOpen?'rgba(108,99,255,0.15)':'transparent', color:'#4E4E63', border:'1px solid transparent', cursor:'pointer', position:'relative'}}
+            onMouseEnter={e => { e.currentTarget.style.background='#1E1E2E'; }}
             onMouseLeave={e => { if (!bellOpen) e.currentTarget.style.background='transparent'; }}>
             <BellIcon />
             {unread > 0 && (
-              <span style={{position:'absolute', top:-2, right:-2, width:16, height:16, borderRadius:'50%', background:'#ef4444', color:'#fff', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center'}}>{unread > 9 ? '9+' : unread}</span>
+              <span style={{position:'absolute', top:-2, right:-2, width:16, height:16, borderRadius:'50%', background:'#FF4560', color:'#fff', fontSize:9, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center'}}>{unread > 9 ? '9+' : unread}</span>
             )}
           </button>
 
           {bellOpen && (
-            <div style={{position:'absolute', right:0, top:40, width:280, borderRadius:16, background:'#070712', border:'1px solid rgba(255,255,255,0.08)', boxShadow:'0 20px 60px rgba(0,0,0,0.6)', zIndex:50, overflow:'hidden'}}>
-              <div style={{padding:'12px 16px', borderBottom:'1px solid rgba(255,255,255,0.06)', display:'flex', alignItems:'center', justifyContent:'space-between'}}>
-                <span style={{fontSize:14, fontWeight:600, color:'#F5F5FA'}}>Alerts</span>
-                {alerts.length > 0 && <button onClick={() => setAlerts([])} style={{fontSize:12, color:'#4a5a7a', cursor:'pointer', background:'none', border:'none'}}>Clear all</button>}
+            <div style={{position:'absolute', right:0, top:40, width:280, borderRadius:16, background:'#070712', border:'1px solid rgba(108,99,255,0.2)', boxShadow:'0 20px 60px rgba(0,0,0,0.6)', zIndex:50, overflow:'hidden'}}>
+              <div style={{padding:'12px 16px', borderBottom:'1px solid #1E1E2E', display:'flex', alignItems:'center', justifyContent:'space-between'}}>
+                <span style={{fontSize:14, fontWeight:600, color:'#F0F0FF'}}>Alerts</span>
+                {alerts.length > 0 && <button onClick={() => setAlerts([])} style={{fontSize:12, color:'#4E4E63', cursor:'pointer', background:'none', border:'none'}}>Clear all</button>}
               </div>
               {alerts.length === 0 ? (
                 <div style={{padding:'32px 16px', textAlign:'center', fontSize:13, color:'#2a3a5a'}}>No alerts yet</div>
               ) : (
                 <div style={{maxHeight:280, overflowY:'auto'}}>
                   {alerts.map(a => (
-                    <div key={a.id} style={{padding:'12px 16px', borderBottom:'1px solid rgba(255,255,255,0.04)', opacity:a.read?0.6:1, display:'flex', gap:12}}>
-                      <div style={{width:6, height:6, borderRadius:'50%', background:a.read?'#1a2535':'#4f8ef7', marginTop:4, flexShrink:0}} />
+                    <div key={a.id} style={{padding:'12px 16px', borderBottom:'1px solid #1A1A24', opacity:a.read?0.6:1, display:'flex', gap:12}}>
+                      <div style={{width:6, height:6, borderRadius:'50%', background:a.read?'#1a2535':'#6C63FF', marginTop:4, flexShrink:0}} />
                       <div>
                         <p style={{fontSize:12, color:'#cbd5e1', margin:0}}>{a.text}</p>
                         <p style={{fontSize:11, color:'#2a3a5a', marginTop:2}}>{new Date(a.ts).toLocaleTimeString()}</p>
@@ -95,7 +95,7 @@ export default function Navbar() {
           )}
         </div>
 
-        <span className="hidden sm:block" style={{fontSize:13, color:'#4a5a7a', fontWeight:500}}>{firstName(user?.email)}</span>
+        <span className="hidden sm:block" style={{fontSize:13, color:'#4E4E63', fontWeight:500}}>{firstName(user?.email)}</span>
 
       </div>
     </nav>
