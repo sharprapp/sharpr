@@ -35,8 +35,8 @@ export default function SharpSignal({ userPlan }) {
   const filtered = qualitySignals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? s.confidence === 'HIGH' : true);
   const fmtOdds = n => n == null ? '--' : n > 0 ? '+' + n : '' + n;
   const timeAgo = d => { if (!d) return ''; const s = Math.floor((Date.now() - d.getTime()) / 1000); return s < 60 ? s + 's ago' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; };
-  const confStyle = c => c === 'HIGH' ? { bg: 'rgba(34,197,94,0.15)', color: '#00E5B4', border: 'rgba(34,197,94,0.3)' } : c === 'MEDIUM' ? { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' } : { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', border: 'rgba(148,163,184,0.2)' };
-  const gc = { background: '#111118', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16 };
+  const confStyle = c => c === 'HIGH' ? { bg: 'rgba(34,197,94,0.15)', color: '#0A0A0F', border: 'rgba(34,197,94,0.3)' } : c === 'MEDIUM' ? { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' } : { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', border: 'rgba(148,163,184,0.2)' };
+  const gc = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16 };
 
   return (
     <div>
@@ -59,7 +59,7 @@ export default function SharpSignal({ userPlan }) {
       {/* Stats */}
       {stats && (
         <div style={{ display: 'flex', gap: 10, margin: '16px 0' }}>
-          {[{ l: 'Total', v: stats.total, c: '#867fff' }, { l: 'Sports', v: stats.sports, c: '#00E5B4' }, { l: 'Poly', v: stats.poly, c: '#a78bfa' }, { l: 'High Conf', v: signals.filter(s => s.confidence === 'HIGH').length, c: '#fbbf24' }].map(x => (
+          {[{ l: 'Total', v: stats.total, c: '#867fff' }, { l: 'Sports', v: stats.sports, c: '#0A0A0F' }, { l: 'Poly', v: stats.poly, c: '#a78bfa' }, { l: 'High Conf', v: signals.filter(s => s.confidence === 'HIGH').length, c: '#fbbf24' }].map(x => (
             <div key={x.l} style={{ ...gc, padding: '12px 16px', flex: 1 }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: x.c }}>{x.v}</div>
               <div style={{ fontSize: 10, color: '#2a3a5a', marginTop: 2 }}>{x.l}</div>
@@ -72,7 +72,7 @@ export default function SharpSignal({ userPlan }) {
       <div style={{ ...gc, padding: 16, marginBottom: 20, background: 'rgba(108,99,255,0.04)', borderColor: 'rgba(108,99,255,0.15)' }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff', marginBottom: 8, letterSpacing: '1px', textTransform: 'uppercase' }}>How it works</div>
         <div style={{ fontSize: 12, color: '#4E4E63', lineHeight: 1.7 }}>
-          We compare Polymarket YES probabilities against implied probabilities from DraftKings, FanDuel, and BetMGM. When they diverge by &gt;5%, there may be a mispricing. <span style={{ color: '#00E5B4' }}>POLY_HIGHER</span> = Polymarket overvalues, consider sportsbook side. <span style={{ color: '#f59e0b' }}>BOOK_HIGHER</span> = sportsbooks overvalue, consider Polymarket YES.
+          We compare Polymarket YES probabilities against implied probabilities from DraftKings, FanDuel, and BetMGM. When they diverge by &gt;5%, there may be a mispricing. <span style={{ color: '#0A0A0F' }}>POLY_HIGHER</span> = Polymarket overvalues, consider sportsbook side. <span style={{ color: '#f59e0b' }}>BOOK_HIGHER</span> = sportsbooks overvalue, consider Polymarket YES.
         </div>
       </div>
 
@@ -112,7 +112,7 @@ export default function SharpSignal({ userPlan }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff' }}>{sig.sport}</span>
               <span style={{ background: cs.bg, border: `1px solid ${cs.border}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: cs.color }}>{sig.confidence}</span>
-              {sig.edge != null && <span style={{ background: Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', border: `1px solid ${Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: Math.abs(sig.edge) > 10 ? '#00E5B4' : '#fbbf24' }}>{sig.edge > 0 ? '+' : ''}{sig.edge}% EDGE</span>}
+              {sig.edge != null && <span style={{ background: Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', border: `1px solid ${Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: Math.abs(sig.edge) > 10 ? '#0A0A0F' : '#fbbf24' }}>{sig.edge > 0 ? '+' : ''}{sig.edge}% EDGE</span>}
             </div>
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f4ff', marginBottom: 4 }}>{sig.event || sig.polyMarket}</div>
             {sig.type === 'sports' && sig.polyMarket !== sig.event && <div style={{ fontSize: 11, color: '#2a3a5a', marginBottom: 8 }}>Poly: {sig.polyMarket}</div>}
@@ -120,28 +120,28 @@ export default function SharpSignal({ userPlan }) {
             {/* Stats grid */}
             {sig.type === 'sports' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
-                <div style={{ background: '#111118', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
                   <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Polymarket YES</div>
                   <div style={{ fontSize: 22, fontWeight: 900, color: '#a78bfa' }}>{sig.polyYesProb}¢</div>
                 </div>
-                <div style={{ background: '#111118', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
                   <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Book Implied</div>
                   <div style={{ fontSize: 22, fontWeight: 900, color: '#867fff' }}>{sig.bookHomeProb}%</div>
                   <div style={{ fontSize: 10, color: '#4E4E63' }}>{fmtOdds(sig.bookHomeML)} ML</div>
                 </div>
-                <div style={{ background: '#111118', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
                   <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Mispricing</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: sig.edge > 0 ? '#00E5B4' : '#f59e0b' }}>{sig.edge > 0 ? '+' : ''}{sig.edge}%</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: sig.edge > 0 ? '#0A0A0F' : '#f59e0b' }}>{sig.edge > 0 ? '+' : ''}{sig.edge}%</div>
                 </div>
               </div>
             )}
             {sig.type === 'polymarket' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                <div style={{ background: '#111118', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
                   <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>YES Price</div>
                   <div style={{ fontSize: 22, fontWeight: 900, color: '#a78bfa' }}>{sig.polyYesProb}¢</div>
                 </div>
-                <div style={{ background: '#111118', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
+                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
                   <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Volume</div>
                   <div style={{ fontSize: 18, fontWeight: 800, color: '#867fff' }}>${sig.volume >= 1e6 ? (sig.volume / 1e6).toFixed(1) + 'M' : (sig.volume / 1000).toFixed(0) + 'K'}</div>
                 </div>
@@ -153,7 +153,7 @@ export default function SharpSignal({ userPlan }) {
               <div style={{ fontSize: 12, color: '#4E4E63', fontStyle: 'italic' }}>💡 {sig.signal}</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 {sig.polyUrl && <a href={sig.polyUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#a78bfa', textDecoration: 'none' }}>View on Poly →</a>}
-                {sig.type === 'sports' && <button onClick={() => setHedgeModal(sig)} style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#00E5B4', cursor: 'pointer' }}>Hedge Calc</button>}
+                {sig.type === 'sports' && <button onClick={() => setHedgeModal(sig)} style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#0A0A0F', cursor: 'pointer' }}>Hedge Calc</button>}
               </div>
             </div>
           </div>
@@ -178,7 +178,7 @@ function HedgeModal({ signal, onClose }) {
 
   return (
     <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ background: '#070712', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 20, padding: 32, width: '100%', maxWidth: 440, position: 'relative' }}>
+      <div style={{ background: '#0A0A0F', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 20, padding: 32, width: '100%', maxWidth: 440, position: 'relative' }}>
         <div onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, cursor: 'pointer', color: '#4E4E63', fontSize: 18 }}>✕</div>
         <div style={{ fontSize: 18, fontWeight: 800, color: '#f0f4ff', marginBottom: 4 }}>Hedge Calculator</div>
         <div style={{ fontSize: 12, color: '#4E4E63', marginBottom: 24 }}>{signal.event}</div>
@@ -191,8 +191,8 @@ function HedgeModal({ signal, onClose }) {
             {[
               { l: 'Poly stake', v: '$' + stake, c: '#867fff' },
               { l: 'Hedge bet', v: '$' + result.hedgeStake, c: '#fbbf24' },
-              { l: 'Locked profit', v: '$' + result.lockedProfit, c: '#00E5B4' },
-              { l: 'ROI if YES', v: result.roiIfYes + '%', c: '#00E5B4' },
+              { l: 'Locked profit', v: '$' + result.lockedProfit, c: '#0A0A0F' },
+              { l: 'ROI if YES', v: result.roiIfYes + '%', c: '#0A0A0F' },
               { l: 'ROI if NO', v: result.roiIfNo + '%', c: '#f59e0b' },
             ].map(x => (
               <div key={x.l} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(255,255,255,0.02)', borderRadius: 8 }}>

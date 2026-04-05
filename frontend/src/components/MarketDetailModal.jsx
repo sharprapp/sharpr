@@ -7,7 +7,7 @@ import posthog from 'posthog-js';
 const CAT_COLORS = {
   Politics: { background: 'rgba(167,139,250,0.15)', color: '#c084fc' },
   Crypto: { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-  Sports: { background: 'rgba(34,197,94,0.15)', color: '#00E5B4' },
+  Sports: { background: 'rgba(34,197,94,0.15)', color: '#0A0A0F' },
   Finance: { background: 'rgba(108,99,255,0.15)', color: '#867fff' },
   Science: { background: 'rgba(20,184,166,0.15)', color: '#2dd4bf' },
   Entertainment: { background: 'rgba(244,63,94,0.15)', color: '#fb7185' },
@@ -21,7 +21,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
   const resizeTimerRef = useRef(null);
 
   const pct = m.yes ?? 50;
-  const fill = pct > 66 ? '#00E5B4' : pct > 40 ? '#f59e0b' : '#FF4560';
+  const fill = pct > 66 ? '#0A0A0F' : pct > 40 ? '#f59e0b' : '#FF4560';
   const vol = m.volume >= 1e6 ? '$' + (m.volume / 1e6).toFixed(1) + 'M' : m.volume >= 1000 ? '$' + (m.volume / 1000).toFixed(0) + 'K' : '$' + Math.round(m.volume || 0);
   const catStyle = CAT_COLORS[m.cat] || CAT_COLORS.Other;
   const isPro = userPlan === 'pro' || userPlan === 'elite';
@@ -133,7 +133,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
       }}>
         <div onClick={e => e.stopPropagation()} style={{
           position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-          background: '#070712', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+          background: '#0A0A0F', overflowY: 'auto', WebkitOverflowScrolling: 'touch',
           display: 'flex', flexDirection: 'column',
         }}>
           {/* Fixed close button */}
@@ -162,12 +162,12 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
                 <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#FF4560', opacity: 0.7 }}>{m.no ?? 100 - pct}%</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 4 }}>
-                <span style={{ fontSize: 11, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em' }}>YES</span>
+                <span style={{ fontSize: 11, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em' }}>YES</span>
                 <span style={{ fontSize: 11, color: '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>NO</span>
               </div>
               {/* Progress bar */}
               <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', marginTop: 10, display: 'flex' }}>
-                <div style={{ width: pct + '%', background: '#00E5B4', borderRadius: '4px 0 0 4px' }} />
+                <div style={{ width: pct + '%', background: '#0A0A0F', borderRadius: '4px 0 0 4px' }} />
                 <div style={{ flex: 1, background: '#FF4560', borderRadius: '0 4px 4px 0' }} />
               </div>
             </div>
@@ -179,7 +179,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
                 ['Closes', m.endDate ? new Date(m.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'],
                 ['Liquidity', m.liquidity >= 1000 ? '$' + (m.liquidity / 1000).toFixed(0) + 'K' : '$' + Math.round(m.liquidity || 0)],
               ].map(([label, value]) => (
-                <div key={label} style={{ background: '#111118', border: '1px solid #1E1E2E', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+                <div key={label} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
                   <div style={{ fontSize: 11, color: '#2a3a5a', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{label}</div>
                   <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>{value}</div>
                 </div>
@@ -189,7 +189,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
             {/* Buy YES / Buy NO buttons */}
             <div style={{ display: 'flex', gap: 8 }}>
               <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#00E5B4', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer' }}>
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '12px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#0A0A0F', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer' }}>
                 Buy YES @ {pct}c
               </a>
               <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
@@ -234,7 +234,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         width: '100%', maxWidth: 1000, maxHeight: '90vh', overflowY: 'auto',
-        background: '#070712', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 20,
+        background: '#0A0A0F', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 20,
         display: 'flex', flexDirection: 'column',
       }}>
         {/* Header */}
@@ -265,7 +265,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
               </div>
               <div style={{ fontSize: 12, color: '#2a3a5a', marginTop: 4 }}>YES probability</div>
               <div style={{ height: 8, borderRadius: 4, overflow: 'hidden', marginTop: 12, display: 'flex' }}>
-                <div style={{ width: pct + '%', background: '#00E5B4', borderRadius: '4px 0 0 4px' }} />
+                <div style={{ width: pct + '%', background: '#0A0A0F', borderRadius: '4px 0 0 4px' }} />
                 <div style={{ flex: 1, background: '#FF4560', borderRadius: '0 4px 4px 0' }} />
               </div>
             </div>
@@ -277,7 +277,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
                 ['Closes', m.endDate ? new Date(m.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'],
                 ['Liquidity', m.liquidity >= 1000 ? '$' + (m.liquidity / 1000).toFixed(0) + 'K' : '$' + Math.round(m.liquidity || 0)],
               ].map(([label, value]) => (
-                <div key={label} style={{ background: '#111118', border: '1px solid #1E1E2E', borderRadius: 12, padding: '12px 14px', textAlign: 'center' }}>
+                <div key={label} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 12, padding: '12px 14px', textAlign: 'center' }}>
                   <div style={{ fontSize: 10, color: '#2a3a5a', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
                   <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>{value}</div>
                 </div>
@@ -287,7 +287,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: 8 }}>
               <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}
-                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#00E5B4', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer' }}>
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 16px', borderRadius: 10, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', color: '#0A0A0F', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer' }}>
                 Buy YES @ {pct}c
               </a>
               <a href={m.url || (m.slug ? `https://polymarket.com/event/${m.slug}` : `https://polymarket.com/search?q=${encodeURIComponent(m.title || '')}`)} target="_blank" rel="noopener noreferrer" onClick={trackReferral}

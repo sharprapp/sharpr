@@ -8,11 +8,11 @@ import { requestPermission, subscribeToPush, unsubscribeFromPush } from '../lib/
 import { exportBetsCSV, exportTradesCSV, exportBetsPDF, exportTradesPDF } from '../lib/export';
 
 const inp = 'outline-none transition-colors';
-const inpStyle = { background: '#111118', border: '1px solid #1E1E2E', color: '#F0F0FF', borderRadius: '12px', padding: '10px 14px', fontSize: 14, width: '100%' };
+const inpStyle = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', color: '#F0F0FF', borderRadius: '12px', padding: '10px 14px', fontSize: 14, width: '100%' };
 const inpFocus = e => { e.target.style.borderColor = '#6C63FF'; };
 const inpBlur  = e => { e.target.style.borderColor = '#1E1E2E'; };
 
-const CARD = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: '16px', padding: '24px' };
+const CARD = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: '16px', padding: '24px' };
 const LABEL = { fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 6, display: 'block' };
 
 function Toggle({ value, onChange, label, sub }) {
@@ -94,7 +94,7 @@ export default function Settings() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', color: '#F0F0FF' }}>
+    <div style={{ minHeight: '100vh', background: '#0A0A0F', color: '#F0F0FF' }}>
       <nav style={{ borderBottom: '1px solid #1E1E2E', padding: '16px 24px' }}>
         <div style={{ maxWidth: 680, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Logo size="md" />
@@ -105,12 +105,12 @@ export default function Settings() {
 
         {/* Banners */}
         {upgraded && (
-          <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#00E5B4', fontWeight: 500 }}>
+          <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#0A0A0F', fontWeight: 500 }}>
             You're now on Pro. Welcome!
           </div>
         )}
         {canceled && (
-          <div style={{ background: 'rgba(100,116,139,0.1)', border: '1px solid #1E1E2E', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#6B6B8A' }}>
+          <div style={{ background: 'rgba(100,116,139,0.1)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#6B6B8A' }}>
             Checkout canceled — you haven't been charged.
           </div>
         )}
@@ -140,16 +140,16 @@ export default function Settings() {
                 </button>
               </div>
               {nameError && <div style={{ fontSize: 12, color: '#FF4560', marginTop: 6 }}>{nameError}</div>}
-              {nameSaved && <div style={{ fontSize: 12, color: '#00E5B4', marginTop: 6 }}>Display name saved</div>}
+              {nameSaved && <div style={{ fontSize: 12, color: '#0A0A0F', marginTop: 6 }}>Display name saved</div>}
             </div>
             <div>
               <label style={LABEL}>Email</label>
-              <div style={{ ...inpStyle, background: '#111118', color: '#6B6B8A' }}>{user?.email}</div>
+              <div style={{ ...inpStyle, background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', color: '#6B6B8A' }}>{user?.email}</div>
             </div>
             <div>
               <label style={LABEL}>Password</label>
               {resetSent ? (
-                <div style={{ fontSize: 13, color: '#00E5B4' }}>Password reset email sent — check your inbox</div>
+                <div style={{ fontSize: 13, color: '#0A0A0F' }}>Password reset email sent — check your inbox</div>
               ) : (
                 <button onClick={async () => {
                   await supabase.auth.resetPasswordForEmail(user?.email, { redirectTo: window.location.origin + '/settings' });
@@ -267,10 +267,10 @@ export default function Settings() {
           )}
 
           {/* Plan limits table */}
-          <div style={{ marginTop: 20, borderRadius: 12, overflow: 'hidden', border: '1px solid #1E1E2E' }}>
+          <div style={{ marginTop: 20, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(108, 99, 255, 0.3)' }}>
             <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
               <thead>
-                <tr style={{ background: '#111118' }}>
+                <tr style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)' }}>
                   {['Feature','Free','Pro'].map(h => (
                     <th key={h} style={{ padding: '10px 14px', textAlign: h === 'Feature' ? 'left' : 'center', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', borderBottom: '1px solid #1E1E2E' }}>{h}</th>
                   ))}
@@ -288,7 +288,7 @@ export default function Settings() {
                   <tr key={f} style={{ borderBottom: '1px solid rgba(30,42,74,0.6)' }}>
                     <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{f}</td>
                     <td style={{ padding: '10px 14px', textAlign: 'center', color: '#6B6B8A' }}>{fr}</td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em' }}>{pr}</td>
+                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em' }}>{pr}</td>
                   </tr>
                 ))}
               </tbody>
@@ -352,7 +352,7 @@ export default function Settings() {
 
         {/* Save button */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          {saved && <span style={{ fontSize: 13, color: '#00E5B4', alignSelf: 'center' }}>Saved!</span>}
+          {saved && <span style={{ fontSize: 13, color: '#0A0A0F', alignSelf: 'center' }}>Saved!</span>}
           <button onClick={savePrefs} className="glass-btn-blue" style={{ padding: '10px 28px', fontSize: 14, borderRadius: '12px' }}>
             Save preferences
           </button>

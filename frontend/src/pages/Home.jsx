@@ -52,17 +52,17 @@ function timeAgo(dateStr) {
 }
 
 /* ── colour helpers ── */
-const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: '16px', padding: '20px' };
-const pnlColor = (n) => n == null ? '#6B6B8A' : n >= 0 ? '#00E5B4' : '#FF4560';
+const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: '16px', padding: '20px' };
+const pnlColor = (n) => n == null ? '#6B6B8A' : n >= 0 ? '#0A0A0F' : '#FF4560';
 
 /* ── sport pill colours ── */
-const SPORT_COLORS = { NBA: '#f59e0b', NFL: '#3b82f6', MLB: '#FF4560', NHL: '#06b6d4', Soccer: '#00E5B4', UFC: '#a855f7' };
+const SPORT_COLORS = { NBA: '#f59e0b', NFL: '#3b82f6', MLB: '#FF4560', NHL: '#0A0A0F', Soccer: '#0A0A0F', UFC: '#a855f7' };
 const SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'Soccer', 'UFC'];
 
 /* ── quick action cards ── */
 const ACTIONS = [
   { label: 'AI Research',   icon: '🤖', color: '#6C63FF', tab: 'AI Research' },
-  { label: 'Log a trade',   icon: '📈', color: '#00E5B4', tab: 'Day Trading' },
+  { label: 'Log a trade',   icon: '📈', color: '#0A0A0F', tab: 'Day Trading' },
   { label: 'Log a bet',     icon: '🏈', color: '#f59e0b', tab: 'Sports Betting' },
   { label: 'View markets',  icon: '🎯', color: '#a855f7', tab: 'Polymarket' },
 ];
@@ -141,7 +141,7 @@ export default function Home() {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080810', color: '#F0F0FF' }}>
+    <div style={{ minHeight: '100vh', background: '#0A0A0F', color: '#F0F0FF' }}>
 
       {/* ── NAVBAR ── */}
       <nav className="glass-nav" style={{ position: 'sticky', top: 0, zIndex: 50 }}>
@@ -192,7 +192,7 @@ export default function Home() {
           {[
             { label: "Today's P&L", value: fmtPnl(todayPnl), color: pnlColor(todayPnl), loading: tradesLoading },
             { label: 'Bets today',  value: tradesLoading ? '—' : todayBets.length, color: '#F0F0FF', loading: betsLoading },
-            { label: 'AI queries',  value: tier === 'pro' ? 'Unlimited' : '0 / 5', color: tier === 'pro' ? '#00E5B4' : '#6B6B8A', loading: false },
+            { label: 'AI queries',  value: tier === 'pro' ? 'Unlimited' : '0 / 5', color: tier === 'pro' ? '#0A0A0F' : '#6B6B8A', loading: false },
             { label: "Month P&L",   value: fmtPnl(monthPnl), color: pnlColor(monthPnl), loading: tradesLoading },
           ].map(({ label, value, color, loading }) => (
             <div key={label} style={{ ...card, background: 'linear-gradient(180deg, rgba(108,99,255,0.05) 0%, transparent 100%)' }}>
@@ -226,7 +226,7 @@ export default function Home() {
                 <>
                   <p style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', margin: 0, lineHeight: 1.4 }}>{markets[0].title}</p>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
-                    <span style={{ fontSize: 24, fontWeight: 900, color: markets[0].yes > 60 ? '#00E5B4' : markets[0].yes > 40 ? '#f59e0b' : '#FF4560' }}>{markets[0].yes}%</span>
+                    <span style={{ fontSize: 24, fontWeight: 900, color: markets[0].yes > 60 ? '#0A0A0F' : markets[0].yes > 40 ? '#f59e0b' : '#FF4560' }}>{markets[0].yes}%</span>
                     <span style={{ fontSize: 12, color: '#6B6B8A' }}>YES</span>
                   </div>
                   <button onClick={() => { sessionStorage.setItem('ai-prefill-topic', markets[0].title); sessionStorage.setItem('ai-prefill-type', 'polymarket'); goTab('AI Research'); }}
@@ -242,12 +242,12 @@ export default function Home() {
             </div>
 
             {/* Trading Setup */}
-            <div style={{ ...card, borderLeft: '3px solid #00E5B4', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#00E5B4' }}>Trading Setup</span>
+            <div style={{ ...card, borderLeft: '3px solid #0A0A0F', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#0A0A0F' }}>Trading Setup</span>
               {(() => {
                 const saved = JSON.parse(localStorage.getItem('premarket_levels') || '{}');
                 if (saved.bias && saved.date === new Date().toDateString()) {
-                  const biasColor = saved.bias === 'LONG' ? '#00E5B4' : saved.bias === 'SHORT' ? '#FF4560' : '#f59e0b';
+                  const biasColor = saved.bias === 'LONG' ? '#0A0A0F' : saved.bias === 'SHORT' ? '#FF4560' : '#f59e0b';
                   return (
                     <>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -263,7 +263,7 @@ export default function Home() {
                   <>
                     <p style={{ fontSize: 14, color: '#6B6B8A', margin: 0 }}>No bias set for today</p>
                     <button onClick={() => goTab('Day Trading')}
-                      style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#00E5B4', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}
+                      style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '6px 12px', fontSize: 12, color: '#0A0A0F', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', textAlign: 'center' }}
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(34,197,94,0.2)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(34,197,94,0.12)'}>
                       Set your bias in Pre-Market →
@@ -319,7 +319,7 @@ export default function Home() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
               {markets.map((m, i) => {
                 const pct = m.yes ?? 50;
-                const fill = pct > 60 ? '#00E5B4' : pct > 40 ? '#f59e0b' : '#FF4560';
+                const fill = pct > 60 ? '#0A0A0F' : pct > 40 ? '#f59e0b' : '#FF4560';
                 return (
                   <div key={`${m.id}-${i}`} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 12, transition: 'all 0.2s ease', cursor: 'default' }}
                     onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
@@ -454,7 +454,7 @@ export default function Home() {
             // Discipline component (30 pts) - based on consistency
             const discPts = Math.min(30, Math.round(Math.min(totalSettled, 20) / 20 * 30));
             const score = Math.max(0, Math.min(100, wrPts + roiPts + discPts));
-            const scoreColor = score >= 71 ? '#00E5B4' : score >= 41 ? '#f59e0b' : '#FF4560';
+            const scoreColor = score >= 71 ? '#0A0A0F' : score >= 41 ? '#f59e0b' : '#FF4560';
             const scoreLabel = score >= 85 ? 'Elite' : score >= 71 ? 'Sharp money' : score >= 41 ? 'Finding your edge' : 'Keep grinding';
             return (
               <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 24 }}>
@@ -504,9 +504,9 @@ export default function Home() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {last3Trades.map((t, i) => (
-                  <div key={t.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: '#111118' }}>
+                  <div key={t.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)' }}>
                     <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', minWidth: 60 }}>{t.ticker}</span>
-                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 7px', borderRadius: 12, background: t.direction === 'LONG' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: t.direction === 'LONG' ? '#00E5B4' : '#FF4560' }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 7px', borderRadius: 12, background: t.direction === 'LONG' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: t.direction === 'LONG' ? '#0A0A0F' : '#FF4560' }}>
                       {t.direction}
                     </span>
                     <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', marginLeft: 'auto', color: pnlColor(t.pnl) }}>
@@ -541,10 +541,10 @@ export default function Home() {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {last3Bets.map((b, i) => {
-                  const resultColor = b.result === 'win' ? '#00E5B4' : b.result === 'loss' ? '#FF4560' : '#f59e0b';
+                  const resultColor = b.result === 'win' ? '#0A0A0F' : b.result === 'loss' ? '#FF4560' : '#f59e0b';
                   const resultBg    = b.result === 'win' ? 'rgba(34,197,94,0.12)' : b.result === 'loss' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)';
                   return (
-                    <div key={b.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: '#111118' }}>
+                    <div key={b.id || i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)' }}>
                       <span style={{ fontSize: 12, color: '#F0F0FF', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.match}</span>
                       <span style={{ fontSize: 11, color: '#6B6B8A', flexShrink: 0 }}>{b.odds > 0 ? '+' : ''}{b.odds}</span>
                       <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 7px', borderRadius: 12, background: resultBg, color: resultColor, flexShrink: 0 }}>
@@ -609,7 +609,7 @@ export default function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
             {ACTIONS.map(({ label, icon, color, tab }) => (
               <button key={label} onClick={() => goTab(tab)}
-                style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', border: '1px solid #1E1E2E', textAlign: 'left', transition: 'border-color 0.15s' }}
+                style={{ ...card, display: 'flex', alignItems: 'center', gap: 14, cursor: 'pointer', border: '1px solid rgba(108, 99, 255, 0.3)', textAlign: 'left', transition: 'border-color 0.15s' }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = color}
                 onMouseLeave={e => e.currentTarget.style.borderColor = '#1E1E2E'}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, background: color + '20', flexShrink: 0 }}>

@@ -80,7 +80,7 @@ function setPMCache(markets) {
 
 /* ── shared input / select style helpers ── */
 const inp = 'outline-none transition-colors';
-const inpStyle = { background: '#111118', border: '1px solid #1E1E2E', color: '#F0F0FF' };
+const inpStyle = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', color: '#F0F0FF' };
 const inpFocus  = e => { e.target.style.borderColor = '#6C63FF'; };
 const inpBlur   = e => { e.target.style.borderColor = '#1E1E2E'; };
 
@@ -187,7 +187,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen" style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
+    <div className="min-h-screen" style={{ overflowX: 'hidden', maxWidth: '100vw' }} relative overflow-hidden z-10>
+
+      {/* ELITE ORBS */}
+      <style>{'\
+        @keyframes floatDash { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(3vw, -3vh) scale(1.05); } 100% { transform: translate(0,0) scale(1); } }\
+      '}</style>
+      <div style={{ position: 'fixed', width: '60vw', height: '60vw', background: 'rgba(108,99,255,0.1)', filter: 'blur(140px)', top: '-20%', left: '-10%', borderRadius: '50%', pointerEvents: 'none', zIndex: 0, animation: 'floatDash 25s infinite ease-in-out' }}></div>
+      <div style={{ position: 'fixed', width: '50vw', height: '50vw', background: 'rgba(0,229,180,0.05)', filter: 'blur(120px)', bottom: '-10%', right: '-15%', borderRadius: '50%', pointerEvents: 'none', zIndex: 0, animation: 'floatDash 30s infinite ease-in-out reverse' }}></div>
+  
       {showOnboarding && (
         <OnboardingModal userPlan={tier} onComplete={() => setShowOnboarding(false)} />
       )}
@@ -296,7 +304,7 @@ function NavGroups({ tab, setTab }) {
             {isOpen && g.items.length > 1 && (
               <div style={{
                 position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                marginTop: 8, background: '#070712',
+                marginTop: 8, background: '#0A0A0F',
                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14,
                 padding: 8, zIndex: 100, minWidth: 220,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
@@ -429,7 +437,7 @@ function NavGroups({ tab, setTab }) {
             {isOpen && (
               <div style={{
                 position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                marginTop: 8, background: '#070712',
+                marginTop: 8, background: '#0A0A0F',
                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14,
                 padding: 8, zIndex: 100, minWidth: 420,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
@@ -481,7 +489,7 @@ function NavGroups({ tab, setTab }) {
             {isOpen && g.items.length > 1 && (
               <div style={{
                 position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-                marginTop: 8, background: '#070712',
+                marginTop: 8, background: '#0A0A0F',
                 border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14,
                 padding: 8, zIndex: 100, minWidth: 220,
                 boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
@@ -651,7 +659,7 @@ function DashboardNav({ tab, setTab, tier, displayName }) {
             </button>
 
             {bellOpen && (
-              <div style={{ position: 'absolute', right: 0, top: 40, width: 280, borderRadius: 16, background: '#070712', border: '1px solid rgba(108,99,255,0.2)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', zIndex: 50, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', right: 0, top: 40, width: 280, borderRadius: 16, background: '#0A0A0F', border: '1px solid rgba(108,99,255,0.2)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', zIndex: 50, overflow: 'hidden' }}>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid #1E1E2E', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>Alerts</span>
                   {alerts.length > 0 && <button onClick={() => setAlerts([])} style={{ fontSize: 12, color: '#4E4E63', cursor: 'pointer', background: 'none', border: 'none' }}>Clear all</button>}
@@ -729,14 +737,14 @@ function PortfolioPanel() {
     return sum + (p.currentPrice - p.avgPrice) * p.shares * (p.side === 'YES' ? 1 : -1);
   }, 0);
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
         {[
           ['Open positions', positions.length, '#F0F0FF'],
-          ['Unrealized P&L', (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2), totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
+          ['Unrealized P&L', (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2), totalPnl >= 0 ? '#0A0A0F' : '#FF4560'],
           ['Avg cost basis', positions.length ? '$' + (positions.reduce((s,p) => s + p.shares * p.avgPrice, 0) / positions.length).toFixed(2) : '—', '#F0F0FF'],
         ].map(([l, v, c]) => (
           <div key={l} style={card}>
@@ -786,10 +794,10 @@ function PortfolioPanel() {
           <div style={{ fontSize: 12, color: '#6B6B8A', marginTop: 4 }}>Add markets you hold shares in to track unrealized P&L.</div>
         </div>
       ) : (
-        <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #1E1E2E' }}>
+        <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(108, 99, 255, 0.3)' }}>
           <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: '#111118', borderBottom: '1px solid #1E1E2E' }}>
+              <tr style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #1E1E2E' }}>
                 {['Market','Side','Shares','Avg ¢','Cur ¢','P&L',''].map(h => (
                   <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B6B8A' }}>{h}</th>
                 ))}
@@ -799,10 +807,10 @@ function PortfolioPanel() {
               {positions.map((p, i) => {
                 const pnl = (p.currentPrice - p.avgPrice) * p.shares * (p.side === 'YES' ? 1 : -1);
                 return (
-                  <tr key={p.id} style={{ borderBottom: i < positions.length - 1 ? '1px solid rgba(30,42,74,0.5)' : 'none', background: '#111118' }}>
+                  <tr key={p.id} style={{ borderBottom: i < positions.length - 1 ? '1px solid rgba(30,42,74,0.5)' : 'none', background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)' }}>
                     <td style={{ padding: '10px 14px', color: '#F0F0FF', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</td>
                     <td style={{ padding: '10px 14px' }}>
-                      <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', background: p.side === 'YES' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: p.side === 'YES' ? '#00E5B4' : '#FF4560' }}>{p.side}</span>
+                      <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', background: p.side === 'YES' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: p.side === 'YES' ? '#0A0A0F' : '#FF4560' }}>{p.side}</span>
                     </td>
                     <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{p.shares}</td>
                     <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{p.avgPrice}</td>
@@ -811,7 +819,7 @@ function PortfolioPanel() {
                         onBlur={e => updateCurrent(p.id, e.target.value)}
                         style={{ background: 'transparent', border: 'none', borderBottom: '1px solid #1E1E2E', color: '#F0F0FF', width: 46, fontSize: 13, outline: 'none' }} />
                     </td>
-                    <td style={{ padding: '10px 14px', fontWeight: 800, letterSpacing: '-0.03em', color: pnl >= 0 ? '#00E5B4' : '#FF4560' }}>
+                    <td style={{ padding: '10px 14px', fontWeight: 800, letterSpacing: '-0.03em', color: pnl >= 0 ? '#0A0A0F' : '#FF4560' }}>
                       {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
                     </td>
                     <td style={{ padding: '10px 14px' }}>
@@ -856,7 +864,7 @@ function AlertsPanel() {
     }));
   }
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 560 }}>
@@ -910,7 +918,7 @@ function AlertsPanel() {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 800, letterSpacing: '-0.02em', background: a.triggered ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)', color: a.triggered ? '#00E5B4' : '#60a5fa' }}>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 800, letterSpacing: '-0.02em', background: a.triggered ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)', color: a.triggered ? '#0A0A0F' : '#60a5fa' }}>
                   {a.triggered ? '✓ Triggered' : '⏳ Watching'}
                 </span>
                 <button onClick={() => save(alertsList.filter(x => x.id !== a.id))}
@@ -1003,7 +1011,7 @@ function PolymarketTab({ tier }) {
   return (
     <div className="flex flex-col gap-5">
       {/* Sub-tab bar */}
-      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#111118'}}>
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)'}}>
         {PM_SUBTABS.map(t => (
           <button key={t.id} onClick={() => setPmTab(t.id)}
             className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
@@ -1049,7 +1057,7 @@ function PolymarketTab({ tier }) {
               </div>
               <button onClick={() => fetchMarkets(true)} disabled={loading}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors disabled:opacity-50 whitespace-nowrap"
-                style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
+                style={{border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A', background: 'transparent'}}
                 onMouseEnter={e => { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#F0F0FF'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; }}>
                 {loading ? 'Loading…' : '↻ Refresh'}
@@ -1063,7 +1071,7 @@ function PolymarketTab({ tier }) {
                   className="text-xs px-3.5 py-1.5 rounded-lg font-medium transition-all"
                   style={filt === c
                     ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'}
-                    : {border: '1px solid #1E1E2E', color: '#6B6B8A'}}>
+                    : {border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A'}}>
                   {c} {catCounts[c] > 0 && <span style={{opacity: 0.6}}>{catCounts[c]}</span>}
                 </button>
               ))}
@@ -1090,7 +1098,7 @@ function PolymarketTab({ tier }) {
             {loading && markets.length === 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {Array.from({length: 6}).map((_, i) => (
-                  <div key={i} className="rounded-2xl p-5 flex flex-col gap-4" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+                  <div key={i} className="rounded-2xl p-5 flex flex-col gap-4" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
                     <div className="skeleton" style={{height: 20, width: '40%', borderRadius: 8}} />
                     <div className="skeleton" style={{height: 16, borderRadius: 6}} />
                     <div className="skeleton" style={{height: 14, width: '75%', borderRadius: 6}} />
@@ -1136,7 +1144,7 @@ function PolymarketTab({ tier }) {
 const CAT_COLORS = {
   Politics: { background: 'rgba(167,139,250,0.15)', color: '#c084fc' },
   Crypto: { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-  Sports: { background: 'rgba(34,197,94,0.15)', color: '#00E5B4' },
+  Sports: { background: 'rgba(34,197,94,0.15)', color: '#0A0A0F' },
   Finance: { background: 'rgba(108,99,255,0.15)', color: '#867fff' },
   Science: { background: 'rgba(20,184,166,0.15)', color: '#2dd4bf' },
   Entertainment: { background: 'rgba(244,63,94,0.15)', color: '#fb7185' },
@@ -1215,7 +1223,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
   
   // Neon Green for UP, Vivid Crimson/Magenta for DOWN
   const isUp = pLast > pFirst || (pLast === pFirst && pct >= 50);
-  const trendColor = isUp ? '#00ffcc' : '#ff3366';
+  const trendColor = isUp ? '#0A0A0F' : '#ff3366';
   
   const pulseAnim = pLast === pFirst ? 'marketPulseNeutral' : isUp ? 'marketPulseUp' : 'marketPulseDown';
 
@@ -1256,7 +1264,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
     <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
       style={{
         background: 'linear-gradient(145deg, rgba(30,41,59,0.55) 0%, rgba(15,23,42,0.85) 100%)', 
-        border: '1px solid #1E1E2E', 
+        border: '1px solid rgba(108, 99, 255, 0.3)', 
         boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.4)',
         backdropFilter: 'blur(24px)', 
         WebkitBackdropFilter: 'blur(24px)', 
@@ -1425,7 +1433,7 @@ function DayTradingTab({ activeSubTab, tier }) {
         {/* Hero P&L */}
         <div className="rounded-2xl p-6" style={{background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', textAlign: 'center'}}>
           <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#6B6B8A'}}>Total P&L</div>
-          <div style={{fontSize: 48, fontWeight: 900, color: stats.pnl >= 0 ? '#00E5B4' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1}}>
+          <div style={{fontSize: 48, fontWeight: 900, color: stats.pnl >= 0 ? '#0A0A0F' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1}}>
             {(stats.pnl>=0?'+':'')+'$'+stats.pnl.toFixed(2)}
           </div>
         </div>
@@ -1450,7 +1458,7 @@ function DayTradingTab({ activeSubTab, tier }) {
               empty="No trades yet. Log your first trade above.">
               {trades.map(t => {
                 const cls = t.status==='win'?'text-green-500':t.status==='loss'?'text-red-500':'text-slate-500';
-                const confColor = t.confidence === 'Max' ? '#FF4560' : t.confidence === 'High' ? '#00E5B4' : t.confidence === 'Medium' ? '#867fff' : '#6B6B8A';
+                const confColor = t.confidence === 'Max' ? '#FF4560' : t.confidence === 'High' ? '#0A0A0F' : t.confidence === 'Medium' ? '#867fff' : '#6B6B8A';
                 return (
                   <tr key={t.id} className="transition-colors" style={{borderBottom: '1px solid #1E1E2E'}}
                     onMouseEnter={e => e.currentTarget.style.background='rgba(30,42,74,0.4)'}
@@ -1465,7 +1473,7 @@ function DayTradingTab({ activeSubTab, tier }) {
                       <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${t.direction==='LONG'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{t.direction}</span>
                     </td>
                     <td className="px-5 py-3.5 text-slate-300">${parseFloat(t.entry).toFixed(2)}</td>
-                    <td className="px-5 py-3.5 font-semibold" style={{color: t.status==='open' ? '#94a3b8' : t.pnl > 0 ? '#00E5B4' : t.pnl < 0 ? '#FF4560' : '#94a3b8'}}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
+                    <td className="px-5 py-3.5 font-semibold" style={{color: t.status==='open' ? '#94a3b8' : t.pnl > 0 ? '#0A0A0F' : t.pnl < 0 ? '#FF4560' : '#94a3b8'}}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
                     <td className="px-5 py-3.5"><span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', color: confColor }}>{t.confidence || '—'}</span></td>
                     <td className="px-5 py-3.5 text-slate-400" style={{ fontSize: 12 }}>{t.duration || '—'}</td>
                     <td className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>{t.status}</td>
@@ -1489,7 +1497,7 @@ function DayTradingTab({ activeSubTab, tier }) {
             </DarkTable>
             <button onClick={() => sendPrompt('Analyze my day trading journal. Tell me which setups are most profitable, where I leave money on the table, and give me 3 specific improvements.')}
               className="text-sm text-left transition-colors rounded-xl px-5 py-3"
-              style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
+              style={{border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A', background: 'transparent'}}
               onMouseEnter={e => { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#F0F0FF'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; }}>
               Ask Claude to review my trading ↗
@@ -1509,10 +1517,10 @@ function TradeForm({ form, setForm, loading, onAdd }) {
   const handleSubmit = () => { onAdd(); setSaved(true); setTimeout(() => setSaved(false), 2000); };
   const onEnter = (e) => { if (e.key === 'Enter' && canSubmit) handleSubmit(); };
   return (
-    <div className="rounded-2xl p-5" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+    <div className="rounded-2xl p-5" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#6B6B8A'}}>Quick log</div>
-        {saved && <span style={{ fontSize: 12, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em' }}>Trade logged ✓</span>}
+        {saved && <span style={{ fontSize: 12, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em' }}>Trade logged ✓</span>}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
         {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['pnl','P&L $','number']].map(([k,pl,t]) => (
@@ -1555,7 +1563,7 @@ function TradeForm({ form, setForm, loading, onAdd }) {
                     style={{ flex: 1, padding: '7px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', transition: 'all 0.15s ease',
                       background: form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.2)' : c === 'High' ? 'rgba(34,197,94,0.2)' : c === 'Medium' ? 'rgba(108,99,255,0.2)' : '#1E1E2E') : '#1A1A24',
                       border: `1px solid ${form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.4)' : c === 'High' ? 'rgba(34,197,94,0.4)' : c === 'Medium' ? 'rgba(108,99,255,0.4)' : 'rgba(255,255,255,0.15)') : 'rgba(108,99,255,0.2)'}`,
-                      color: form.confidence === c ? (c === 'Max' ? '#FF4560' : c === 'High' ? '#00E5B4' : c === 'Medium' ? '#867fff' : '#94a3b8') : '#4E4E63',
+                      color: form.confidence === c ? (c === 'Max' ? '#FF4560' : c === 'High' ? '#0A0A0F' : c === 'Medium' ? '#867fff' : '#94a3b8') : '#4E4E63',
                     }}>{c}</button>
                 ))}
               </div>
@@ -1574,7 +1582,7 @@ function TradeForm({ form, setForm, loading, onAdd }) {
             <div>
               <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Status</label>
               <div className={`w-full rounded-xl px-3.5 py-2.5 text-sm`} style={{...inpStyle, display: 'flex', alignItems: 'center', gap: 6}}>
-                <span style={{color: form.pnl && parseFloat(form.pnl) > 0 ? '#00E5B4' : form.pnl && parseFloat(form.pnl) < 0 ? '#FF4560' : '#6B6B8A', fontWeight: 800, letterSpacing: '-0.02em'}}>
+                <span style={{color: form.pnl && parseFloat(form.pnl) > 0 ? '#0A0A0F' : form.pnl && parseFloat(form.pnl) < 0 ? '#FF4560' : '#6B6B8A', fontWeight: 800, letterSpacing: '-0.02em'}}>
                   {form.pnl && parseFloat(form.pnl) > 0 ? 'Win' : form.pnl && parseFloat(form.pnl) < 0 ? 'Loss' : 'Open'}
                 </span>
                 <span style={{fontSize: 10, color: '#4E4E63'}}>Auto from P&L</span>
@@ -1629,7 +1637,7 @@ function AIStrategyAnalyzer({ tier }) {
 
   if (!isPro) {
     return (
-      <div className="rounded-2xl p-8 text-center" style={{ background: '#111118', border: '1px solid rgba(108,99,255,0.2)' }}>
+      <div className="rounded-2xl p-8 text-center" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.2)' }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>🧠</div>
         <div className="flex items-center justify-center gap-2 mb-2">
           <span style={{ fontSize: 18, fontWeight: 800, color: '#F0F0FF' }}>AI Strategy Analyzer</span>
@@ -1646,7 +1654,7 @@ function AIStrategyAnalyzer({ tier }) {
     );
   }
 
-  const verdictColor = result?.includes('STRONG SETUP') ? '#00E5B4' : result?.includes('AVOID') ? '#FF4560' : result?.includes('NEEDS WORK') ? '#f59e0b' : '#6B6B8A';
+  const verdictColor = result?.includes('STRONG SETUP') ? '#0A0A0F' : result?.includes('AVOID') ? '#FF4560' : result?.includes('NEEDS WORK') ? '#f59e0b' : '#6B6B8A';
   const verdictMatch = result?.match(/VERDICT:\s*(STRONG SETUP|NEEDS WORK|AVOID)/);
 
   return (
@@ -1657,7 +1665,7 @@ function AIStrategyAnalyzer({ tier }) {
         <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 4, background: 'rgba(108,99,255,0.2)', color: '#867fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
       </div>
 
-      <div className="rounded-2xl p-5" style={{ background: '#111118', border: '1px solid #1E1E2E' }}>
+      <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)' }}>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
           <div className="sm:col-span-3">
             <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Describe your setup</label>
@@ -1692,7 +1700,7 @@ function AIStrategyAnalyzer({ tier }) {
 
       {/* Result */}
       {(result || loading) && (
-        <div className="rounded-2xl p-5" style={{ background: '#111118', border: '1px solid #1E1E2E' }}>
+        <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)' }}>
           {verdictMatch && (
             <div className="mb-4 p-3 rounded-xl text-center" style={{ background: verdictColor + '15', border: `1px solid ${verdictColor}40` }}>
               <div style={{ fontSize: 10, color: '#4E4E63', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>AI Verdict</div>
@@ -1823,14 +1831,14 @@ function SportsBettingTab({ tier, activeSubTab }) {
       {/* ── Stats bar ── */}
       <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
         {[
-          ['P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(0), totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
-          ['Units', (totalPnl>=0?'+':'')+((totalPnl/unitSize)||0).toFixed(1)+'u', totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
-          ['Win Rate', wr+'%', wr >= 50 ? '#00E5B4' : '#F0F0FF'],
-          ['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+          ['P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(0), totalPnl >= 0 ? '#0A0A0F' : '#FF4560'],
+          ['Units', (totalPnl>=0?'+':'')+((totalPnl/unitSize)||0).toFixed(1)+'u', totalPnl >= 0 ? '#0A0A0F' : '#FF4560'],
+          ['Win Rate', wr+'%', wr >= 50 ? '#0A0A0F' : '#F0F0FF'],
+          ['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi) >= 0 ? '#0A0A0F' : '#FF4560'],
           ['CLV Avg', '—', '#4E4E63'],
           ['Active', bets.filter(b => b.result==='pending').length+'', '#6C63FF'],
         ].map(([l, v, c]) => (
-          <div key={l} style={{ background: '#111118', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 12, padding: '10px 12px' }}>
+          <div key={l} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 12, padding: '10px 12px' }}>
             <div style={{ fontSize: 9, color: '#4E4E63', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{l}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: c }}>{v}</div>
           </div>
@@ -1842,14 +1850,14 @@ function SportsBettingTab({ tier, activeSubTab }) {
         {['screenshot', 'manual'].map(m => (
           <button key={m} onClick={() => setEntryMode(m)}
             style={{ padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', flex: m === 'screenshot' ? 1 : 0, border: '1px solid',
-              ...(entryMode === m ? { background: m === 'screenshot' ? 'rgba(108,99,255,0.15)' : '#1E1E2E', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
+              ...(entryMode === m ? { background: m === 'screenshot' ? 'rgba(108,99,255,0.15)' : '#1E1E2E', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
             }}>{m === 'screenshot' ? '📷 Snap your bet slip' : 'Manual entry'}</button>
         ))}
       </div>
 
       {/* ── Screenshot import ── */}
       {entryMode === 'screenshot' && (
-        <div style={{ background: '#111118', border: '2px dashed rgba(108,99,255,0.3)', borderRadius: 16, padding: 32, textAlign: 'center' }}>
+        <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '2px dashed rgba(108,99,255,0.3)', borderRadius: 16, padding: 32, textAlign: 'center' }}>
           {imgParsing ? (
             <div><div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 12 }}>{[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#6C63FF', animation: `pulse 1.2s infinite ${i*0.2}s` }} />)}</div><div style={{ fontSize: 13, color: '#4E4E63' }}>Reading bet slip with AI...</div></div>
           ) : parsedPreview ? (
@@ -1915,14 +1923,14 @@ function SportsBettingTab({ tier, activeSubTab }) {
 
       {/* ── Manual bet slip entry ── */}
       {entryMode === 'manual' && (
-        <div data-bet-form style={{ background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 }}>
-          {betSaved && <div style={{ fontSize: 12, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>Bet logged ✓</div>}
+        <div data-bet-form style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 }}>
+          {betSaved && <div style={{ fontSize: 12, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>Bet logged ✓</div>}
           {/* Sport tiles */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
             {[['🏀','NBA'],['🏈','NFL'],['⚾','MLB'],['🏒','NHL'],['⚽','Soccer'],['🥊','UFC'],['🎾','Tennis'],['⛳','Golf']].map(([icon, s]) => (
               <button key={s} onClick={() => setForm(f => ({...f, sport: s}))}
                 style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid', display: 'flex', alignItems: 'center', gap: 4,
-                  ...(form.sport === s ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
+                  ...(form.sport === s ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
                 }}>{icon} {s}</button>
             ))}
           </div>
@@ -1931,7 +1939,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
             {['Moneyline','Spread','Over/Under','Prop','Parlay','Futures'].map(t => (
               <button key={t} onClick={() => setForm(f => ({...f, type: t}))}
                 style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                  ...(form.type === t ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
+                  ...(form.type === t ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
                 }}>{t}</button>
             ))}
           </div>
@@ -1978,7 +1986,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
             const o = parseFloat(form.odds), s = parseFloat(form.stake);
             if (!o || !s) return null;
             const pr = o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100);
-            return <div style={{ fontSize: 14, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10 }}>Payout: ${(s + pr).toFixed(2)} <span style={{ fontSize: 11, color: '#6B6B8A', fontWeight: 400 }}>(+${pr.toFixed(2)} profit · {(s/unitSize).toFixed(1)}u)</span></div>;
+            return <div style={{ fontSize: 14, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10 }}>Payout: ${(s + pr).toFixed(2)} <span style={{ fontSize: 11, color: '#6B6B8A', fontWeight: 400 }}>(+${pr.toFixed(2)} profit · {(s/unitSize).toFixed(1)}u)</span></div>;
           })()}
           <button onClick={addBet} disabled={loading || !form.match || !form.odds || !form.stake}
             style={{ width: '100%', padding: '12px', borderRadius: 12, background: '#6C63FF', color: '#fff', fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', border: 'none', cursor: 'pointer', opacity: loading || !form.match || !form.odds || !form.stake ? 0.5 : 1 }}>
@@ -1995,7 +2003,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
             return (
               <button key={f} onClick={() => setFeedFilter(f === 'All' ? null : f)}
                 style={{ padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                  ...(isActive ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: '#111118', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
+                  ...(isActive ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
                 }}>{f}</button>
             );
           })}
@@ -2003,7 +2011,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
         <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bets…"
           className={`rounded-lg px-3 py-1.5 text-xs ${inp}`} style={{...inpStyle, width: 140, fontSize: 11}} onFocus={inpFocus} onBlur={inpBlur} />
         <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-          style={{ background: '#111118', border: '1px solid #1E1E2E', color: '#6B6B8A', borderRadius: 8, padding: '4px 8px', fontSize: 10, outline: 'none' }}>
+          style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A', borderRadius: 8, padding: '4px 8px', fontSize: 10, outline: 'none' }}>
           <option value="date">Newest</option>
           <option value="odds">Odds</option>
           <option value="stake">Stake</option>
@@ -2026,12 +2034,12 @@ function SportsBettingTab({ tier, activeSubTab }) {
             if (sortBy === 'pnl') return (b.pnl||0) - (a.pnl||0);
             return new Date(b.created_at) - new Date(a.created_at);
           }).map(b => {
-          const borderColor = b.result === 'win' ? '#00E5B4' : b.result === 'loss' ? '#FF4560' : b.result === 'push' ? '#6B6B8A' : '#6C63FF';
+          const borderColor = b.result === 'win' ? '#0A0A0F' : b.result === 'loss' ? '#FF4560' : b.result === 'push' ? '#6B6B8A' : '#6C63FF';
           const sportIcons = { NBA:'🏀', NFL:'🏈', MLB:'⚾', NHL:'🏒', Soccer:'⚽', UFC:'🥊', Tennis:'🎾', Golf:'⛳' };
           const o = parseFloat(b.odds), s = parseFloat(b.stake);
           const toWin = o && s ? (o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100)) : 0;
           return (
-            <div key={b.id} style={{ background: '#111118', border: '1px solid #1E1E2E', borderLeft: `3px solid ${borderColor}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}
+            <div key={b.id} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderLeft: `3px solid ${borderColor}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)'; }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
               <div style={{ fontSize: 20, flexShrink: 0 }}>{sportIcons[b.sport] || '🎯'}</div>
@@ -2043,7 +2051,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
                 {b.result === 'pending' ? (
                   markingBet === b.id ? (
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {[['W','win','#00E5B4'],['L','loss','#FF4560'],['P','push','#6B6B8A']].map(([label, res, color]) => (
+                      {[['W','win','#0A0A0F'],['L','loss','#FF4560'],['P','push','#6B6B8A']].map(([label, res, color]) => (
                         <button key={res} onClick={() => markResult(b.id, res)}
                           style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '4px 10px', borderRadius: 6, background: color + '20', border: `1px solid ${color}40`, color, cursor: 'pointer' }}>{label}</button>
                       ))}
@@ -2056,7 +2064,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
                   )
                 ) : (
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: b.pnl >= 0 ? '#00E5B4' : '#FF4560' }}>{b.pnl >= 0 ? '+' : ''}${(b.pnl||0).toFixed(0)}</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: b.pnl >= 0 ? '#0A0A0F' : '#FF4560' }}>{b.pnl >= 0 ? '+' : ''}${(b.pnl||0).toFixed(0)}</div>
                     <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.02em', color: borderColor, textTransform: 'uppercase' }}>{b.result}</div>
                   </div>
                 )}
@@ -2068,7 +2076,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
           );
         })}
         {bets.length === 0 && (
-          <div style={{ background: '#111118', border: '1px solid #1E1E2E', borderRadius: 14, padding: 40, textAlign: 'center' }}>
+          <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 14, padding: 40, textAlign: 'center' }}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>📝</div>
             <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#4E4E63' }}>No bets yet — snap a bet slip or log manually</div>
           </div>
@@ -2118,11 +2126,11 @@ function EVCalcTab() {
   ];
 
   const RESULTS = [
-    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#00E5B4' : '#FF4560'],
-    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#0A0A0F' : '#FF4560'],
+    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#0A0A0F' : '#FF4560'],
     ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#867fff' : '#4E4E63'],
     ['Max Payout', '$' + (ba + payout).toFixed(0), '#F0F0FF'],
-    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#00E5B4' : parseFloat(edge) < 0 ? '#FF4560' : '#4E4E63'],
+    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#0A0A0F' : parseFloat(edge) < 0 ? '#FF4560' : '#4E4E63'],
   ];
 
   return (
@@ -2148,21 +2156,21 @@ function EVCalcTab() {
       {/* Hero EV */}
       <div style={{ ...gc, padding: 32, textAlign: 'center' }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 12 }}>Expected Value</div>
-        <div style={{ fontSize: 48, fontWeight: 900, color: ev >= 0 ? '#00E5B4' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1 }}>
+        <div style={{ fontSize: 48, fontWeight: 900, color: ev >= 0 ? '#0A0A0F' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1 }}>
           {(ev >= 0 ? '+' : '') + '$' + ev.toFixed(2)}
         </div>
       </div>
       {/* Edge hero */}
-      <div style={{ ...gc, padding: 24, textAlign: 'center', borderLeft: `3px solid ${parseFloat(edge) > 5 ? '#00E5B4' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560'}` }}>
+      <div style={{ ...gc, padding: 24, textAlign: 'center', borderLeft: `3px solid ${parseFloat(edge) > 5 ? '#0A0A0F' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560'}` }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 8 }}>Edge</div>
-        <div style={{ fontSize: 36, fontWeight: 800, color: parseFloat(edge) > 5 ? '#00E5B4' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560', lineHeight: 1 }}>
+        <div style={{ fontSize: 36, fontWeight: 800, color: parseFloat(edge) > 5 ? '#0A0A0F' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560', lineHeight: 1 }}>
           {(parseFloat(edge) > 0 ? '+' : '') + edge + '%'}
         </div>
         <div style={{ fontSize: 12, color: '#4E4E63', marginTop: 8 }}>Breakeven: {mp}% · Your estimate: {tp}%</div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         {[
-          ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+          ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#0A0A0F' : '#FF4560'],
           ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#867fff' : '#4E4E63'],
           ['Max Payout', '$' + (ba + payout).toFixed(0), '#F0F0FF'],
           ['Breakeven Odds', mp + '%', '#6B6B8A'],
@@ -2347,7 +2355,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 12 }}>
             {(SUGGESTIONS[category] || []).map(s => (
               <button key={s} onClick={() => send(s)}
-                style={{ fontSize: 11, padding: '6px 14px', borderRadius: 100, background: '#111118', border: '1px solid rgba(255,255,255,0.07)', color: '#4E4E63', cursor: 'pointer', transition: 'all 0.15s' }}
+                style={{ fontSize: 11, padding: '6px 14px', borderRadius: 100, background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.07)', color: '#4E4E63', cursor: 'pointer', transition: 'all 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; e.currentTarget.style.color = '#867fff'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = '#4E4E63'; }}>
                 {s}
@@ -2447,13 +2455,13 @@ function NewsTab() {
   const SPORT_PILLS  = ['NFL','NBA','MLB','NHL','Soccer','UFC','Golf','Tennis'];
 
   const SPORT_GRAD = {
-    NFL: 'linear-gradient(135deg,#1e3a5f,#0a1628)',
+    NFL: 'linear-gradient(135deg,#1e3a5f,#0A0A0F)',
     NBA: 'linear-gradient(135deg,#1a1040,#2d1080)',
     MLB: 'linear-gradient(135deg,#1a0a0a,#3d0a0a)',
-    NHL: 'linear-gradient(135deg,#0a1a2a,#0a3050)',
-    Soccer: 'linear-gradient(135deg,#0a2a0a,#1a4a1a)',
+    NHL: 'linear-gradient(135deg,#0A0A0F,#0A0A0F)',
+    Soccer: 'linear-gradient(135deg,#0A0A0F,#1a4a1a)',
     UFC: 'linear-gradient(135deg,#2a0a0a,#4a1a0a)',
-    Golf: 'linear-gradient(135deg,#0a2010,#1a4020)',
+    Golf: 'linear-gradient(135deg,#0A0A0F,#1a4020)',
     Tennis: 'linear-gradient(135deg,#2a1a00,#4a3000)',
     default: 'linear-gradient(135deg,#1E1E2E,#111118)',
   };
@@ -2515,7 +2523,7 @@ function NewsTab() {
   }
 
   function borderColor(sentiment) {
-    return sentiment === 'positive' ? '#00E5B4' : sentiment === 'negative' ? '#FF4560' : '#6C63FF';
+    return sentiment === 'positive' ? '#0A0A0F' : sentiment === 'negative' ? '#FF4560' : '#6C63FF';
   }
 
   // Calendar filters
@@ -2542,7 +2550,7 @@ function NewsTab() {
         {['sports','trading'].map(s => (
           <button key={s} onClick={() => setSection(s)}
             className="text-sm px-4 py-2 rounded-xl font-medium transition-all"
-            style={section===s ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'} : {border: '1px solid #1E1E2E', color: '#6B6B8A'}}
+            style={section===s ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'} : {border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A'}}
             onMouseEnter={e => { if (section!==s) { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#F0F0FF'; } }}
             onMouseLeave={e => { if (section!==s) { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; } }}>
             {s === 'sports' ? '🏈 Sports News' : '📈 Trading News'}
@@ -2558,13 +2566,13 @@ function NewsTab() {
             {SPORT_PILLS.map(s => (
               <button key={s} onClick={() => setSport(s)}
                 className="text-xs px-3 py-1.5 rounded-lg font-medium transition-all"
-                style={sport===s ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'} : {border: '1px solid #1E1E2E', color: '#6B6B8A'}}>
+                style={sport===s ? {background: '#6C63FF', color: '#fff', border: '1px solid #6C63FF'} : {border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A'}}>
                 {SPORT_EMOJIS[s]} {s}
               </button>
             ))}
             <button onClick={fetchSports} disabled={sportsLoad}
               className="ml-auto text-xs px-3 py-1.5 rounded-lg transition-all disabled:opacity-40"
-              style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
+              style={{border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A', background: 'transparent'}}
               onMouseEnter={e => { if (!e.currentTarget.disabled) { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#93c5fd'; } }}
               onMouseLeave={e => { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; }}>
               {sportsLoad ? '…' : '↻ Refresh'}
@@ -2576,7 +2584,7 @@ function NewsTab() {
           {sportsLoad && (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {[1,2,3,4,5,6].map(i => (
-                <div key={i} className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+                <div key={i} className="rounded-2xl overflow-hidden" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
                   <div className="skeleton" style={{height: 140}} />
                   <div className="p-4 flex flex-col gap-2">
                     <div className="skeleton" style={{height: 14, width: '80%'}} />
@@ -2590,10 +2598,10 @@ function NewsTab() {
 
           {/* Unavailable */}
           {!sportsLoad && sportsErr && (
-            <div className="rounded-2xl p-8 flex flex-col items-center gap-2" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+            <div className="rounded-2xl p-8 flex flex-col items-center gap-2" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
               <span style={{fontSize: 28}}>📡</span>
               <p className="text-sm font-medium" style={{color: '#6B6B8A'}}>News temporarily unavailable — check back soon</p>
-              <button onClick={fetchSports} className="text-xs px-3 py-1.5 rounded-lg mt-1" style={{border: '1px solid #1E1E2E', color: '#6B6B8A'}}>Try again</button>
+              <button onClick={fetchSports} className="text-xs px-3 py-1.5 rounded-lg mt-1" style={{border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A'}}>Try again</button>
             </div>
           )}
 
@@ -2603,7 +2611,7 @@ function NewsTab() {
               {sportsItems.map((item, i) => (
                 <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
                   className="rounded-2xl overflow-hidden flex flex-col transition-all cursor-pointer"
-                  style={{background: '#111118', border: `1px solid #1E1E2E`, borderLeft: `4px solid ${borderColor(item.sentiment)}`, textDecoration: 'none'}}
+                  style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: `1px solid #1E1E2E`, borderLeft: `4px solid ${borderColor(item.sentiment)}`, textDecoration: 'none'}}
                   onMouseEnter={e => { e.currentTarget.style.boxShadow='0 0 20px rgba(37,99,235,0.1)'; e.currentTarget.style.borderColor='rgba(37,99,235,0.3)'; e.currentTarget.style.borderLeftColor=borderColor(item.sentiment); }}
                   onMouseLeave={e => { e.currentTarget.style.boxShadow='none'; e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.borderLeftColor=borderColor(item.sentiment); }}>
                   {/* Image */}
@@ -2657,14 +2665,14 @@ function NewsTab() {
       {section === 'trading' && (
         <div className="flex flex-col gap-5">
           {/* Economic calendar */}
-          <div className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+          <div className="rounded-2xl overflow-hidden" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
             <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom: '1px solid #1E1E2E'}}>
               <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#6B6B8A'}}>Economic Calendar</div>
               <div className="flex gap-1">
                 {[['today','Today'],['week','This Week']].map(([v, label]) => (
                   <button key={v} onClick={() => setEconView(v)}
                     className="text-xs px-3 py-1 rounded-lg font-medium transition-all"
-                    style={econView===v ? {background: '#6C63FF', color: '#fff'} : {background: 'transparent', color: '#6B6B8A', border: '1px solid #1E1E2E'}}>
+                    style={econView===v ? {background: '#6C63FF', color: '#fff'} : {background: 'transparent', color: '#6B6B8A', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
                     {label}
                   </button>
                 ))}
@@ -2681,7 +2689,7 @@ function NewsTab() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-xs font-medium uppercase tracking-wide" style={{borderBottom: '1px solid #1E1E2E', background: '#111118', color: '#6B6B8A'}}>
+                    <tr className="text-xs font-medium uppercase tracking-wide" style={{borderBottom: '1px solid #1E1E2E', background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', color: '#6B6B8A'}}>
                       {['Time','Currency','Event','Impact','Forecast','Prev','Actual'].map(h => (
                         <th key={h} className="text-left px-4 py-3 whitespace-nowrap">{h}</th>
                       ))}
@@ -2717,14 +2725,14 @@ function NewsTab() {
           </div>
 
           {/* Market news from RSS */}
-          <div className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+          <div className="rounded-2xl overflow-hidden" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
             <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom: '1px solid #1E1E2E'}}>
               <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#6B6B8A'}}>Market News</div>
               <div className="flex items-center gap-3">
                 {mktTs && <span className="text-xs" style={{color: '#6B6B8A'}}>{timeAgo(mktTs)}</span>}
                 <button onClick={fetchMarket} disabled={mktLoad}
                   className="text-xs px-2.5 py-1 rounded-lg transition-all disabled:opacity-40"
-                  style={{border: '1px solid #1E1E2E', color: '#6B6B8A', background: 'transparent'}}
+                  style={{border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A', background: 'transparent'}}
                   onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.color='#93c5fd'; }}
                   onMouseLeave={e => e.currentTarget.style.color='#6B6B8A'}>
                   ↻
@@ -2742,7 +2750,7 @@ function NewsTab() {
               <div className="flex flex-col">
                 {mktItems.slice(0, 20).map((item, i) => {
                   const dir      = /gain|surge|rise|rally|up\b|higher|bull|positive/i.test(item.title) ? '↑' : /fall|drop|decline|down\b|lower|bear|negative/i.test(item.title) ? '↓' : '→';
-                  const dirColor = dir === '↑' ? '#00E5B4' : dir === '↓' ? '#FF4560' : '#6B6B8A';
+                  const dirColor = dir === '↑' ? '#0A0A0F' : dir === '↓' ? '#FF4560' : '#6B6B8A';
                   return (
                     <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
                       className="px-5 py-3.5 flex items-start gap-3 transition-all"
@@ -2818,7 +2826,7 @@ function PreMarketPanel() {
     ['vwap', 'VWAP'],        ['orh', 'OR High (9:35)'], ['orl', 'OR Low (9:35)'],
   ];
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -2868,9 +2876,9 @@ function PreMarketPanel() {
             <button key={b} onClick={() => setBias(b)}
               style={{
                 padding: '8px 20px', borderRadius: 10, fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                background: bias === b ? (b === 'LONG' ? '#00E5B420' : b === 'SHORT' ? '#FF456020' : '#6C63FF20') : 'transparent',
-                borderColor: bias === b ? (b === 'LONG' ? '#00E5B4' : b === 'SHORT' ? '#FF4560' : '#6C63FF') : '#1E1E2E',
-                color: bias === b ? (b === 'LONG' ? '#00E5B4' : b === 'SHORT' ? '#FF4560' : '#60a5fa') : '#6B6B8A',
+                background: bias === b ? (b === 'LONG' ? '#0A0A0F20' : b === 'SHORT' ? '#FF456020' : '#6C63FF20') : 'transparent',
+                borderColor: bias === b ? (b === 'LONG' ? '#0A0A0F' : b === 'SHORT' ? '#FF4560' : '#6C63FF') : '#1E1E2E',
+                color: bias === b ? (b === 'LONG' ? '#0A0A0F' : b === 'SHORT' ? '#FF4560' : '#60a5fa') : '#6B6B8A',
               }}>
               {b === 'LONG' ? '📈' : b === 'SHORT' ? '📉' : '➡️'} {b}
             </button>
@@ -2889,7 +2897,7 @@ function PreMarketPanel() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {SESSIONS.map(s => (
-            <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: '#111118' }}>
+            <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10, background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)' }}>
               <span style={{ fontSize: 16 }}>{s.status}</span>
               <div>
                 <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{s.name}</div>
@@ -2901,7 +2909,7 @@ function PreMarketPanel() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, alignItems: 'center' }}>
-        {saved && <span style={{ fontSize: 12, color: '#00E5B4' }}>Saved!</span>}
+        {saved && <span style={{ fontSize: 12, color: '#0A0A0F' }}>Saved!</span>}
         <button onClick={save} className="glass-btn-blue" style={{ padding: '9px 22px', fontSize: 13, borderRadius: 10 }}>
           Save prep notes
         </button>
@@ -2930,8 +2938,8 @@ function RiskCalcPanel() {
   const mnqContr = stopDist > 0 ? Math.floor(riskDollars / (stopDist * 2)) : 0; // MNQ tick value ~$2
   const rr       = targetN && stopDist ? ((Math.abs(targetN - entryN) / stopDist)).toFixed(2) : null;
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
-  const out  = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 12, padding: '14px 16px' };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
+  const out  = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 12, padding: '14px 16px' };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
@@ -2970,9 +2978,9 @@ function RiskCalcPanel() {
               {['LONG','SHORT'].map(d => (
                 <button key={d} onClick={() => setDir(d)}
                   style={{ flex: 1, padding: '9px', borderRadius: 10, fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                    background: dir === d ? (d === 'LONG' ? '#00E5B420' : '#FF456020') : 'transparent',
-                    borderColor: dir === d ? (d === 'LONG' ? '#00E5B4' : '#FF4560') : '#1E1E2E',
-                    color: dir === d ? (d === 'LONG' ? '#00E5B4' : '#FF4560') : '#6B6B8A' }}>
+                    background: dir === d ? (d === 'LONG' ? '#0A0A0F20' : '#FF456020') : 'transparent',
+                    borderColor: dir === d ? (d === 'LONG' ? '#0A0A0F' : '#FF4560') : '#1E1E2E',
+                    color: dir === d ? (d === 'LONG' ? '#0A0A0F' : '#FF4560') : '#6B6B8A' }}>
                   {d}
                 </button>
               ))}
@@ -2988,7 +2996,7 @@ function RiskCalcPanel() {
           ['Stop distance',    stopDist > 0 ? `$${stopDist.toFixed(2)}` : '—', '#6B6B8A'],
           ['Max shares',       shares > 0 ? shares.toLocaleString() : '—', '#F0F0FF'],
           ['MNQ contracts',    mnqContr > 0 ? mnqContr : '—', '#60a5fa'],
-          ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#00E5B4' : '#f59e0b']] : []),
+          ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#0A0A0F' : '#f59e0b']] : []),
         ].map(([l, v, c]) => (
           <div key={l} style={out}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 6 }}>{l}</div>
@@ -3049,7 +3057,7 @@ function ReportsPanel({ trades }) {
     datasets: [{
       data: weekPnl.length ? weekPnl : [0],
       backgroundColor: weekPnl.map(v => v >= 0 ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)'),
-      borderColor:     weekPnl.map(v => v >= 0 ? '#00E5B4' : '#FF4560'),
+      borderColor:     weekPnl.map(v => v >= 0 ? '#0A0A0F' : '#FF4560'),
       borderWidth: 1, borderRadius: 4,
     }],
   };
@@ -3064,7 +3072,7 @@ function ReportsPanel({ trades }) {
     }],
   };
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   if (closed.length === 0) {
     return (
@@ -3087,9 +3095,9 @@ function ReportsPanel({ trades }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {[
           ['Total closed', closed.length, '#F0F0FF'],
-          ['LONG win rate', longWR+'%', longWR >= 50 ? '#00E5B4' : '#FF4560'],
-          ['SHORT win rate', shortWR+'%', shortWR >= 50 ? '#00E5B4' : '#FF4560'],
-          ['Total P&L', '$'+closed.reduce((s,t) => s+(t.pnl||0), 0).toFixed(0), closed.reduce((s,t) => s+(t.pnl||0), 0) >= 0 ? '#00E5B4' : '#FF4560'],
+          ['LONG win rate', longWR+'%', longWR >= 50 ? '#0A0A0F' : '#FF4560'],
+          ['SHORT win rate', shortWR+'%', shortWR >= 50 ? '#0A0A0F' : '#FF4560'],
+          ['Total P&L', '$'+closed.reduce((s,t) => s+(t.pnl||0), 0).toFixed(0), closed.reduce((s,t) => s+(t.pnl||0), 0) >= 0 ? '#0A0A0F' : '#FF4560'],
         ].map(([l,v,c]) => (
           <div key={l} style={card}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 8 }}>{l}</div>
@@ -3117,7 +3125,7 @@ function ReportsPanel({ trades }) {
       {/* Best/worst trades */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {[
-          { label: '🏆 Best trades', items: [...closed].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#00E5B4' },
+          { label: '🏆 Best trades', items: [...closed].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#0A0A0F' },
           { label: '💔 Worst trades', items: [...closed].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#FF4560' },
         ].map(({ label, items, color }) => (
           <div key={label} style={card}>
@@ -3166,7 +3174,7 @@ function ArbitragePanel() {
   const stake1     = hasArb ? (stake / (d1 * impliedSum)).toFixed(2) : null;
   const stake2     = hasArb ? (stake / (d2 * impliedSum)).toFixed(2) : null;
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520 }}>
@@ -3200,21 +3208,21 @@ function ArbitragePanel() {
 
       {impliedSum && (
         <div style={{ ...card, border: `1px solid ${hasArb ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.3)'}`, background: hasArb ? 'rgba(34,197,94,0.05)' : '#111118' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: hasArb ? '#00E5B4' : '#FF4560', marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: hasArb ? '#0A0A0F' : '#FF4560', marginBottom: 12 }}>
             {hasArb ? '✅ Arbitrage opportunity found!' : '❌ No arbitrage — books have edge'}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {[
-              ['Implied sum', (impliedSum * 100).toFixed(2)+'%', impliedSum < 1 ? '#00E5B4' : '#FF4560'],
+              ['Implied sum', (impliedSum * 100).toFixed(2)+'%', impliedSum < 1 ? '#0A0A0F' : '#FF4560'],
               ['Book edge', ((impliedSum - 1) * 100).toFixed(2)+'%', '#6B6B8A'],
               ...(hasArb ? [
                 [`Bet on ${book1 || 'Book 1'}`, '$'+stake1, '#F0F0FF'],
                 [`Bet on ${book2 || 'Book 2'}`, '$'+stake2, '#F0F0FF'],
-                ['Guaranteed profit', '$'+profit.toFixed(2), '#00E5B4'],
-                ['Profit %', profitPct+'%', '#00E5B4'],
+                ['Guaranteed profit', '$'+profit.toFixed(2), '#0A0A0F'],
+                ['Profit %', profitPct+'%', '#0A0A0F'],
               ] : []),
             ].map(([l, v, c]) => (
-              <div key={l} style={{ background: '#111118', borderRadius: 10, padding: '12px 14px' }}>
+              <div key={l} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '12px 14px' }}>
                 <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>{l}</div>
                 <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', color: c }}>{v}</div>
               </div>
@@ -3246,7 +3254,7 @@ function ParlayPanel() {
   const impliedProb = hasOdds ? (1 / decimal) * 100 : 0;
   const filledLegs = legs.filter(l => l.trim());
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520 }}>
@@ -3291,7 +3299,7 @@ function ParlayPanel() {
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#6C63FF', marginBottom: 8 }}>
             {filledLegs.length > 0 ? `${filledLegs.length}-Leg Parlay` : 'Payout if Win'}
           </div>
-          <div style={{ fontSize: 56, fontWeight: 900, color: '#00E5B4', letterSpacing: '-0.02em', lineHeight: 1 }}>
+          <div style={{ fontSize: 56, fontWeight: 900, color: '#0A0A0F', letterSpacing: '-0.02em', lineHeight: 1 }}>
             ${payout.toFixed(2)}
           </div>
           <div style={{ fontSize: 14, color: '#94a3b8', marginTop: 10 }}>
@@ -3351,10 +3359,10 @@ function BettingAnalyticsPanel({ bets }) {
     return { type: t, wr: tb.length ? Math.round(wins.length/tb.length*100) : 0, pnl: tb.reduce((sum,b) => sum+(b.pnl||0), 0), n: tb.length };
   });
 
-  const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   if (settled.length === 0) {
-    const card = { background: '#111118', border: '1px solid #1E1E2E', borderRadius: 16, padding: 20 };
+    const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Onboarding card */}
@@ -3447,8 +3455,8 @@ function BettingAnalyticsPanel({ bets }) {
               <tr key={d.type} style={{ borderTop: '1px solid #1E1E2E' }}>
                 <td style={{ padding: '8px 0', color: '#F0F0FF', fontWeight: 500 }}>{d.type}</td>
                 <td style={{ padding: '8px 0', color: '#6B6B8A' }}>{d.n}</td>
-                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
-                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(2)}</td>
+                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
+                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -3465,8 +3473,8 @@ function BettingAnalyticsPanel({ bets }) {
               <tr key={d.book} style={{ borderTop: '1px solid #1E1E2E' }}>
                 <td style={{ padding: '8px 0', color: '#F0F0FF', fontWeight: 500 }}>{d.book}</td>
                 <td style={{ padding: '8px 0', color: '#6B6B8A' }}>{d.n}</td>
-                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
-                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(0)}</td>
+                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
+                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(0)}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -3476,7 +3484,7 @@ function BettingAnalyticsPanel({ bets }) {
       {/* Best/worst bets */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {[
-          { label: '🏆 Best bets', items: [...settled].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#00E5B4' },
+          { label: '🏆 Best bets', items: [...settled].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#0A0A0F' },
           { label: '💔 Worst bets', items: [...settled].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#FF4560' },
         ].map(({ label, items, color }) => (
           <div key={label} style={card}>
@@ -3505,8 +3513,8 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
   const wrPct     = wrTarget > 0 ? Math.min(100, monthWR/wrTarget*100) : 0;
 
   const barColor = (pct, inv=false) => inv
-    ? (pct < 50 ? '#00E5B4' : pct < 80 ? '#f59e0b' : '#FF4560')
-    : (pct >= 100 ? '#00E5B4' : pct >= 50 ? '#f59e0b' : '#6B6B8A');
+    ? (pct < 50 ? '#0A0A0F' : pct < 80 ? '#f59e0b' : '#FF4560')
+    : (pct >= 100 ? '#0A0A0F' : pct >= 50 ? '#f59e0b' : '#6B6B8A');
 
   const card = { background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
   const track = { background: 'rgba(108,99,255,0.2)' };
@@ -3551,7 +3559,7 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
           {monthWR}%
         </div>
         <div className="h-1.5 rounded-full overflow-hidden mb-2.5" style={track}>
-          <div className="h-full rounded-full transition-all duration-500" style={{width: wrPct+'%', background: monthWR>=wrTarget?'#00E5B4':'#f59e0b'}} />
+          <div className="h-full rounded-full transition-all duration-500" style={{width: wrPct+'%', background: monthWR>=wrTarget?'#0A0A0F':'#f59e0b'}} />
         </div>
         <div className="flex items-center gap-1.5 text-xs" style={{color: '#6B6B8A'}}>
           <span>Target</span>
@@ -3581,7 +3589,7 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
 ───────────────────────────────────────── */
 function ViewToggle({ view, setView, options = ['calendar', 'table'] }) {
   return (
-    <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: '#111118'}}>
+    <div className="flex gap-1 p-1 rounded-xl w-fit" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)'}}>
       {options.map(v => (
         <button key={v} onClick={() => setView(v)}
           className="px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
@@ -3595,10 +3603,10 @@ function ViewToggle({ view, setView, options = ['calendar', 'table'] }) {
 
 function DarkTable({ headers, children, empty }) {
   return (
-    <div className="rounded-2xl overflow-hidden" style={{background: '#111118', border: '1px solid #1E1E2E'}}>
+    <div className="rounded-2xl overflow-hidden" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-xs font-medium uppercase tracking-wide" style={{background: '#111118', borderBottom: '1px solid #1E1E2E', color: '#6B6B8A'}}>
+          <tr className="text-xs font-medium uppercase tracking-wide" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #1E1E2E', color: '#6B6B8A'}}>
             {headers.map(h => <th key={h} className="text-left px-5 py-3">{h}</th>)}
           </tr>
         </thead>
