@@ -37,6 +37,43 @@ export default function HomeTab({ onSwitchTab }) {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [signalCount, setSignalCount] = useState(0);
+  const [displaySignal, setDisplaySignal] = useState(0);
+  const [typedName, setTypedName] = useState('');
+
+  useEffect(() => {
+    // Sharp Signals count-up
+    let start = 0;
+    const end = signalCount || 0;
+    if (end === 0) return;
+    const duration = 1500;
+    const frameRate = 1000 / 60;
+    const totalFrames = duration / frameRate;
+    const increment = end / totalFrames;
+    
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setDisplaySignal(end);
+        clearInterval(timer);
+      } else {
+        setDisplaySignal(Math.floor(start));
+      }
+    }, frameRate);
+    return () => clearInterval(timer);
+  }, [signalCount]);
+
+  useEffect(() => {
+    // Typewriter effect
+    const fullText = displayName.toUpperCase();
+    let i = 0;
+    setTypedName('');
+    const timer = setInterval(() => {
+      setTypedName(fullText.slice(0, i));
+      i++;
+      if (i > fullText.length) clearInterval(timer);
+    }, 50);
+    return () => clearInterval(timer);
+  }, [displayName]);
 
   useEffect(() => {
     // Simulated live signal count increment
@@ -94,10 +131,12 @@ export default function HomeTab({ onSwitchTab }) {
     <div className="flex flex-col gap-10">
       <style>{`
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes drift1 { 0% { transform: translate(0, 0); } 50% { transform: translate(40px, 30px); } 100% { transform: translate(0, 0); } }
+        @keyframes drift2 { 0% { transform: translate(0, 0); } 50% { transform: translate(-30px, -40px); } 100% { transform: translate(0, 0); } }
         .fade-in-up { animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; }
-        .hero-banner { background: linear-gradient(135deg, #6C63FF 0%, #00E5B4 100%); position: relative; overflow: hidden; }
-        .hero-banner::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); background-size: 200% 100%; animation: shimmer 3s infinite; }
+        .orb-1 { width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(108,99,255,0.18) 0%, transparent 70%); filter: blur(40px); position: absolute; top: -100px; left: -60px; animation: drift1 20s infinite ease-in-out; z-index: 0; }
+        .orb-2 { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(0,229,180,0.12) 0%, transparent 70%); filter: blur(30px); position: absolute; bottom: -60px; right: 15%; animation: drift2 25s infinite ease-in-out; z-index: 0; }
+        .hero-banner { background: #050508; border: 1px solid rgba(255,255,255,0.06); position: relative; overflow: hidden; }
         .glass-card { background: rgba(17, 17, 32, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(108, 99, 255, 0.2); transition: all 0.3s ease; }
         .glass-card:hover { transform: translateY(-5px); border-color: rgba(108, 99, 255, 0.5); box-shadow: 0 0 30px rgba(108, 99, 255, 0.15); }
       `}</style>
@@ -105,15 +144,24 @@ export default function HomeTab({ onSwitchTab }) {
       {/* HERO BANNER */}
       <div className="hero-banner rounded-[32px] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-10 fade-in-up" 
         style={{ animationDelay: '0.1s' }}>
-        <div className="flex-1">
-          <h1 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter mb-4 leading-none">
-            {greeting().toUpperCase()},<br/> <span className="opacity-70 text-black">{displayName.toUpperCase()}</span>
+        
+        <div className="orb-1" />
+        <div className="orb-2" />
+
+        <div className="flex-1 relative z-10">
+          <h1 className="text-4xl md:text-5xl font-black text-[#F0F0FF] tracking-tighter mb-4 leading-none">
+            {greeting().toUpperCase()},<br/> 
+            <span className="text-[#F0F0FF]">{typedName}</span>
           </h1>
-          <p className="text-white/80 font-bold uppercase tracking-[0.2em] text-xs">The Edge has arrived. You're ready.</p>
+          <p className="text-[rgba(240,240,255,0.5)] font-bold uppercase tracking-[0.2em] text-xs">The Edge has arrived. You're ready.</p>
         </div>
-        <div className="flex flex-col items-center md:items-end gap-2">
-          <div className="text-7xl font-black text-white tabular-nums drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">{signalCount}</div>
-          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#0A0A0F] bg-white/20 px-4 py-1 rounded-full backdrop-blur-md">Sharp Signals Today</div>
+        <div className="flex flex-col items-center md:items-end gap-2 relative z-10">
+          <div className="text-7xl font-black text-[#00E5B4] tabular-nums drop-shadow-[0_0_20px_rgba(0,229,180,0.2)]">
+            {displaySignal}
+          </div>
+          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6B6B8A] bg-white/5 px-4 py-1 rounded-full border border-white/5">
+            Sharp Signals Today
+          </div>
         </div>
       </div>
 
