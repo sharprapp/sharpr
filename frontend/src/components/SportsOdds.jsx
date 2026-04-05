@@ -187,103 +187,124 @@ export default function SportsOdds({ initialSport, tier }) {
         </div>
       )}
 
-      {/* Game cards */}
       {!loading && [...games].sort((a, b) => sortByEdge ? (b.edgeScore?.score || 0) - (a.edgeScore?.score || 0) : 0).map(game => {
-        const hasOdds = game.homeML != null || game.awayML != null;
         const edge = game.edgeScore;
 
         return (
-          <div key={game.id} style={{ ...gc, overflow: 'hidden', cursor: 'pointer' }}
-            onClick={() => setSelectedGame(game)}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.2)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+          <div key={game.id} className="group relative overflow-hidden transition-all hover:scale-[1.01]"
+            style={{ 
+              background: 'rgba(17,17,32,0.8)', 
+              backdropFilter: 'blur(20px)', 
+              border: '1px solid rgba(108,99,255,0.2)', 
+              borderRadius: 24,
+              cursor: 'pointer'
+            }}
+            onClick={() => setSelectedGame(game)}>
+            
+            {/* Edge Glow */}
+            {edge && edge.score > 60 && (
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                style={{ background: `radial-gradient(circle at center, ${edge.color}10 0%, transparent 70%)` }} />
+            )}
 
-            <div style={{ padding: 20 }}>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 8px', borderRadius: 20, background: 'rgba(108,99,255,0.1)', color: '#867fff', textTransform: 'uppercase' }}>{SPORT_LABELS[sport] || sport}</span>
-                  {game.isLive && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 10, background: 'rgba(239,68,68,0.15)', color: '#FF4560', animation: 'pulse 1.5s infinite' }}>LIVE</span>}
-                  {edge && edge.score > 30 && (
-                    <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 10, background: edge.score >= 81 ? 'rgba(34,197,94,0.15)' : edge.score >= 61 ? 'rgba(245,158,11,0.15)' : 'rgba(251,191,36,0.1)', color: edge.color, border: `1px solid ${edge.color}30` }}>
-                      {edge.score >= 81 ? '⚡ ' : ''}{edge.score} Edge
+            <div className="p-8">
+              {/* Top Bar */}
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] font-black px-3 py-1 rounded-full bg-[#6C63FF]/10 text-[#867fff] uppercase tracking-widest border border-[#6C63FF]/20">
+                    {SPORT_LABELS[sport] || sport}
+                  </span>
+                  {game.isLive && (
+                    <span className="flex items-center gap-1.5 text-[10px] font-black px-3 py-1 rounded-full bg-[#FF4560]/10 text-[#FF4560] uppercase tracking-widest border border-[#FF4560]/20 animate-pulse">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#FF4560]" /> LIVE
                     </span>
                   )}
                 </div>
-                <span style={{ fontSize: 11, color: '#4E4E63' }}>{fmtDate(game.commenceTime)}</span>
+                <div className="text-right">
+                  <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-widest">{fmtDate(game.commenceTime)}</div>
+                </div>
               </div>
 
-              {/* Odds grid: 2 rows (away/home) × 3 columns (spread/ml/total) */}
-              {hasOdds ? (
-                <div style={{ marginBottom: 12 }}>
-                  {/* Column headers */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6, marginBottom: 6 }}>
-                    <div />
-                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Spread</div>
-                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Moneyline</div>
-                    <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', textAlign: 'center' }}>Total</div>
+              {/* VS Layout */}
+              <div className="flex items-center justify-between gap-4 mb-10">
+                {/* Away Team */}
+                <div className="flex-1 flex flex-col items-center gap-4 text-center">
+                  <div className="w-20 h-20 rounded-2xl bg-black/40 flex items-center justify-center p-4 border border-white/5 shadow-inner group-hover:border-[#6C63FF]/30 transition-all">
+                    <TeamLogo teamName={game.awayTeam} size={64} />
                   </div>
-                  {/* Away row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6, marginBottom: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <TeamLogo teamName={game.awayTeam} size={24} />
-                      <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', wordBreak: 'break-word' }}>{game.awayTeam}</span>
-                    </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.awayTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
-                      {formatSpread(game.awaySpread)} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.awaySpreadOdds)})</span>
-                    </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.awayTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.awayML > 0 ? '#00E5B4' : '#FF4560', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
-                      {formatOdds(game.awayML)}
-                    </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Over', null); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
-                      O {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.overOdds)})</span>
-                    </div>
-                  </div>
-                  {/* Home row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr repeat(3, 100px)', gap: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <TeamLogo teamName={game.homeTeam} size={24} />
-                      <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', wordBreak: 'break-word' }}>{game.homeTeam}</span>
-                    </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Spread', game.homeTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
-                      {formatSpread(game.homeSpread)} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.homeSpreadOdds)})</span>
-                    </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'ML', game.homeTeam); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 13, fontWeight: 800, color: game.homeML > 0 ? '#00E5B4' : '#FF4560', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
-                      {formatOdds(game.homeML)}
-                    </div>
-                    <div onClick={e => { e.stopPropagation(); betGame(game, 'Under', null); }} style={{ background: '#111118', borderRadius: 8, padding: '8px 6px', textAlign: 'center', fontSize: 12, fontWeight: 800, letterSpacing: '-0.03em', color: '#8899bb', cursor: 'pointer', transition: 'all 0.15s' }} onMouseEnter={e => e.currentTarget.style.background='#1E1E2E'} onMouseLeave={e => e.currentTarget.style.background='#111118'}>
-                      U {game.overTotal || '--'} <span style={{ fontSize: 10, color: '#4E4E63' }}>({formatOdds(game.underOdds)})</span>
-                    </div>
+                  <div>
+                    <div className="text-xl font-black text-[#F0F0FF] tracking-tight">{game.awayTeam}</div>
+                    <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-widest mt-1">AWAY</div>
                   </div>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <TeamLogo teamName={game.awayTeam} size={24} />
-                    <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{game.awayTeam}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <TeamLogo teamName={game.homeTeam} size={24} />
-                    <span style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF' }}>{game.homeTeam}</span>
-                  </div>
-                  <div style={{ fontSize: 12, color: '#2a3a5a', marginTop: 4 }}>Odds not yet available</div>
-                </div>
-              )}
 
-              {/* Action row */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button onClick={e => { e.stopPropagation(); betGame(game, 'ML', null); }}
-                  style={{ background: '#6C63FF', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#fff', cursor: 'pointer' }}>
-                  Log bet
-                </button>
-                <button onClick={e => { e.stopPropagation(); analyzeGame(game); }}
-                  style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.25)', borderRadius: 10, padding: '6px 14px', fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', color: '#60a5fa', cursor: 'pointer' }}>
-                  Analyze
-                </button>
+                {/* VS Center */}
+                <div className="flex flex-col items-center gap-2 px-8">
+                  <div className="text-4xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-[#6C63FF] to-[#00E5B4] opacity-20 group-hover:opacity-50 transition-opacity">VS</div>
+                  {edge && (
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap shadow-lg transition-all group-hover:scale-110"
+                        style={{ background: `${edge.color}20`, color: edge.color, border: `1px solid ${edge.color}40` }}>
+                        {edge.score}% EDGE
+                      </div>
+                      {edge.score > 70 && (
+                        <span className="text-[8px] font-black text-[#00E5B4] uppercase tracking-[0.2em] animate-pulse">Sharp Signal</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Home Team */}
+                <div className="flex-1 flex flex-col items-center gap-4 text-center">
+                  <div className="w-20 h-20 rounded-2xl bg-black/40 flex items-center justify-center p-4 border border-white/5 shadow-inner group-hover:border-[#6C63FF]/30 transition-all">
+                    <TeamLogo teamName={game.homeTeam} size={64} />
+                  </div>
+                  <div>
+                    <div className="text-xl font-black text-[#F0F0FF] tracking-tight">{game.homeTeam}</div>
+                    <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-widest mt-1">HOME</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Odds Grid */}
+              <div className="grid grid-cols-3 gap-3 mb-8">
+                {[
+                  { label: 'MONEYLINE', away: game.awayML, home: game.homeML, type: 'ML' },
+                  { label: 'SPREAD', away: game.awaySpread, home: game.homeSpread, subAway: game.awaySpreadOdds, subHome: game.homeSpreadOdds, type: 'Spread' },
+                  { label: 'TOTAL', away: 'O ' + (game.overTotal || '--'), home: 'U ' + (game.overTotal || '--'), subAway: game.overOdds, subHome: game.underOdds, type: 'Total' }
+                ].map((col) => (
+                  <div key={col.label} className="flex flex-col gap-2">
+                    <div className="text-[9px] font-black text-[#4E4E63] uppercase tracking-[0.2em] text-center mb-1">{col.label}</div>
+                    <div className="flex flex-col gap-1">
+                      <button onClick={(e) => { e.stopPropagation(); betGame(game, col.type, game.awayTeam); }}
+                        className="py-3 px-2 rounded-xl bg-black/40 border border-white/5 hover:border-[#6C63FF]/40 hover:bg-[#6C63FF]/5 transition-all text-sm font-black text-[#F0F0FF]">
+                        {col.type === 'ML' ? formatOdds(col.away) : col.away}
+                        {col.subAway && <span className="text-[10px] text-[#6B6B8A] ml-2 font-bold">({formatOdds(col.subAway)})</span>}
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); betGame(game, col.type, game.homeTeam); }}
+                        className="py-3 px-2 rounded-xl bg-black/40 border border-white/5 hover:border-[#6C63FF]/40 hover:bg-[#6C63FF]/5 transition-all text-sm font-black text-[#F0F0FF]">
+                        {col.type === 'ML' ? formatOdds(col.home) : col.home}
+                        {col.subHome && <span className="text-[10px] text-[#6B6B8A] ml-2 font-bold">({formatOdds(col.subHome)})</span>}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                <div className="flex gap-3">
+                  <button onClick={(e) => { e.stopPropagation(); analyzeGame(game); }}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#6C63FF]/10 border border-[#6C63FF]/30 text-[10px] font-black uppercase tracking-widest text-[#F0F0FF] hover:bg-[#6C63FF] transition-all">
+                    <span>🔬</span> ANALYZE
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); betGame(game, 'ML', null); }}
+                    className="px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-[#6B6B8A] hover:text-[#F0F0FF] transition-all">
+                    LOG CUSTOM
+                  </button>
+                </div>
                 {game.bookmakers?.length > 0 && (
-                  <span style={{ marginLeft: 'auto', fontSize: 10, color: '#2a3a5a' }}>
-                    via {game.bookmakers[0]}
-                  </span>
+                  <div className="text-[10px] font-black text-[#2a3a5a] uppercase tracking-widest">VIA {game.bookmakers[0]}</div>
                 )}
               </div>
             </div>

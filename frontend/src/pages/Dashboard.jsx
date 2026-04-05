@@ -187,14 +187,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen" style={{ overflowX: 'hidden', maxWidth: '100vw' }} relative overflow-hidden z-10>
-
-      {/* ELITE ORBS */}
-      <style>{'\
-        @keyframes floatDash { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(3vw, -3vh) scale(1.05); } 100% { transform: translate(0,0) scale(1); } }\
-      '}</style>
-      <div style={{ position: 'fixed', width: '60vw', height: '60vw', background: 'rgba(108,99,255,0.1)', filter: 'blur(140px)', top: '-20%', left: '-10%', borderRadius: '50%', pointerEvents: 'none', zIndex: 0, animation: 'floatDash 25s infinite ease-in-out' }}></div>
-      <div style={{ position: 'fixed', width: '50vw', height: '50vw', background: 'rgba(0,229,180,0.05)', filter: 'blur(120px)', bottom: '-10%', right: '-15%', borderRadius: '50%', pointerEvents: 'none', zIndex: 0, animation: 'floatDash 30s infinite ease-in-out reverse' }}></div>
+    <div className="min-h-screen relative overflow-hidden bg-[#0A0A0F]" style={{ maxWidth: '100vw' }}>
+      {/* Institutional Dark Background System */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#6C63FF]/10 blur-[120px] animate-pulse" 
+          style={{ animationDuration: '8s' }} />
+        <div className="absolute bottom-[-10%] right-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#00E5B4]/5 blur-[100px] animate-pulse"
+          style={{ animationDuration: '12s' }} />
+      </div>
   
       {showOnboarding && (
         <OnboardingModal userPlan={tier} onComplete={() => setShowOnboarding(false)} />
@@ -1108,7 +1108,7 @@ function PolymarketTab({ tier }) {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {visible.map((m) => <MarketCard key={m.id} market={m} onClick={() => { setSelectedMarket(m); posthog.capture('market_viewed', { market_id: m.id, title: m.title }); }} />)}
             </div>
 
@@ -1261,74 +1261,58 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
   };
 
   return (
-    <div className="rounded-2xl p-5 flex flex-col gap-4 transition-all"
+    <div className="group rounded-2xl p-6 flex flex-col gap-5 transition-all hover:-translate-y-1"
       style={{
-        background: 'linear-gradient(145deg, rgba(30,41,59,0.55) 0%, rgba(15,23,42,0.85) 100%)', 
-        border: '1px solid rgba(108, 99, 255, 0.3)', 
-        boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.4)',
-        backdropFilter: 'blur(24px)', 
-        WebkitBackdropFilter: 'blur(24px)', 
-        transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)', 
+        background: 'rgba(17,17,32,0.8)', 
+        backdropFilter: 'blur(20px)',
+        border: `1px solid ${isUp ? 'rgba(0, 229, 180, 0.3)' : 'rgba(108, 99, 255, 0.3)'}`,
+        boxShadow: isUp ? '0 0 20px rgba(0, 229, 180, 0.05)' : '0 0 20px rgba(108, 99, 255, 0.05)',
         cursor: 'pointer',
-        position: 'relative',
-        overflow: 'hidden'
+        position: 'relative'
       }}
-      onClick={onClick}
-      onMouseEnter={e => { 
-        e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'; 
-        e.currentTarget.style.boxShadow=`inset 0 1px 1px rgba(255,255,255,0.1), 0 12px 30px rgba(0,0,0,0.7), 0 0 20px ${trendColor}2a`; 
-        e.currentTarget.style.transform='translateY(-4px)'; 
-      }}
-      onMouseLeave={e => { 
-        e.currentTarget.style.borderColor='#1E1E2E'; 
-        e.currentTarget.style.boxShadow='inset 0 1px 1px rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.4)'; 
-        e.currentTarget.style.transform='translateY(0)'; 
-      }}>
+      onClick={onClick}>
 
-      <div className="flex items-center justify-between gap-2 flex-wrap">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          {historyData.length > 0 && (
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: trendColor, animation: `${pulseAnim} 2s infinite` }} />
-          )}
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={catColor(m.cat)}>{m.cat}</span>
+          <span className="text-[10px] font-black px-2.5 py-1 rounded-lg uppercase tracking-widest" 
+            style={{ background: isUp ? 'rgba(0, 229, 180, 0.1)' : 'rgba(108, 99, 255, 0.1)', color: isUp ? '#00E5B4' : '#8179ff' }}>
+            {m.cat}
+          </span>
           {isSharp && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-lg" style={{background: 'rgba(239,68,68,0.15)', color: '#FF4560'}}>🔥 Sharp</span>
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-[#FF4560]/10 text-[#FF4560] uppercase tracking-widest">🔥 Sharp</span>
           )}
         </div>
-        <span className="text-xs font-medium uppercase tracking-wider" style={{color: '#94a3b8'}}>Vol {vol}</span>
+        <span className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A]">VOL {vol}</span>
       </div>
 
-      <p style={{fontSize: 15, fontWeight: 800, letterSpacing: '-0.02em', color: '#F8FAFC', lineHeight: 1.35, letterSpacing: '-0.01em', flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', margin: 0}}>{m.title}</p>
+      <div className="flex flex-col gap-1">
+        <p className="text-lg font-black text-[#F0F0FF] leading-tight tracking-tight line-clamp-2 min-h-[3rem]">{m.title}</p>
+      </div>
 
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#6B6B8A'}}>YES</span>
-          <div className="flex items-center gap-4">
-            {renderSparkline()}
-            <div className="flex items-center gap-1.5">
-              <span style={{fontSize: 32, fontWeight: 800, color: trendColor, lineHeight: 1, letterSpacing: '-0.03em', textShadow: `0 0 24px ${trendColor}66`}}>{pct}%</span>
-              <span style={{fontSize: 20, fontWeight: 900, color: trendColor, transform: 'translateY(-2px)'}}>{isUp ? '↑' : '↓'}</span>
-            </div>
+      <div className="flex items-end justify-between mt-2">
+        <div className="flex flex-col">
+          <div className="flex items-baseline gap-2">
+            <span style={{ fontSize: 44, fontWeight: 900, color: isUp ? '#00E5B4' : '#6C63FF', letterSpacing: '-0.05em', lineHeight: 1 }}>{pct}%</span>
+            <span className="text-xl font-black" style={{ color: isUp ? '#00E5B4' : '#6C63FF' }}>{isUp ? '↗' : '↘'}</span>
           </div>
-          <span className="text-xs font-bold uppercase tracking-wider" style={{color: '#6B6B8A'}}>NO {m.no ?? 100 - pct}%</span>
+          <span className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A] mt-1">LATEST PROBABILITY</span>
         </div>
-        <div className="h-1.5 rounded-full overflow-hidden" style={{background: 'rgba(0,0,0,0.5)', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.6)'}}>
-          <div className="h-full rounded-full transition-all" style={{width: pct+'%', background: trendColor, boxShadow: `0 0 10px ${trendColor}80`}} />
+        <div className="flex flex-col items-end gap-3">
+          {renderSparkline()}
+          <button onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
+            className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A] hover:text-[#F0F0FF] transition-colors">
+            {expanded ? 'CLOSE HISTORY' : 'VIEW HISTORY'}
+          </button>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-1">
-        <div onClick={e => e.stopPropagation()}><AIAnalyzeButton topic={m.title} type="polymarket" /></div>
-        <button onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
-          className="text-xs font-semibold transition-colors" style={{color: '#6B6B8A'}}
-          onMouseEnter={e => e.currentTarget.style.color='#cbd5e1'}
-          onMouseLeave={e => e.currentTarget.style.color='#6B6B8A'}>
-          {expanded ? '▲ Hide history' : '▼ 7-day history'}
-        </button>
+      <div className="h-1.5 rounded-full overflow-hidden bg-black/40 border border-white/5">
+        <div className="h-full rounded-full transition-all duration-1000" 
+          style={{ width: pct+'%', background: isUp ? 'linear-gradient(90deg, #00E5B4 0%, #009D7D 100%)' : 'linear-gradient(90deg, #6C63FF 0%, #4E46E5 100%)', boxShadow: `0 0 10px ${isUp ? '#00E5B4' : '#6C63FF'}40` }} />
       </div>
 
       {expanded && (
-        <div style={{height: 120, marginTop: 4}} onClick={e => e.stopPropagation()}>
+        <div className="pt-4 mt-2 border-t border-white/5 h-[140px]" onClick={e => e.stopPropagation()}>
           <Line data={chartData} options={chartOpts} />
         </div>
       )}
@@ -1420,90 +1404,138 @@ function DayTradingTab({ activeSubTab, tier }) {
           onLimitChange={v => { setDailyLimit(v); localStorage.setItem('dt_daily_limit', v); }}
           onTargetChange={v => { setWrTarget(v);  localStorage.setItem('dt_wr_target',   v); }}
         />
-        {/* Export buttons */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={() => exportTradesCSV(trades)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', cursor: 'pointer' }}>Export CSV</button>
-          {(tier === 'pro' || tier === 'elite') ? (
-            <button onClick={() => exportTradesPDF(trades)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>Export PDF</button>
-          ) : (
-            <span style={{ fontSize: 10, color: '#2a3a5a', alignSelf: 'center' }}>PDF — <span style={{ color: '#6C63FF', cursor: 'pointer' }} onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))}>Pro</span></span>
-          )}
-        </div>
+        
+        {/* Trading Dashboard Section */}
+        <div className="flex flex-col gap-6 mt-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-black tracking-tight text-[#F0F0FF]">Trading Performance</h3>
+            <div className="flex gap-2">
+              <button onClick={() => exportTradesCSV(trades)} className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-[rgba(108,99,255,0.2)] text-[#6B6B8A] hover:text-[#F0F0FF] hover:border-[#6C63FF] transition-all">CSV</button>
+              {(tier === 'pro' || tier === 'elite') ? (
+                <button onClick={() => exportTradesPDF(trades)} className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-[rgba(108,99,255,0.2)] text-[#867fff] hover:border-[#6C63FF] transition-all" style={{ background: 'rgba(108,99,255,0.1)' }}>PDF</button>
+              ) : (
+                <span onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg border border-[rgba(108,99,255,0.1)] text-[#2a3a5a] cursor-pointer">PDF (Unlock)</span>
+              )}
+            </div>
+          </div>
 
-        {/* Hero P&L */}
-        <div className="rounded-2xl p-6" style={{background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', textAlign: 'center'}}>
-          <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#6B6B8A'}}>Total P&L</div>
-          <div style={{fontSize: 48, fontWeight: 900, color: stats.pnl >= 0 ? '#0A0A0F' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1}}>
-            {(stats.pnl>=0?'+':'')+'$'+stats.pnl.toFixed(2)}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+              <div className="relative z-10">
+                <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Total Net P&L</div>
+                <div className="text-4xl font-black tracking-tighter" style={{ color: stats.pnl >= 0 ? '#00E5B4' : '#FF4560', textShadow: `0 0 30px ${stats.pnl >= 0 ? 'rgba(0,229,180,0.3)' : 'rgba(255,69,96,0.3)'}` }}>
+                  {(stats.pnl >= 0 ? '+' : '') + '$' + stats.pnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </div>
+              </div>
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">📈</div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+                <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Win Rate</div>
+                <div className="text-2xl font-black text-[#F0F0FF]">{stats.wr}%</div>
+                <div className="h-1 mt-2 rounded-full bg-black/40 overflow-hidden">
+                  <div className="h-full bg-[#6C63FF]" style={{ width: `${stats.wr}%` }}></div>
+                </div>
+              </div>
+              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+                <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Trades Today</div>
+                <div className="text-2xl font-black text-[#F0F0FF]">{todayTrades.length}</div>
+                <div className="text-[10px] font-bold mt-1" style={{ color: todayPnl >= 0 ? '#00E5B4' : '#FF4560' }}>
+                  {(todayPnl >= 0 ? '+' : '')}$ {todayPnl.toFixed(0)}
+                </div>
+              </div>
+              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+                <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Max Drawdown</div>
+                <div className="text-2xl font-black text-[#FF4560]">${Math.abs(maxDD).toFixed(0)}</div>
+              </div>
+              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+                <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Best Trade</div>
+                <div className="text-2xl font-black text-[#00E5B4]">${Math.max(...(trades.map(t => t.pnl || 0).concat(0))).toFixed(0)}</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
-          {[['Win Rate', stats.wr+'%', '#F0F0FF', 28], ['Max Drawdown', maxDD ? '-$'+Math.abs(maxDD).toFixed(0) : '$0', maxDD < 0 ? '#FF4560' : '#F0F0FF', 28], ['Total Trades', stats.total, '#F0F0FF', 28]].map(([l,v,c,sz]) => (
-            <div key={l} className="rounded-2xl p-5" style={{background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', textAlign: 'center', transition: 'all 0.2s ease'}}
-              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
-              <div className="text-xs font-medium uppercase tracking-wide mb-2" style={{color: '#6B6B8A'}}>{l}</div>
-              <div style={{fontSize: sz, fontWeight: 800, letterSpacing: '-0.03em', color: c}}>{v}</div>
-            </div>
-          ))}
-        </div>
+
         <ViewToggle view={view} setView={setView} />
+        
         {view === 'calendar' ? (
           <TradingCalendar trades={trades} />
         ) : (
-          <>
+          <div className="flex flex-col gap-8">
             <TradeForm form={form} setForm={setForm} loading={loading} onAdd={addTrade} />
-            <DarkTable
-              headers={['Ticker','Direction','Entry','P&L','Confidence','Duration','Status','','']}
-              empty="No trades yet. Log your first trade above.">
-              {trades.map(t => {
-                const cls = t.status==='win'?'text-green-500':t.status==='loss'?'text-red-500':'text-slate-500';
-                const confColor = t.confidence === 'Max' ? '#FF4560' : t.confidence === 'High' ? '#0A0A0F' : t.confidence === 'Medium' ? '#867fff' : '#6B6B8A';
-                return (
-                  <tr key={t.id} className="transition-colors" style={{borderBottom: '1px solid #1E1E2E'}}
-                    onMouseEnter={e => e.currentTarget.style.background='rgba(30,42,74,0.4)'}
-                    onMouseLeave={e => e.currentTarget.style.background='transparent'}>
-                    <td className="px-5 py-3.5 font-semibold" style={{color: '#F0F0FF'}}>
-                      <div className="flex items-center gap-2">
-                        {t.ticker}
-                        {t.screenshot_url && <span title="Has chart screenshot" style={{ fontSize: 10, color: '#6C63FF' }}>📸</span>}
+            
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between px-2 mb-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A]">Global Trade Journal</span>
+                <span className="text-[10px] font-black text-[#2a3a5a]">{trades.length} entries</span>
+              </div>
+              {trades.length === 0 ? (
+                <div className="rounded-2xl py-20 text-center border border-dashed border-[rgba(108,99,255,0.2)]" style={{ background: 'rgba(17,17,32,0.4)', backdropFilter: 'blur(20px)' }}>
+                  <div className="text-4xl mb-4">📓</div>
+                  <div className="text-sm font-bold text-[#6B6B8A]">No trades yet. Log your first trade above.</div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {trades.map(t => {
+                    const isWin = t.status === 'win';
+                    const isLoss = t.status === 'loss';
+                    const statusColor = isWin ? '#00E5B4' : isLoss ? '#FF4560' : '#6B6B8A';
+                    
+                    return (
+                      <div key={t.id} className="group relative overflow-hidden flex items-center gap-4 p-4 rounded-xl transition-all hover:translate-x-1" 
+                           style={{ 
+                             background: 'rgba(17,17,32,0.8)', 
+                             backdropFilter: 'blur(20px)', 
+                             border: '1px solid rgba(108, 99, 255, 0.2)',
+                             borderLeft: `4px solid ${statusColor}`
+                           }}>
+                        <div className="flex-1 flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-lg bg-black/40 flex items-center justify-center font-black text-[#F0F0FF] text-sm">{t.ticker}</div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-black text-[#F0F0FF] uppercase tracking-tighter">{t.direction}</span>
+                                <span className="text-[10px] font-bold text-[#4E4E63]">@{t.entry}</span>
+                              </div>
+                              <div className="text-[10px] font-bold text-[#6B6B8A]">{t.setup} · {t.duration}</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-8 text-right">
+                            <div className="hidden md:block">
+                              <div className="text-[10px] font-black uppercase tracking-widest text-[#2a3a5a] mb-0.5">Confidence</div>
+                              <div className="text-xs font-bold" style={{ color: t.confidence === 'Max' ? '#6C63FF' : '#F0F0FF' }}>{t.confidence}</div>
+                            </div>
+                            <div>
+                              <div className="text-[10px] font-black uppercase tracking-widest text-[#2a3a5a] mb-0.5">Outcome</div>
+                              <div className="text-sm font-black" style={{ color: statusColor }}>
+                                {t.status === 'open' ? 'OPEN' : (t.pnl >= 0 ? '+' : '') + '$' + Math.abs(t.pnl).toFixed(2)}
+                              </div>
+                            </div>
+                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <label className="cursor-pointer text-[#6B6B8A] hover:text-[#6C63FF]">
+                                📸 <input type="file" className="hidden" onChange={e => { const f = e.target.files?.[0]; if(f) uploadScreenshot(t.id, f); }} />
+                              </label>
+                              <button onClick={() => deleteTrade(t.id)} className="text-[#6B6B8A] hover:text-[#FF4560]">✕</button>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${t.direction==='LONG'?'bg-green-500/20 text-green-400':'bg-red-500/20 text-red-400'}`}>{t.direction}</span>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-300">${parseFloat(t.entry).toFixed(2)}</td>
-                    <td className="px-5 py-3.5 font-semibold" style={{color: t.status==='open' ? '#94a3b8' : t.pnl > 0 ? '#0A0A0F' : t.pnl < 0 ? '#FF4560' : '#94a3b8'}}>{t.status==='open'?'Open':t.pnl!=null?(t.pnl>=0?'+':'')+' $'+parseFloat(t.pnl).toFixed(2):'—'}</td>
-                    <td className="px-5 py-3.5"><span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', color: confColor }}>{t.confidence || '—'}</span></td>
-                    <td className="px-5 py-3.5 text-slate-400" style={{ fontSize: 12 }}>{t.duration || '—'}</td>
-                    <td className={`px-5 py-3.5 text-xs font-semibold uppercase tracking-wide ${cls}`}>{t.status}</td>
-                    <td className="px-5 py-3.5">
-                      <label title="Attach chart screenshot" style={{ cursor: 'pointer', fontSize: 14, color: t.screenshot_url ? '#6C63FF' : '#2a3a5a' }}
-                        className="hover:text-blue-400 transition-colors">
-                        📷
-                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
-                          const file = e.target.files?.[0];
-                          if (file) uploadScreenshot(t.id, file);
-                          e.target.value = '';
-                        }} />
-                      </label>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <button onClick={() => deleteTrade(t.id)} className="text-slate-600 hover:text-red-400 text-base transition-colors">✕</button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </DarkTable>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <button onClick={() => sendPrompt('Analyze my day trading journal. Tell me which setups are most profitable, where I leave money on the table, and give me 3 specific improvements.')}
-              className="text-sm text-left transition-colors rounded-xl px-5 py-3"
-              style={{border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A', background: 'transparent'}}
-              onMouseEnter={e => { e.currentTarget.style.borderColor='#6C63FF'; e.currentTarget.style.color='#F0F0FF'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor='#1E1E2E'; e.currentTarget.style.color='#6B6B8A'; }}>
-              Ask Claude to review my trading ↗
+              className="text-xs font-black uppercase tracking-widest self-start px-6 py-3 rounded-xl border border-[rgba(108,99,255,0.3)] text-[#6B6B8A] hover:text-[#F0F0FF] hover:border-[#6C63FF] transition-all"
+              style={{ background: 'rgba(108,99,255,0.05)' }}>
+              Ask AI to review my trading 🧠
             </button>
-          </>
-        )}
+          </div>
+        )
+}
       </>)}
     </div>
   );
@@ -1828,275 +1860,262 @@ function SportsBettingTab({ tier, activeSubTab }) {
       {subTab === 'analytics' && <BettingAnalyticsPanel bets={bets} />}
 
       {subTab === 'journal' && (<>
-      {/* ── Stats bar ── */}
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        {[
-          ['P&L', (totalPnl>=0?'+':'')+'$'+totalPnl.toFixed(0), totalPnl >= 0 ? '#0A0A0F' : '#FF4560'],
-          ['Units', (totalPnl>=0?'+':'')+((totalPnl/unitSize)||0).toFixed(1)+'u', totalPnl >= 0 ? '#0A0A0F' : '#FF4560'],
-          ['Win Rate', wr+'%', wr >= 50 ? '#0A0A0F' : '#F0F0FF'],
-          ['ROI', (roi>=0?'+':'')+roi+'%', parseFloat(roi) >= 0 ? '#0A0A0F' : '#FF4560'],
-          ['CLV Avg', '—', '#4E4E63'],
-          ['Active', bets.filter(b => b.result==='pending').length+'', '#6C63FF'],
-        ].map(([l, v, c]) => (
-          <div key={l} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 12, padding: '10px 12px' }}>
-            <div style={{ fontSize: 9, color: '#4E4E63', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{l}</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: c }}>{v}</div>
+        {/* ── Institutional Stats Banner ── */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {[
+            ['Total Bets', settled.length, '#F0F0FF'],
+            ['Win Rate', wr + '%', wr >= 50 ? '#00E5B4' : '#F0F0FF'],
+            ['Units Won', (totalPnl >= 0 ? '+' : '') + (totalPnl / unitSize).toFixed(1) + 'u', totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
+            ['ROI', (roi >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+          ].map(([l, v, c]) => (
+            <div key={l} className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+              <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">{l}</div>
+              <div className="text-2xl font-black" style={{ color: c }}>{v}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-6">
+          {/* Entry Methods */}
+          <div className="flex gap-3">
+            <button onClick={() => setEntryMode('screenshot')}
+              className={`flex-1 py-4 rounded-2xl font-black text-sm tracking-tight transition-all border ${entryMode === 'screenshot' ? 'bg-[#6C63FF]/10 border-[#6C63FF] text-[#F0F0FF]' : 'bg-transparent border-[rgba(108,99,255,0.2)] text-[#6B6B8A]'}`}>
+              📷 SCAN BET SLIP
+            </button>
+            <button onClick={() => setEntryMode('manual')}
+              className={`px-8 py-4 rounded-2xl font-black text-sm tracking-tight transition-all border ${entryMode === 'manual' ? 'bg-[#6C63FF]/10 border-[#6C63FF] text-[#F0F0FF]' : 'bg-transparent border-[rgba(108,99,255,0.2)] text-[#6B6B8A]'}`}>
+              MANUAL
+            </button>
           </div>
-        ))}
-      </div>
 
-      {/* ── Screenshot import (primary) + Manual toggle ── */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        {['screenshot', 'manual'].map(m => (
-          <button key={m} onClick={() => setEntryMode(m)}
-            style={{ padding: '8px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', flex: m === 'screenshot' ? 1 : 0, border: '1px solid',
-              ...(entryMode === m ? { background: m === 'screenshot' ? 'rgba(108,99,255,0.15)' : '#1E1E2E', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
-            }}>{m === 'screenshot' ? '📷 Snap your bet slip' : 'Manual entry'}</button>
-        ))}
-      </div>
-
-      {/* ── Screenshot import ── */}
-      {entryMode === 'screenshot' && (
-        <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '2px dashed rgba(108,99,255,0.3)', borderRadius: 16, padding: 32, textAlign: 'center' }}>
-          {imgParsing ? (
-            <div><div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 12 }}>{[0,1,2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#6C63FF', animation: `pulse 1.2s infinite ${i*0.2}s` }} />)}</div><div style={{ fontSize: 13, color: '#4E4E63' }}>Reading bet slip with AI...</div></div>
-          ) : parsedPreview ? (
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff', marginBottom: 12 }}>Detected from screenshot:</div>
-              <div className="grid grid-cols-2 gap-3 mb-3">
-                {[['Matchup', 'match'], ['Odds', 'odds'], ['Stake', 'stake'], ['Sport', 'sport'], ['Type', 'type'], ['Book', 'sportsbook']].map(([label, key]) => (
-                  <div key={key}>
-                    <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 2 }}>{label}</div>
-                    <input value={form[key]} onChange={e => setForm(f => ({...f, [key]: e.target.value}))}
-                      className={`w-full rounded-lg px-3 py-2 text-sm ${inp}`} style={{...inpStyle, fontSize: 13}} onFocus={inpFocus} onBlur={inpBlur} />
+          {/* Entry Panels */}
+          {entryMode === 'screenshot' && (
+            <div className="rounded-2xl p-8 text-center border-2 border-dashed border-[rgba(108,99,255,0.2)] bg-black/20">
+              {imgParsing ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex gap-1">
+                    {[0,1,2].map(i => <div key={i} className="w-2 h-2 rounded-full bg-[#6C63FF] animate-bounce" style={{ animationDelay: `${i*0.2}s` }} />)}
                   </div>
+                  <div className="text-xs font-black text-[#6B6B8A] uppercase tracking-widest">Processing Slip...</div>
+                </div>
+              ) : parsedPreview ? (
+                <div className="text-left animate-in fade-in slide-in-from-bottom-4">
+                  <div className="text-[10px] font-black text-[#6C63FF] uppercase tracking-widest mb-4">Verification Required</div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    {[['Matchup', 'match'], ['Odds', 'odds'], ['Stake', 'stake'], ['Sport', 'sport'], ['Type', 'type'], ['Book', 'sportsbook']].map(([label, key]) => (
+                      <div key={key}>
+                        <label className="text-[10px] font-bold text-[#4E4E63] uppercase mb-1 block">{label}</label>
+                        <input value={form[key]} onChange={e => setForm(f => ({...f, [key]: e.target.value}))}
+                          className={`w-full rounded-xl px-4 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    <button onClick={() => { addBet(); setParsedPreview(null); }} className="flex-1 py-3 rounded-xl bg-[#6C63FF] text-white font-black text-xs tracking-widest hover:bg-[#5b52e6] transition-colors">CONFIRM & LOG</button>
+                    <button onClick={() => { setParsedPreview(null); setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' }); }} className="px-6 py-3 rounded-xl border border-[rgba(108,99,255,0.2)] text-[#6B6B8A] font-black text-xs tracking-widest">CANCEL</button>
+                  </div>
+                </div>
+              ) : (
+                <label className="cursor-pointer group">
+                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📸</div>
+                  <div className="text-lg font-black text-[#F0F0FF] mb-1">Instant Slip Sync</div>
+                  <div className="text-xs text-[#6B6B8A] mb-6">Upload your bet slip from any major sportsbook</div>
+                  <div className="inline-block px-8 py-3 rounded-xl bg-[#6C63FF] text-white font-black text-xs tracking-widest shadow-[0_0_20px_rgba(108,99,255,0.3)]">UPLOAD IMAGE</div>
+                  <input type="file" className="hidden" onChange={async (e) => {
+                    const file = e.target.files?.[0]; if (!file) return;
+                    setImgParsing(true);
+                    try {
+                      const base64 = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                      });
+                      const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'bet' });
+                      if (data.parsed) {
+                        const p = data.parsed;
+                        setForm(prev => ({
+                          ...prev,
+                          match: p.match || prev.match,
+                          odds: p.odds || prev.odds,
+                          stake: p.stake ? String(p.stake).replace(/[$,]/g, '') : prev.stake,
+                          type: p.type || prev.type,
+                          sport: p.sport || prev.sport,
+                          sportsbook: p.sportsbook || prev.sportsbook,
+                        }));
+                        setParsedPreview(true);
+                      }
+                    } catch { alert('Could not read screenshot.'); }
+                    finally { setImgParsing(false); }
+                  }} />
+                </label>
+              )}
+            </div>
+          )}
+
+          {entryMode === 'manual' && (
+            <div className="rounded-2xl p-6 bg-black/20 border border-[rgba(108,99,255,0.2)]">
+              <div className="flex gap-2 flex-wrap mb-6">
+                {[['🏀','NBA'],['🏈','NFL'],['⚾','MLB'],['🏒','NHL'],['⚽','Soccer'],['🥊','UFC'],['🎾','Tennis'],['⛳','Golf']].map(([icon, s]) => (
+                  <button key={s} onClick={() => setForm(f => ({...f, sport: s}))}
+                    className={`px-3 py-2 rounded-xl text-xs font-black tracking-tight border transition-all ${form.sport === s ? 'bg-[#6C63FF]/10 border-[#6C63FF] text-[#F0F0FF]' : 'bg-transparent border-white/5 text-[#4E4E63]'}`}>
+                    {icon} {s}
+                  </button>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => { addBet(); setParsedPreview(null); }}
-                  disabled={loading || !form.match || !form.odds || !form.stake}
-                  style={{ flex: 1, padding: '10px', borderRadius: 10, background: '#6C63FF', color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', border: 'none', cursor: 'pointer' }}>
-                  {loading ? 'Logging…' : 'Confirm & Log Bet'}
-                </button>
-                <button onClick={() => { setParsedPreview(null); setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' }); }}
-                  style={{ padding: '10px 16px', borderRadius: 10, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', fontSize: 12, cursor: 'pointer' }}>Cancel</button>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="text-[10px] font-bold text-[#6B6B8A] uppercase mb-1.5 block">Matchup</label>
+                  <input placeholder="e.g. Lakers ML" value={form.match} onChange={e => setForm({...form, match: e.target.value})}
+                    className={`w-full rounded-xl px-4 py-3 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-[#6B6B8A] uppercase mb-1.5 block">Odds</label>
+                  <input placeholder="-110" value={form.odds} onChange={e => setForm({...form, odds: e.target.value})}
+                    className={`w-full rounded-xl px-4 py-3 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+                </div>
               </div>
-            </div>
-          ) : (
-            <label style={{ cursor: 'pointer', display: 'block' }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>📷</div>
-              <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 4 }}>Snap your bet slip</div>
-              <div style={{ fontSize: 12, color: '#4E4E63', marginBottom: 12 }}>Upload a screenshot from DraftKings, FanDuel, BetMGM, or any sportsbook</div>
-              <div style={{ display: 'inline-block', padding: '10px 24px', borderRadius: 10, background: '#6C63FF', color: '#fff', fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em' }}>Upload Screenshot</div>
-              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
-                const file = e.target.files?.[0]; if (!file) return;
-                setImgParsing(true);
-                try {
-                  const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                  });
-                  const { data } = await api.post('/api/ai/parse-image', { image: base64, type: 'bet' });
-                  if (data.parsed) {
-                    const p = data.parsed;
-                    setForm(prev => ({
-                      ...prev,
-                      match: p.match || prev.match,
-                      odds: p.odds || prev.odds,
-                      stake: p.stake ? String(p.stake).replace(/[$,]/g, '') : prev.stake,
-                      type: p.type || prev.type,
-                      sport: p.sport || prev.sport,
-                      sportsbook: p.sportsbook || prev.sportsbook,
-                    }));
-                    setParsedPreview(true);
-                  }
-                } catch { alert('Could not read screenshot. Try a clearer image.'); }
-                finally { setImgParsing(false); }
-                e.target.value = '';
-              }} />
-            </label>
-          )}
-        </div>
-      )}
 
-      {/* ── Manual bet slip entry ── */}
-      {entryMode === 'manual' && (
-        <div data-bet-form style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 }}>
-          {betSaved && <div style={{ fontSize: 12, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 8 }}>Bet logged ✓</div>}
-          {/* Sport tiles */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {[['🏀','NBA'],['🏈','NFL'],['⚾','MLB'],['🏒','NHL'],['⚽','Soccer'],['🥊','UFC'],['🎾','Tennis'],['⛳','Golf']].map(([icon, s]) => (
-              <button key={s} onClick={() => setForm(f => ({...f, sport: s}))}
-                style={{ padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid', display: 'flex', alignItems: 'center', gap: 4,
-                  ...(form.sport === s ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
-                }}>{icon} {s}</button>
-            ))}
-          </div>
-          {/* Bet type pills */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {['Moneyline','Spread','Over/Under','Prop','Parlay','Futures'].map(t => (
-              <button key={t} onClick={() => setForm(f => ({...f, type: t}))}
-                style={{ padding: '5px 12px', borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                  ...(form.type === t ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
-                }}>{t}</button>
-            ))}
-          </div>
-          {/* Matchup + Odds */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <div>
-              <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Matchup / pick</div>
-              <input placeholder="e.g. Lakers ML, Chiefs -3.5" value={form.match} onChange={e => setForm({...form, match: e.target.value})}
-                onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
-                className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
-            </div>
-            <div>
-              <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Odds (American)</div>
-              <input placeholder="-110" value={form.odds} onChange={e => setForm({...form, odds: e.target.value})}
-                onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
-                className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
-            </div>
-          </div>
-          {/* Stake with quick-add */}
-          <div style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 4 }}>Stake ($)</div>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-              <input type="number" placeholder="50" value={form.stake} onChange={e => setForm({...form, stake: e.target.value})}
-                onKeyDown={e => e.key === 'Enter' && form.match && form.odds && form.stake && addBet()}
-                className={`rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={{...inpStyle, width: 100}} onFocus={inpFocus} onBlur={inpBlur} />
-              {[10, 25, 50, 100].map(v => (
-                <button key={v} onClick={() => setForm(f => ({...f, stake: String((parseFloat(f.stake) || 0) + v)}))}
-                  style={{ padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#6B6B8A' }}>+${v}</button>
-              ))}
-              {form.stake && <span style={{ fontSize: 11, color: '#4E4E63' }}>{(parseFloat(form.stake)/unitSize).toFixed(1)}u</span>}
-            </div>
-          </div>
-          {/* Book selector pills */}
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
-            {['DraftKings','FanDuel','BetMGM','Caesars','ESPN Bet','Other'].map(b => (
-              <button key={b} onClick={() => setForm(f => ({...f, sportsbook: b}))}
-                style={{ padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                  ...(form.sportsbook === b ? { background: 'rgba(108,99,255,0.1)', borderColor: 'rgba(108,99,255,0.3)', color: '#867fff' } : { background: 'transparent', borderColor: '#1E1E2E', color: '#2a3a5a' })
-                }}>{b}</button>
-            ))}
-          </div>
-          {/* Payout preview */}
-          {form.odds && form.stake && (() => {
-            const o = parseFloat(form.odds), s = parseFloat(form.stake);
-            if (!o || !s) return null;
-            const pr = o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100);
-            return <div style={{ fontSize: 14, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10 }}>Payout: ${(s + pr).toFixed(2)} <span style={{ fontSize: 11, color: '#6B6B8A', fontWeight: 400 }}>(+${pr.toFixed(2)} profit · {(s/unitSize).toFixed(1)}u)</span></div>;
-          })()}
-          <button onClick={addBet} disabled={loading || !form.match || !form.odds || !form.stake}
-            style={{ width: '100%', padding: '12px', borderRadius: 12, background: '#6C63FF', color: '#fff', fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', border: 'none', cursor: 'pointer', opacity: loading || !form.match || !form.odds || !form.stake ? 0.5 : 1 }}>
-            {loading ? 'Logging…' : 'Log Bet'}
-          </button>
-        </div>
-      )}
-
-      {/* ── Filters + search ── */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flex: 1 }}>
-          {['All','Pending','Won','Lost',...[...new Set(bets.map(b => b.sport))]].map(f => {
-            const isActive = (feedFilter || 'All') === f;
-            return (
-              <button key={f} onClick={() => setFeedFilter(f === 'All' ? null : f)}
-                style={{ padding: '5px 14px', borderRadius: 20, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                  ...(isActive ? { background: 'rgba(108,99,255,0.15)', borderColor: 'rgba(108,99,255,0.4)', color: '#867fff' } : { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderColor: 'rgba(108,99,255,0.2)', color: '#4E4E63' })
-                }}>{f}</button>
-            );
-          })}
-        </div>
-        <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search bets…"
-          className={`rounded-lg px-3 py-1.5 text-xs ${inp}`} style={{...inpStyle, width: 140, fontSize: 11}} onFocus={inpFocus} onBlur={inpBlur} />
-        <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-          style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', color: '#6B6B8A', borderRadius: 8, padding: '4px 8px', fontSize: 10, outline: 'none' }}>
-          <option value="date">Newest</option>
-          <option value="odds">Odds</option>
-          <option value="stake">Stake</option>
-          <option value="pnl">P&L</option>
-        </select>
-      </div>
-
-      {/* ── Bet feed cards ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {bets.filter(b => {
-          if (feedFilter === 'Pending') return b.result === 'pending';
-          if (feedFilter === 'Won') return b.result === 'win';
-          if (feedFilter === 'Lost') return b.result === 'loss';
-          if (feedFilter && !['Pending','Won','Lost'].includes(feedFilter)) return b.sport === feedFilter;
-          return true;
-        }).filter(b => !searchQuery || (b.match || '').toLowerCase().includes(searchQuery.toLowerCase()))
-          .sort((a, b) => {
-            if (sortBy === 'odds') return Math.abs(parseFloat(b.odds)||0) - Math.abs(parseFloat(a.odds)||0);
-            if (sortBy === 'stake') return (b.stake||0) - (a.stake||0);
-            if (sortBy === 'pnl') return (b.pnl||0) - (a.pnl||0);
-            return new Date(b.created_at) - new Date(a.created_at);
-          }).map(b => {
-          const borderColor = b.result === 'win' ? '#0A0A0F' : b.result === 'loss' ? '#FF4560' : b.result === 'push' ? '#6B6B8A' : '#6C63FF';
-          const sportIcons = { NBA:'🏀', NFL:'🏈', MLB:'⚾', NHL:'🏒', Soccer:'⚽', UFC:'🥊', Tennis:'🎾', Golf:'⛳' };
-          const o = parseFloat(b.odds), s = parseFloat(b.stake);
-          const toWin = o && s ? (o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100)) : 0;
-          return (
-            <div key={b.id} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderLeft: `3px solid ${borderColor}`, borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, transition: 'all 0.15s' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.2)'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <div style={{ fontSize: 20, flexShrink: 0 }}>{sportIcons[b.sport] || '🎯'}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#F0F0FF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.match}</div>
-                <div style={{ fontSize: 11, color: '#4E4E63', marginTop: 2 }}>{b.type} · {b.odds} · ${s?.toFixed(0)} ({(s/unitSize).toFixed(1)}u) · {b.sportsbook || 'Book'}</div>
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                {b.result === 'pending' ? (
-                  markingBet === b.id ? (
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {[['W','win','#0A0A0F'],['L','loss','#FF4560'],['P','push','#6B6B8A']].map(([label, res, color]) => (
-                        <button key={res} onClick={() => markResult(b.id, res)}
-                          style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', padding: '4px 10px', borderRadius: 6, background: color + '20', border: `1px solid ${color}40`, color, cursor: 'pointer' }}>{label}</button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#94a3b8' }}>+${toWin.toFixed(0)}</div>
-                      <button onClick={() => setMarkingBet(b.id)} style={{ fontSize: 10, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', marginTop: 2 }}>Mark result</button>
-                    </div>
-                  )
-                ) : (
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: b.pnl >= 0 ? '#0A0A0F' : '#FF4560' }}>{b.pnl >= 0 ? '+' : ''}${(b.pnl||0).toFixed(0)}</div>
-                    <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.02em', color: borderColor, textTransform: 'uppercase' }}>{b.result}</div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="md:col-span-2">
+                  <label className="text-[10px] font-bold text-[#6B6B8A] uppercase mb-1.5 block">Stake ($)</label>
+                  <div className="flex gap-2">
+                    <input type="number" placeholder="50" value={form.stake} onChange={e => setForm({...form, stake: e.target.value})}
+                      className={`flex-1 rounded-xl px-4 py-3 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+                    {[25, 50, 100].map(v => (
+                      <button key={v} onClick={() => setForm(f => ({...f, stake: String((parseFloat(f.stake) || 0) + v)}))}
+                        className="px-4 py-3 rounded-xl bg-black/40 border border-white/5 text-xs font-black text-[#6B6B8A] hover:text-[#F0F0FF] transition-all">+${v}</button>
+                    ))}
                   </div>
-                )}
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-[#6B6B8A] uppercase mb-1.5 block">Sportsbook</label>
+                  <select value={form.sportsbook} onChange={e => setForm(f => ({...f, sportsbook: e.target.value}))}
+                    className={`w-full rounded-xl px-4 py-3 text-sm ${inp}`} style={inpStyle}>
+                    {['DraftKings','FanDuel','BetMGM','Caesars','ESPN Bet','Other'].map(b => <option key={b}>{b}</option>)}
+                  </select>
+                </div>
               </div>
-              <button onClick={() => deleteBet(b.id)} style={{ color: '#1E1E2E', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, flexShrink: 0 }}
-                onMouseEnter={e => e.currentTarget.style.color = '#FF4560'}
-                onMouseLeave={e => e.currentTarget.style.color = '#1E1E2E'}>✕</button>
-            </div>
-          );
-        })}
-        {bets.length === 0 && (
-          <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 14, padding: 40, textAlign: 'center' }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>📝</div>
-            <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.02em', color: '#4E4E63' }}>No bets yet — snap a bet slip or log manually</div>
-          </div>
-        )}
-      </div>
 
-      {/* Export + AI */}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => exportBetsCSV(bets)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', cursor: 'pointer' }}>Export CSV</button>
-          {(tier === 'pro' || tier === 'elite') && (
-            <button onClick={() => exportBetsPDF(bets)} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>Export PDF</button>
+              <button onClick={addBet} disabled={loading || !form.match || !form.odds || !form.stake}
+                className="w-full py-4 rounded-2xl bg-[#6C63FF] text-white font-black text-sm tracking-widest shadow-[0_0_30px_rgba(108,99,255,0.2)] disabled:opacity-50">
+                {loading ? 'LOGGING...' : 'LOG BET'}
+              </button>
+            </div>
           )}
+
+          {/* List Header */}
+          <div className="flex items-center justify-between px-2">
+            <div className="flex gap-2">
+              {['All','Pending','Won','Lost'].map(f => (
+                <button key={f} onClick={() => setFeedFilter(f === 'All' ? null : f)}
+                  className={`text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full border transition-all ${feedFilter === f || (f === 'All' && !feedFilter) ? 'bg-[#6C63FF]/20 border-[#6C63FF] text-[#F0F0FF]' : 'bg-transparent border-white/5 text-[#4E4E63]'}`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-4">
+              <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Filter bets..."
+                className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-[#F0F0FF] focus:outline-none placeholder:text-[#2a3a5a]" />
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-[#6B6B8A] focus:outline-none cursor-pointer">
+                <option value="date">Newest</option>
+                <option value="pnl">P&L</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Bet Entries */}
+          <div className="flex flex-col gap-3">
+            {bets.length === 0 ? (
+              <div className="rounded-2xl p-20 text-center border-2 border-dashed border-[rgba(108,99,255,0.1)] bg-black/5">
+                <div className="text-4xl mb-4">📝</div>
+                <div className="text-sm font-bold text-[#6B6B8A]">No bets yet. Log your first bet above.</div>
+              </div>
+            ) : (
+              bets.filter(b => {
+                if (feedFilter === 'Pending') return b.result === 'pending';
+                if (feedFilter === 'Won') return b.result === 'win';
+                if (feedFilter === 'Lost') return b.result === 'loss';
+                if (feedFilter && !['Pending','Won','Lost'].includes(feedFilter)) return b.sport === feedFilter;
+                return true;
+              }).filter(b => !searchQuery || (b.match || '').toLowerCase().includes(searchQuery.toLowerCase()))
+                .sort((a, b) => {
+                  if (sortBy === 'odds') return Math.abs(parseFloat(b.odds)||0) - Math.abs(parseFloat(a.odds)||0);
+                  if (sortBy === 'stake') return (b.stake||0) - (a.stake||0);
+                  if (sortBy === 'pnl') return (b.pnl||0) - (a.pnl||0);
+                  return new Date(b.created_at) - new Date(a.created_at);
+                }).map(b => {
+                  const statusColor = b.result === 'win' ? '#00E5B4' : b.result === 'loss' ? '#FF4560' : b.result === 'push' ? '#6B6B8A' : '#6C63FF';
+                  const o = parseFloat(b.odds), s = parseFloat(b.stake);
+                  const toWin = o && s ? (o > 0 ? s * (o / 100) : s / (Math.abs(o) / 100)) : 0;
+                  
+                  return (
+                    <div key={b.id} className="group flex flex-col md:flex-row items-center gap-4 p-5 rounded-2xl transition-all hover:translate-x-1"
+                      style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.2)', borderLeft: `4px solid ${statusColor}` }}>
+                      
+                      <div className="flex-1 flex gap-4 w-full">
+                        <div className="w-12 h-12 rounded-xl bg-black/40 flex items-center justify-center text-xl shadow-inner">
+                          {{ NBA:'🏀', NFL:'🏈', MLB:'⚾', NHL:'🏒', Soccer:'⚽', UFC:'🥊', Tennis:'🎾', Golf:'⛳' }[b.sport] || '🎯'}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-base font-black text-[#F0F0FF] tracking-tight">{b.match}</div>
+                          <div className="text-[10px] font-bold text-[#6B6B8A] uppercase tracking-widest mt-1">
+                            {b.type} · {b.odds} · {b.sportsbook}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-8 w-full md:w-auto justify-between md:justify-end border-t md:border-none border-white/5 pt-4 md:pt-0">
+                        <div className="text-right">
+                          <div className="text-[10px] font-black uppercase tracking-widest text-[#2a3a5a] mb-0.5">Risk/Win</div>
+                          <div className="text-xs font-black text-[#F0F0FF]">${s.toFixed(0)} <span className="text-[#4E4E63]">→</span> <span style={{ color: statusColor }}>${(s + (b.pnl || toWin)).toFixed(0)}</span></div>
+                        </div>
+
+                        <div className="text-right min-w-[80px]">
+                          {b.result === 'pending' ? (
+                            markingBet === b.id ? (
+                              <div className="flex gap-1">
+                                {[['W','win','#00E5B4'],['L','loss','#FF4560'],['P','push','#6B6B8A']].map(([label, res, color]) => (
+                                  <button key={res} onClick={() => markResult(b.id, res)}
+                                    className="w-7 h-7 rounded-lg font-black text-[10px] flex items-center justify-center transition-all hover:scale-110"
+                                    style={{ background: color + '20', border: `1px solid ${color}40`, color }}>{label}</button>
+                                ))}
+                              </div>
+                            ) : (
+                              <button onClick={() => setMarkingBet(b.id)} className="text-[10px] font-black text-[#6C63FF] uppercase tracking-widest hover:text-[#867fff] transition-colors">Mark Result</button>
+                            )
+                          ) : (
+                            <div>
+                              <div className="text-[10px] font-black uppercase tracking-widest text-[#2a3a5a] mb-0.5">{b.result}</div>
+                              <div className="text-sm font-black" style={{ color: statusColor }}>{b.pnl >= 0 ? '+' : ''}${Math.abs(b.pnl).toFixed(0)}</div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <button onClick={() => deleteBet(b.id)} className="text-[#1E1E2E] hover:text-[#FF4560] transition-colors">✕</button>
+                      </div>
+                    </div>
+                  );
+                })
+            )}
+          </div>
+
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex gap-2">
+              <button onClick={() => exportBetsCSV(bets)} className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border border-white/5 text-[#6B6B8A] hover:text-[#F0F0FF] transition-all">Export CSV</button>
+              {(tier === 'pro' || tier === 'elite') && (
+                <button onClick={() => exportBetsPDF(bets)} className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border border-[rgba(108,99,255,0.1)] text-[#867fff] hover:border-[#6C63FF] transition-all" style={{ background: 'rgba(108,99,255,0.05)' }}>Export PDF</button>
+              )}
+            </div>
+            <button onClick={() => sendPrompt('Analyze my sports betting history. Which sports and bet types are profitable?')}
+              className="text-[10px] font-black text-[#6C63FF] uppercase tracking-widest hover:text-[#867fff] transition-all">
+              AI Betting Insights ↗
+            </button>
+          </div>
         </div>
-        <button onClick={() => sendPrompt('Analyze my sports betting history. Which sports and bet types are profitable?')}
-          style={{ fontSize: 11, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em' }}>
-          Ask AI to analyze ↗
-        </button>
-      </div>
       </>)}
+
     </div>
   );
 }
@@ -2116,8 +2135,6 @@ function EVCalcTab() {
   const roi    = (ev / ba * 100).toFixed(1);
   const edge   = (tp - mp).toFixed(1);
 
-  const gc = { background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 16, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', transition: 'all 0.2s ease' };
-
   const SLIDERS = [
     ['Market / book price', mp, setMp, 1, 99, 1, '%'],
     ['Your true probability', tp, setTp, 1, 99, 1, '%'],
@@ -2126,62 +2143,68 @@ function EVCalcTab() {
   ];
 
   const RESULTS = [
-    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#0A0A0F' : '#FF4560'],
-    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#0A0A0F' : '#FF4560'],
-    ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#867fff' : '#4E4E63'],
+    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#00E5B4' : '#FF4560'],
+    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
+    ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#6C63FF' : '#4E4E63'],
     ['Max Payout', '$' + (ba + payout).toFixed(0), '#F0F0FF'],
-    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#0A0A0F' : parseFloat(edge) < 0 ? '#FF4560' : '#4E4E63'],
+    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#00E5B4' : parseFloat(edge) < 0 ? '#FF4560' : '#4E4E63'],
   ];
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Inputs */}
-      <div style={{ ...gc, padding: 32 }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 20 }}>Calculator</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {SLIDERS.map(([label, val, set, min, max, step, unit]) => (
-            <div key={label}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: '#6a7a9a' }}>{label}</span>
-                <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF' }}>{unit === '$' ? '$' + val.toLocaleString() : val + '%'}</span>
-              </div>
-              <input type="range" min={min} max={max} step={step} value={val}
-                onChange={e => set(Number(e.target.value))}
-                style={{ width: '100%', accentColor: '#6C63FF', cursor: 'pointer' }} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Hero EV */}
-      <div style={{ ...gc, padding: 32, textAlign: 'center' }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 12 }}>Expected Value</div>
-        <div style={{ fontSize: 48, fontWeight: 900, color: ev >= 0 ? '#0A0A0F' : '#FF4560', letterSpacing: '-0.02em', lineHeight: 1 }}>
-          {(ev >= 0 ? '+' : '') + '$' + ev.toFixed(2)}
-        </div>
-      </div>
-      {/* Edge hero */}
-      <div style={{ ...gc, padding: 24, textAlign: 'center', borderLeft: `3px solid ${parseFloat(edge) > 5 ? '#0A0A0F' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560'}` }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63', marginBottom: 8 }}>Edge</div>
-        <div style={{ fontSize: 36, fontWeight: 800, color: parseFloat(edge) > 5 ? '#0A0A0F' : parseFloat(edge) > 0 ? '#f59e0b' : '#FF4560', lineHeight: 1 }}>
-          {(parseFloat(edge) > 0 ? '+' : '') + edge + '%'}
-        </div>
-        <div style={{ fontSize: 12, color: '#4E4E63', marginTop: 8 }}>Breakeven: {mp}% · Your estimate: {tp}%</div>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        {[
-          ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#0A0A0F' : '#FF4560'],
-          ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#867fff' : '#4E4E63'],
-          ['Max Payout', '$' + (ba + payout).toFixed(0), '#F0F0FF'],
-          ['Breakeven Odds', mp + '%', '#6B6B8A'],
-        ].map(([label, value, color]) => (
-          <div key={label} style={{ ...gc, padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 16, minHeight: 110, transition: 'all 0.2s ease' }}
-            onMouseEnter={e => { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 8px 32px rgba(0,0,0,0.3)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4E4E63' }}>{label}</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color, letterSpacing: '-0.02em', lineHeight: 1 }}>{value}</div>
+    <div className="max-w-4xl mx-auto flex flex-col gap-8">
+      {/* Hero Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {RESULTS.map(([l, v, c]) => (
+          <div key={l} className="p-5 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl">
+            <div className="text-[9px] font-black text-[#6B6B8A] uppercase tracking-widest mb-2">{l}</div>
+            <div className="text-xl font-black tracking-tight" style={{ color: c }}>{v}</div>
           </div>
         ))}
+      </div>
+
+      {/* Main Interface */}
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Sliders */}
+        <div className="flex-1 p-8 rounded-3xl bg-black/20 border border-[rgba(108,99,255,0.2)] backdrop-blur-2xl">
+          <h3 className="text-[10px] font-black text-[#6C63FF] uppercase tracking-[0.2em] mb-10">Risk Parameters</h3>
+          <div className="flex flex-col gap-10">
+            {SLIDERS.map(([l, v, s, min, max, step, u]) => (
+              <div key={l}>
+                <div className="flex justify-between items-end mb-4">
+                  <span className="text-xs font-black text-[#F0F0FF] uppercase tracking-wider">{l}</span>
+                  <span className="text-lg font-black text-[#6C63FF]">{v}{u}</span>
+                </div>
+                <input type="range" min={min} max={max} step={step} value={v} onChange={e => s(parseFloat(e.target.value))}
+                  className="w-full h-1.5 bg-black/60 rounded-full appearance-none cursor-pointer accent-[#6C63FF]" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Breakdown */}
+        <div className="w-full md:w-[320px] p-8 rounded-3xl bg-[#6C63FF]/5 border border-[#6C63FF]/20 flex flex-col justify-between">
+          <div>
+            <h3 className="text-[10px] font-black text-[#6C63FF] uppercase tracking-[0.2em] mb-8">Edge Analysis</h3>
+            <div className="flex flex-col gap-6">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-[#6B6B8A]">Theoretical ROI</span>
+                <span className="text-sm font-black text-[#00E5B4]">{roi}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-[#6B6B8A]">Prob. Spread</span>
+                <span className="text-sm font-black text-[#F0F0FF]">{edge}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-bold text-[#6B6B8A]">Kelly Units</span>
+                <span className="text-sm font-black text-[#6C63FF]">{(kelly * 100).toFixed(1)}u</span>
+              </div>
+            </div>
+          </div>
+          
+          <button className="mt-12 w-full py-4 rounded-2xl bg-[#6C63FF] text-white text-[10px] font-black uppercase tracking-widest shadow-[0_0_30px_rgba(108,99,255,0.3)] hover:scale-105 transition-all">
+            Share Strategy ↗
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -2316,85 +2339,85 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
   const hasMessages = messages.length > 0 || loading;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)', maxWidth: 780, margin: '0 auto', width: '100%' }}>
+    <div className="flex flex-col w-full max-w-5xl mx-auto" style={{ height: 'calc(100vh - 200px)' }}>
 
-      {/* Header — always visible */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 12 }}>
-        {!hasMessages ? (
-          <div style={{ textAlign: 'center', width: '100%', paddingTop: 20 }}>
-            <div style={{ width: 56, height: 56, background: 'rgba(108,99,255,0.12)', border: '1px solid rgba(108,99,255,0.25)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 24 }}>🔬</div>
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: '#f0f4ff', margin: '0 0 6px', letterSpacing: '-0.5px' }}>Sharpr Research</h1>
-            <p style={{ fontSize: 13, color: '#2a3a5a', margin: 0 }}>AI-powered analysis for prediction markets, trading, and sports betting</p>
+      {/* Header / Stats Overlay */}
+      <div className="flex items-center justify-between p-6 mb-2 rounded-2xl" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#6C63FF]/10 flex items-center justify-center text-2xl border border-[#6C63FF]/30 shadow-[0_0_20px_rgba(108,99,255,0.2)]">🔬</div>
+          <div>
+            <h1 className="text-lg font-black text-[#F0F0FF] tracking-tight">SHARPR TERMINAL AI</h1>
+            <p className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-widest">Global Intelligence Layer</p>
           </div>
-        ) : (
-          <>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#f0f4ff' }}>🔬 Sharpr Research</div>
-            <button onClick={() => setMessages([])} style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', padding: '5px 12px', borderRadius: 8, background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', color: '#4E4E63', cursor: 'pointer' }}>New Chat</button>
-          </>
-        )}
+        </div>
+        <button onClick={() => setMessages([])} className="px-5 py-2.5 rounded-xl border border-white/5 text-[10px] font-black uppercase tracking-widest text-[#6B6B8A] hover:text-[#F0F0FF] transition-all">Reset Session</button>
       </div>
 
-      {/* Category tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 12, justifyContent: hasMessages ? 'flex-start' : 'center' }}>
+      {/* Category Ticker */}
+      <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
         {CATS.map(c => (
           <button key={c.key} onClick={() => setCategory(c.key)}
-            style={{
-              padding: hasMessages ? '4px 10px' : '10px 14px', borderRadius: hasMessages ? 8 : 12, fontSize: hasMessages ? 11 : 12, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: 'none', transition: 'all 0.15s',
-              background: category === c.key ? 'rgba(108,99,255,0.15)' : '#111118',
-              color: category === c.key ? '#867fff' : '#4E4E63',
-            }}>
-            {hasMessages ? c.label : `${c.emoji} ${c.label}`}
+            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${category === c.key ? 'bg-[#6C63FF]/15 border-[#6C63FF] text-[#F0F0FF]' : 'bg-black/20 border-white/5 text-[#4E4E63] hover:border-white/10'}`}>
+            <span>{c.emoji}</span>
+            <span>{c.label}</span>
           </button>
         ))}
       </div>
 
       {/* Messages area */}
-      <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {/* Suggestions — only when empty */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto pr-4 mb-4 flex flex-col gap-6 custom-scrollbar">
         {!hasMessages && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 12 }}>
-            {(SUGGESTIONS[category] || []).map(s => (
-              <button key={s} onClick={() => send(s)}
-                style={{ fontSize: 11, padding: '6px 14px', borderRadius: 100, background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.07)', color: '#4E4E63', cursor: 'pointer', transition: 'all 0.15s' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; e.currentTarget.style.color = '#867fff'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = '#4E4E63'; }}>
-                {s}
-              </button>
-            ))}
+          <div className="flex flex-col items-center justify-center h-full gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+              {(SUGGESTIONS[category] || []).map(s => (
+                <button key={s} onClick={() => send(s)}
+                  className="p-5 rounded-2xl bg-black/20 border border-[rgba(108,99,255,0.1)] text-left hover:border-[#6C63FF]/40 hover:bg-[#6C63FF]/5 transition-all group">
+                  <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-widest mb-2 group-hover:text-[#6C63FF]">SUGGESTED QUERY</div>
+                  <div className="text-sm font-bold text-[#F0F0FF] leading-relaxed">{s}</div>
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] font-black text-[#2a3a5a] uppercase tracking-widest">Or type your own prompt below</p>
           </div>
         )}
 
-        {/* Chat messages */}
         {messages.map(m => (
-          <div key={m.id} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-            <div style={{
-              maxWidth: '82%', padding: '12px 16px', borderRadius: 16,
-              background: m.role === 'user' ? 'rgba(108,99,255,0.15)' : '#1A1A24',
-              border: `1px solid ${m.role === 'user' ? 'rgba(108,99,255,0.3)' : 'rgba(255,255,255,0.07)'}`,
-              borderBottomRightRadius: m.role === 'user' ? 4 : 16,
-              borderBottomLeftRadius: m.role === 'assistant' ? 4 : 16,
-            }}>
-              {m.role === 'user' ? (
-                <div style={{ fontSize: 13, color: '#867fff', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{m.content}</div>
-              ) : (
-                <div style={{ fontSize: 13, color: m.isError ? '#FF4560' : '#8899bb', lineHeight: 1.7 }}>
+          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-[85%] p-6 rounded-2xl shadow-xl transition-all ${m.role === 'user' ? 'bg-[#6C63FF]/10 border border-[#6C63FF]/30 rounded-br-sm' : 'bg-black/40 border border-white/5 rounded-bl-sm backdrop-blur-md'}`}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`w-1.5 h-6 rounded-full ${m.role === 'user' ? 'bg-[#6C63FF]' : 'bg-[#00E5B4]'}`} />
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A]">
+                  {m.role === 'user' ? 'OPERATOR' : 'INTELLIGENCE'}
+                </span>
+                <span className="text-[10px] font-black text-[#2a3a5a] ml-auto">{fmtTime(m.ts)}</span>
+              </div>
+              
+              <div className={`text-sm leading-relaxed ${m.role === 'user' ? 'text-[#F0F0FF] font-bold' : 'text-[#8899bb]'}`}>
+                {m.role === 'user' ? (
+                  <div className="whitespace-pre-wrap">{m.content}</div>
+                ) : (
                   <ReactMarkdown components={{
-                    strong: ({ children }) => <strong style={{ color: '#f0f4ff', fontWeight: 800, letterSpacing: '-0.03em' }}>{children}</strong>,
-                    em: ({ children }) => <em style={{ color: '#867fff' }}>{children}</em>,
-                    h2: ({ children }) => <div style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f4ff', margin: '8px 0 4px' }}>{children}</div>,
-                    h3: ({ children }) => <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff', margin: '6px 0 2px' }}>{children}</div>,
-                    ul: ({ children }) => <ul style={{ margin: '4px 0', paddingLeft: 16 }}>{children}</ul>,
-                    ol: ({ children }) => <ol style={{ margin: '4px 0', paddingLeft: 16 }}>{children}</ol>,
-                    li: ({ children }) => <li style={{ marginBottom: 2 }}>{children}</li>,
-                    p: ({ children }) => <p style={{ margin: '4px 0' }}>{children}</p>,
-                    hr: () => <div style={{ borderBottom: '1px solid #1E1E2E', margin: '8px 0' }} />,
-                    code: ({ children }) => <code style={{ background: 'rgba(108,99,255,0.1)', padding: '1px 4px', borderRadius: 4, fontSize: 12, color: '#867fff' }}>{children}</code>,
+                    strong: ({ children }) => <strong className="text-[#F0F0FF] font-black tracking-tight">{children}</strong>,
+                    em: ({ children }) => <em className="text-[#6C63FF] not-italic font-bold">{children}</em>,
+                    h2: ({ children }) => <div className="text-lg font-black text-[#F0F0FF] mt-6 mb-3 tracking-tight">{children}</div>,
+                    h3: ({ children }) => <div className="text-sm font-black text-[#6C63FF] mt-4 mb-2 uppercase tracking-widest">{children}</div>,
+                    ul: ({ children }) => <ul className="space-y-2 my-4 list-none">{children}</ul>,
+                    ol: ({ children }) => <ol className="space-y-2 my-4 list-decimal pl-5 marker:text-[#6C63FF] marker:font-black">{children}</ol>,
+                    li: ({ children }) => (
+                      <li className="flex gap-3">
+                        <span className="text-[#6C63FF] mt-1.5">•</span>
+                        <span>{children}</span>
+                      </li>
+                    ),
+                    p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+                    hr: () => <div className="h-px bg-white/5 my-6" />,
+                    code: ({ children }) => <code className="px-2 py-0.5 rounded bg-[#6C63FF]/20 text-[#6C63FF] font-black text-xs">{children}</code>,
                   }}>{m.content}</ReactMarkdown>
-                  {streaming && m.id === messages[messages.length - 1]?.id && (
-                    <span style={{ display: 'inline-block', width: 6, height: 14, background: '#6C63FF', marginLeft: 2, animation: 'pulse 0.8s infinite', verticalAlign: 'text-bottom' }} />
-                  )}
-                </div>
-              )}
+                )}
+                {streaming && m.id === messages[messages.length - 1]?.id && (
+                  <span className="inline-block w-1.5 h-4 bg-[#6C63FF] ml-2 animate-pulse align-middle" />
+                )}
+              </div>
               <div style={{ fontSize: 10, color: '#1a2535', marginTop: 6, textAlign: m.role === 'user' ? 'right' : 'left' }}>{fmtTime(m.ts)}</div>
             </div>
           </div>
