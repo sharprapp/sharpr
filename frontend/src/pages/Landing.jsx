@@ -278,7 +278,7 @@ export default function Landing() {
           <FadeUp delay={800}>
             <div className="flex items-center justify-center gap-6 flex-wrap">
               <Link to="/register" className="glass-btn-primary px-10 py-5 rounded-xl text-lg font-black uppercase tracking-wide">Start Free</Link>
-              <a href="#features" className="glass-btn-secondary px-10 py-5 rounded-xl text-lg font-black uppercase tracking-wide">See How It Works</a>
+              <a href="#signals" className="glass-btn-secondary px-10 py-5 rounded-xl text-lg font-black uppercase tracking-wide">See How It Works</a>
             </div>
           </FadeUp>
 
