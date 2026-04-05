@@ -24,14 +24,11 @@ function genStats(name) {
   return { record: w + '-' + l, last10, ats: (22 + seed % 20) + '-' + (30 + seed % 10), ou: (20 + seed % 20) + '-' + (30 + seed % 10), ppg: (108 + seed % 20).toFixed(1), opp: (106 + (seed + 3) % 20).toFixed(1) };
 }
 
-// Injuries removed — was hardcoded mock data that never updated
 const INJURIES = {};
-
-const stColor = s => s === 'Out' ? { bg: 'rgba(239,68,68,0.15)', c: '#ef4444' } : s === 'Questionable' ? { bg: 'rgba(245,158,11,0.15)', c: '#f59e0b' } : s === 'Probable' ? { bg: 'rgba(34,197,94,0.15)', c: '#22c55e' } : s === 'Doubtful' ? { bg: 'rgba(251,146,60,0.15)', c: '#fb923c' } : { bg: 'rgba(148,163,184,0.15)', c: '#94a3b8' };
-
+const stColor = s => s === 'Out' ? { bg: 'rgba(255,69,96,0.15)', c: '#FF4560' } : s === 'Questionable' ? { bg: 'rgba(245,158,11,0.15)', c: '#f59e0b' } : s === 'Probable' ? { bg: 'rgba(0,229,180,0.15)', c: '#00E5B4' } : { bg: 'rgba(107,107,138,0.15)', c: '#6B6B8A' };
 
 export default function GameDetailModal({ game: g, onClose, userPlan }) {
-  const { text: aiResult, loading: aiLoading, error: aiStreamError, done: aiDone, stream: startAIStream } = useAIStream();
+  const { text: aiResult, loading: aiLoading, done: aiDone, stream: startAIStream } = useAIStream();
   const [props, setProps] = useState({});
   const [propsLoading, setPropsLoading] = useState(false);
   const [selectedPick, setSelectedPick] = useState(null);
@@ -50,12 +47,10 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const homeStats = genStats(g.homeTeam);
   const injuries = [...(INJURIES[g.awayTeam] || []).map(i => ({ ...i, team: g.awayTeam })), ...(INJURIES[g.homeTeam] || []).map(i => ({ ...i, team: g.homeTeam }))];
 
-  // Mock sharp money
   const awayBetPct = g.awayML > 0 ? 35 : 65;
   const awayMoneyPct = g.awayML > 0 ? 51 : 44;
   const sharpAlert = Math.abs(awayMoneyPct - awayBetPct) > 12;
 
-  // AI analysis — streaming
   useEffect(() => {
     if (!isPro) return;
     startAIStream(
@@ -64,7 +59,6 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
     );
   }, [g.id]);
 
-  // Props
   useEffect(() => {
     if (!isPro || !g.id) return;
     setPropsLoading(true);
@@ -72,7 +66,6 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
       .then(r => r.json()).then(d => setProps(d.props || {})).catch(() => {}).finally(() => setPropsLoading(false));
   }, [g.id]);
 
-  // Log bet
   async function logBet() {
     if (!selectedPick) return;
     try {
@@ -82,11 +75,11 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
         user_id: user.id, sport: (g.sport || 'other').toUpperCase(),
         match: `${g.awayTeam} @ ${g.homeTeam}`, type: selectedPick.type || 'Spread',
         odds: String(selectedPick.odds || ''), stake: parseFloat(stake) || 50, result: 'pending',
-        notes: `Logged from Events · ${selectedPick.label}`,
+        notes: `Logged from Terminal Matrix · ${selectedPick.label}`,
       });
       setBetLogged(true);
       setTimeout(() => { setBetLogged(false); setSelectedPick(null); }, 2500);
-    } catch (e) { console.error('Bet log error:', e); }
+    } catch (e) { console.error('Bet translation failed:', e); }
   }
 
   const picks = [
@@ -98,7 +91,6 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
     { label: `Under ${g.overTotal || '--'}`, odds: g.underOdds, type: 'Total' },
   ];
 
-  // Best odds map
   const bestOdds = {};
   (g.allBookmakers || []).forEach(bk => bk.markets?.forEach(mk => mk.outcomes?.forEach(oc => {
     const k = mk.key + '_' + oc.name;
@@ -112,211 +104,221 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const propPlayers = Object.keys(props).slice(0, 8);
   const propStats = propPlayers.length > 0 ? [...new Set(propPlayers.flatMap(p => Object.keys(props[p])))] : [];
 
-  const gc = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 14 };
-  const st = { fontSize: 10, fontWeight: 700, letterSpacing: '2px', color: '#1a2535', textTransform: 'uppercase', marginBottom: 10 };
-
   return (
-    <div onClick={e => e.target === e.currentTarget && onClose()} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.88)', zIndex: 1000, display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 16 }}>
-      <div style={{ background: '#070712', border: isMobile ? 'none' : '1px solid rgba(255,255,255,0.08)', borderRadius: isMobile ? 0 : 20, width: '100%', maxWidth: isMobile ? '100vw' : 1100, maxHeight: isMobile ? '100vh' : '90vh', overflowY: 'auto', position: 'relative' }}>
-
-        {/* Close — fixed on mobile */}
-        <div onClick={onClose} style={{ position: isMobile ? 'fixed' : 'absolute', top: 12, right: 12, background: 'rgba(3,3,10,0.8)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94A3B8', fontSize: 18, zIndex: 1001 }}>✕</div>
-
-        {/* Header */}
-        <div style={{ padding: isMobile ? '16px 16px' : '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isMobile ? 16 : 32 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <TeamLogo teamName={g.awayTeam} size={isMobile ? 36 : 52} />
-            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 700, color: '#f0f4ff', textAlign: 'center' }}>{g.awayTeam}</div>
-            <div style={{ fontSize: 10, color: '#2a3a5a' }}>{awayStats.record}</div>
+    <div onClick={e => e.target === e.currentTarget && onClose()} className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A0A0F]/80 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="relative w-full max-w-6xl h-full max-h-[90vh] bg-[#111120]/90 backdrop-blur-3xl border border-[rgba(108,99,255,0.2)] rounded-[40px] shadow-[0_30px_100px_rgba(0,0,0,0.8)] overflow-hidden animate-in zoom-in-95 duration-500">
+        
+        {/* TOP HUD */}
+        <div className="relative h-[280px] flex items-center justify-center p-12 overflow-hidden border-b border-white/5 bg-gradient-to-br from-[#1A1A2E] to-[#111120]">
+          <div className="absolute inset-0 pointer-events-none">
+             <div className="absolute top-[-50%] left-[-10%] w-[60%] h-[150%] bg-[#6C63FF]/5 blur-[100px] rounded-full rotate-12" />
+             <div className="absolute bottom-[-50%] right-[-10%] w-[60%] h-[150%] bg-[#00E5B4]/5 blur-[100px] rounded-full -rotate-12" />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flexShrink: 0 }}>
-            <div style={{ fontSize: 14, color: '#1a2535', fontWeight: 700 }}>@</div>
-            <div style={{ fontSize: 10, color: '#2a3a5a' }}>{formatTime(g.commenceTime)}</div>
-            <span style={{ background: 'rgba(79,142,247,0.15)', border: '1px solid rgba(79,142,247,0.3)', borderRadius: 100, padding: '2px 8px', fontSize: 9, fontWeight: 700, color: '#7aaff8' }}>{(g.sport || '').toUpperCase()}</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-            <TeamLogo teamName={g.homeTeam} size={isMobile ? 36 : 52} />
-            <div style={{ fontSize: isMobile ? 12 : 14, fontWeight: 700, color: '#f0f4ff', textAlign: 'center' }}>{g.homeTeam}</div>
-            <div style={{ fontSize: 10, color: '#2a3a5a' }}>{homeStats.record}</div>
+
+          <button onClick={onClose} className="absolute top-8 right-8 w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-[#6B6B8A] hover:bg-white/10 hover:text-white transition-all z-20">✕</button>
+
+          <div className="relative z-10 flex items-center justify-center gap-12 lg:gap-20 w-full max-w-4xl">
+            <div className="flex flex-col items-center gap-6 flex-1">
+              <div className="w-24 h-24 rounded-[32px] bg-black/40 border-2 border-white/5 flex items-center justify-center p-4 shadow-2xl group transition-transform hover:scale-110">
+                <TeamLogo teamName={g.awayTeam} size={64} />
+              </div>
+              <div className="text-center">
+                <h2 className="text-2xl font-black text-[#F0F0FF] tracking-tight">{g.awayTeam}</h2>
+                <p className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-[0.4em] mt-1">{awayStats.record} · AWAY</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-2 pt-8">
+              <div className="text-4xl font-black text-white/5 mt-[-40px]">VS</div>
+              <div className="px-6 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-black text-[#F0F0FF] tracking-widest whitespace-nowrap">{formatTime(g.commenceTime)}</div>
+              <div className="px-3 py-1 rounded-lg bg-[#6C63FF]/20 border border-[#6C63FF]/30 text-[9px] font-black text-[#6C63FF] uppercase tracking-[0.3em]">{(g.sport || '').replace('-', ' ')}</div>
+            </div>
+
+            <div className="flex flex-col items-center gap-6 flex-1">
+              <div className="w-24 h-24 rounded-[32px] bg-black/40 border-2 border-white/5 flex items-center justify-center p-4 shadow-2xl group transition-transform hover:scale-110">
+                <TeamLogo teamName={g.homeTeam} size={64} />
+              </div>
+              <div className="text-center">
+                <h2 className="text-2xl font-black text-[#F0F0FF] tracking-tight">{g.homeTeam}</h2>
+                <p className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-[0.4em] mt-1">{homeStats.record} · HOME</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Body */}
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 340px' }}>
-
-          {/* LEFT / Main */}
-          <div style={{ padding: isMobile ? '16px' : '20px 24px', borderRight: isMobile ? 'none' : '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-            {/* Odds comparison table */}
-            <div>
-              <div style={st}>Odds Comparison</div>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        {/* CONTENT GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 h-[calc(90vh-280px)] overflow-y-auto custom-scrollbar">
+          
+          {/* MAIN COLUMN (8) */}
+          <div className="lg:col-span-8 p-10 space-y-12 border-r border-white/5">
+            
+            {/* ODDS MATRIX */}
+            <div className="animate-in slide-in-from-left-8 duration-500">
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-[0.5em]">Global Odds Matrix</div>
+                <div className="flex gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#00E5B4] animate-pulse" />
+                  <span className="text-[9px] font-black text-[#00E5B4] uppercase tracking-widest">Live Integration</span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-y-2">
                   <thead>
-                    <tr>
-                      {['Book', `${g.awayTeam?.split(' ').pop()} Sprd`, `${g.homeTeam?.split(' ').pop()} Sprd`, `${g.awayTeam?.split(' ').pop()} ML`, `${g.homeTeam?.split(' ').pop()} ML`, 'Total'].map(h => (
-                        <th key={h} style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', padding: '6px 8px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>{h}</th>
-                      ))}
+                    <tr className="text-[10px] font-black text-[#4E4E63] uppercase tracking-widest">
+                      <th className="pb-4 pl-4">Bookmaker</th>
+                      <th className="pb-4 text-center">AWAY Spread</th>
+                      <th className="pb-4 text-center">HOME Spread</th>
+                      <th className="pb-4 text-center">AWAY ML</th>
+                      <th className="pb-4 text-center">HOME ML</th>
+                      <th className="pb-4 text-center">TOTAL</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {(g.allBookmakers || []).slice(0, 5).map((bk, bi) => {
+                  <tbody className="space-y-4">
+                    {(g.allBookmakers || []).slice(0, 6).map((bk, bi) => {
                       const getO = (mkt, team) => bk.markets?.find(m => m.key === mkt)?.outcomes?.find(o => o.name === team);
                       const aS = getO('spreads', g.awayTeam), hS = getO('spreads', g.homeTeam);
                       const aM = getO('h2h', g.awayTeam), hM = getO('h2h', g.homeTeam);
                       const tot = bk.markets?.find(m => m.key === 'totals')?.outcomes?.find(o => o.name === 'Over');
                       const isBest = (mk, nm, pr) => bestOdds[mk + '_' + nm]?.price === pr;
-                      const cell = (best, pr) => ({ padding: '7px 6px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.03)', background: best ? 'rgba(34,197,94,0.06)' : 'transparent', color: best ? '#4ade80' : pr > 0 ? '#22c55e' : '#6a7a9a', fontWeight: best ? 700 : 500, fontSize: 11 });
+                      
+                      const cellStyle = "p-4 text-center font-black transition-all";
+                      const getCellColor = (best, pr) => best ? 'text-[#00E5B4] bg-[#00E5B4]/5 border border-[#00E5B4]/20' : pr > 0 ? 'text-[#F0F0FF]' : 'text-[#6B6B8A]';
+
                       return (
-                        <tr key={bk.key || bi}>
-                          <td style={{ padding: '7px 8px', color: '#4a5a7a', fontSize: 10, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{bk.title}</td>
-                          <td style={cell(isBest('spreads', g.awayTeam, aS?.price), aS?.price)}>{aS ? `${formatSpread(aS.point)} (${formatOdds(aS.price)})` : '--'}</td>
-                          <td style={cell(isBest('spreads', g.homeTeam, hS?.price), hS?.price)}>{hS ? `${formatSpread(hS.point)} (${formatOdds(hS.price)})` : '--'}</td>
-                          <td style={cell(isBest('h2h', g.awayTeam, aM?.price), aM?.price)}>{aM ? formatOdds(aM.price) : '--'}</td>
-                          <td style={cell(isBest('h2h', g.homeTeam, hM?.price), hM?.price)}>{hM ? formatOdds(hM.price) : '--'}</td>
-                          <td style={cell(false, tot?.price)}>{tot ? `O ${tot.point} (${formatOdds(tot.price)})` : '--'}</td>
+                        <tr key={bk.key || bi} className="bg-black/20 group hover:bg-black/30 transition-colors">
+                          <td className="p-4 rounded-l-2xl border-l border-white/5 font-black text-[10px] text-[#6B6B8A] uppercase tracking-widest">{bk.title}</td>
+                          <td className={`${cellStyle} ${getCellColor(isBest('spreads', g.awayTeam, aS?.price), aS?.price)}`}>{aS ? `${formatSpread(aS.point)} (${formatOdds(aS.price)})` : '--'}</td>
+                          <td className={`${cellStyle} ${getCellColor(isBest('spreads', g.homeTeam, hS?.price), hS?.price)}`}>{hS ? `${formatSpread(hS.point)} (${formatOdds(hS.price)})` : '--'}</td>
+                          <td className={`${cellStyle} ${getCellColor(isBest('h2h', g.awayTeam, aM?.price), aM?.price)}`}>{aM ? formatOdds(aM.price) : '--'}</td>
+                          <td className={`${cellStyle} ${getCellColor(isBest('h2h', g.homeTeam, hM?.price), hM?.price)}`}>{hM ? formatOdds(hM.price) : '--'}</td>
+                          <td className={`${cellStyle} text-[#6B6B8A] rounded-r-2xl border-r border-white/5`}>{tot ? `O ${tot.point} (${formatOdds(tot.price)})` : '--'}</td>
                         </tr>
                       );
                     })}
-                    {(!g.allBookmakers || g.allBookmakers.length === 0) && (g.homeML != null || g.awayML != null) && (
-                      <tr>
-                        <td style={{ padding: '7px 8px', color: '#4a5a7a', fontSize: 10, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>Best line</td>
-                        <td style={{ padding: '7px', textAlign: 'center', color: '#6a7a9a', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatSpread(g.awaySpread)} ({formatOdds(g.awaySpreadOdds)})</td>
-                        <td style={{ padding: '7px', textAlign: 'center', color: '#6a7a9a', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatSpread(g.homeSpread)} ({formatOdds(g.homeSpreadOdds)})</td>
-                        <td style={{ padding: '7px', textAlign: 'center', color: g.awayML > 0 ? '#22c55e' : '#6a7a9a', fontSize: 11, fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatOdds(g.awayML)}</td>
-                        <td style={{ padding: '7px', textAlign: 'center', color: g.homeML > 0 ? '#22c55e' : '#6a7a9a', fontSize: 11, fontWeight: 600, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{formatOdds(g.homeML)}</td>
-                        <td style={{ padding: '7px', textAlign: 'center', color: '#6a7a9a', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.03)' }}>{g.overTotal ? `O ${g.overTotal} (${formatOdds(g.overOdds)})` : '--'}</td>
-                      </tr>
-                    )}
-                    {(!g.allBookmakers || g.allBookmakers.length === 0) && g.homeML == null && g.awayML == null && (
-                      <tr><td colSpan={6} style={{ padding: 16, textAlign: 'center', color: '#1a2535', fontSize: 12 }}>Odds not yet posted — check back closer to game time</td></tr>
-                    )}
                   </tbody>
                 </table>
               </div>
             </div>
 
-            {/* Sharp money */}
-            <div>
-              <div style={st}>Sharp Money</div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
-                {[{ label: 'Bet %', away: awayBetPct }, { label: 'Money %', away: awayMoneyPct }].map(({ label, away }) => (
-                  <div key={label} style={gc}>
-                    <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#1a2535', textTransform: 'uppercase', marginBottom: 8 }}>{label}</div>
-                    <div style={{ height: 6, borderRadius: 3, overflow: 'hidden', display: 'flex', marginBottom: 6 }}>
-                      <div style={{ width: away + '%', background: '#4f8ef7', borderRadius: '3px 0 0 3px' }} />
-                      <div style={{ flex: 1, background: 'rgba(255,255,255,0.08)' }} />
+            {/* STATS GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+              {/* SHARP VOLUME */}
+              <div>
+                <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-[0.5em] mb-6">Market Distribution</div>
+                <div className="space-y-6">
+                  {[{ label: 'Ticket Volume', away: awayBetPct }, { label: 'Capital Exposure', away: awayMoneyPct }].map(({ label, away }) => (
+                    <div key={label} className="space-y-2">
+                       <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-[#4E4E63]">
+                        <span>{label}</span>
+                        <span>{away}% AWAY / {100-away}% HOME</span>
+                       </div>
+                       <div className="h-2 rounded-full bg-white/5 overflow-hidden flex">
+                        <div className="h-full bg-[#6C63FF] transition-all duration-1000" style={{ width: `${away}%` }} />
+                        <div className="h-full bg-[#00E5B4] transition-all duration-1000 opacity-30" style={{ width: `${100-away}%` }} />
+                       </div>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, fontWeight: 700 }}>
-                      <span style={{ color: '#4f8ef7' }}>{g.awayTeam?.split(' ').pop()} {away}%</span>
-                      <span style={{ color: '#4a5a7a' }}>{g.homeTeam?.split(' ').pop()} {100 - away}%</span>
+                  ))}
+                  {sharpAlert && (
+                    <div className="p-4 rounded-xl bg-[#6C63FF]/5 border border-[#6C63FF]/20 flex items-center gap-3">
+                      <span className="text-lg">📡</span>
+                      <span className="text-[10px] font-black text-[#6C63FF] uppercase tracking-[0.2em]">Sharp action signal detected on {awayMoneyPct > awayBetPct ? g.awayTeam : g.homeTeam}</span>
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
-              {sharpAlert && (
-                <div style={{ marginTop: 8, background: 'rgba(79,142,247,0.08)', border: '1px solid rgba(79,142,247,0.2)', borderRadius: 8, padding: '6px 10px', fontSize: 11, fontWeight: 700, color: '#7aaff8', textAlign: 'center' }}>
-                  Sharp action on {awayMoneyPct > awayBetPct ? g.awayTeam : g.homeTeam}
+
+              {/* TEAM METRICS */}
+              <div>
+                <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-[0.5em] mb-6">Execution Metrics</div>
+                <div className="grid grid-cols-2 gap-4">
+                  {[{ team: g.awayTeam, s: awayStats, clr: '#6C63FF' }, { team: g.homeTeam, s: homeStats, clr: '#00E5B4' }].map(({ team, s, clr }) => (
+                    <div key={team} className="p-6 rounded-3xl bg-black/20 border border-white/5">
+                      <div className="text-xs font-black text-[#F0F0FF] mb-4 truncate">{team}</div>
+                      <div className="flex gap-1.5 mb-6">
+                        {s.last10.map((r, i) => <div key={i} className={`w-2 h-2 rounded-full ${r === 'W' ? 'bg-[#00E5B4]' : 'bg-[#FF4560]'} shadow-sm`} />)}
+                      </div>
+                      <div className="space-y-3">
+                        {[['ATS', s.ats], ['O/U', s.ou], ['PPG', s.ppg]].map(([l, v]) => (
+                          <div key={l} className="flex justify-between items-center border-b border-white/5 pb-2">
+                             <span className="text-[9px] font-black text-[#4E4E63] uppercase">{l}</span>
+                             <span className="text-[10px] font-black text-[#F0F0FF]">{v}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SIDEBAR COLUMN (4) */}
+          <div className="lg:col-span-4 p-10 bg-black/10 space-y-12">
+            
+            {/* AI INTELLIGENCE */}
+            <div>
+               <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-[0.5em] mb-6">Core Intelligence</div>
+               {!isPro ? (
+                <div className="p-8 rounded-[32px] bg-gradient-to-br from-[#6C63FF]/20 to-transparent border border-[#6C63FF]/30 text-center">
+                  <div className="text-4xl mb-6">🔒</div>
+                  <h3 className="text-sm font-black text-[#F0F0FF] uppercase tracking-widest mb-2">Institutional Analysis</h3>
+                  <p className="text-[10px] font-bold text-[#6B6B8A] uppercase tracking-widest mb-8 leading-relaxed">Unlock sharp data interpretation & AI-driven edge detection</p>
+                  <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} className="w-full py-4 rounded-xl bg-[#6C63FF] text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-lg">Upgrade to Elite</button>
+                </div>
+              ) : (
+                <div className="p-6 rounded-[32px] bg-[#0D0D15] border border-[#6C63FF]/20 shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-4 opacity-20 text-xl">🧠</div>
+                  {aiLoading && !aiResult ? (
+                    <div className="flex flex-col items-center py-12 gap-4">
+                      <div className="flex gap-2">{[0, 1, 2].map(i => <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#6C63FF] animate-bounce" style={{ animationDelay: `${i*0.2}s` }} />)}</div>
+                      <span className="text-[10px] font-black text-[#4E4E63] uppercase tracking-[0.4em]">Calibrating Models...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="text-xs text-[#8899bb] leading-relaxed font-medium">
+                        {analysisText}{aiLoading && <span className="inline-block w-1.5 h-4 bg-[#6C63FF] ml-2 animate-pulse align-middle" />}
+                      </div>
+                      {bestBetText && (
+                        <div className="p-5 rounded-2xl bg-[#00E5B4]/5 border border-[#00E5B4]/20">
+                          <div className="text-[9px] font-black text-[#00E5B4] uppercase tracking-[0.2em] mb-2">High Confidence Bet</div>
+                          <div className="text-sm font-black text-[#F0F0FF]">{bestBetText}</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Team Stats */}
+            {/* PROPS SELECT */}
             <div>
-              <div style={st}>Team Stats</div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
-                {[{ team: g.awayTeam, s: awayStats }, { team: g.homeTeam, s: homeStats }].map(({ team, s: ts }) => (
-                  <div key={team} style={gc}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#f0f4ff', marginBottom: 8 }}>{team}</div>
-                    <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', marginBottom: 8 }}>
-                      {ts.last10.map((r, i) => <span key={i} style={{ background: r === 'W' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)', color: r === 'W' ? '#4ade80' : '#f87171', borderRadius: 3, padding: '2px 5px', fontSize: 9, fontWeight: 700 }}>{r}</span>)}
-                    </div>
-                    {[['Record', ts.record], ['ATS', ts.ats], ['O/U', ts.ou], ['PPG', ts.ppg], ['Opp PPG', ts.opp]].map(([l, v]) => (
-                      <div key={l} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#4a5a7a', padding: '3px 0', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                        <span>{l}</span><span style={{ color: '#8899bb', fontWeight: 600 }}>{v}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-[0.5em]">Player Prop Relay</div>
+                {!isPro && <div className="text-[9px] font-black text-[#6C63FF] uppercase tracking-widest">PRO ONLY</div>}
               </div>
-            </div>
-
-            {/* Injuries — only shown if data exists */}
-            {injuries.length > 0 && (
-              <div>
-                <div style={st}>Key Injuries</div>
-                <div style={gc}>
-                  {injuries.map((inj, i) => {
-                    const sc = stColor(inj.status);
-                    return (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: i < injuries.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}>
-                        <div>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: '#8899bb' }}>{inj.player}</span>
-                          <span style={{ fontSize: 10, color: '#2a3a5a', marginLeft: 8 }}>{inj.pos} · {inj.team?.split(' ').pop()} · {inj.inj}</span>
-                        </div>
-                        <span style={{ background: sc.bg, color: sc.c, borderRadius: 5, padding: '2px 8px', fontSize: 9, fontWeight: 700 }}>{inj.status}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* RIGHT / Secondary */}
-          <div style={{ padding: isMobile ? 16 : 20, background: 'rgba(79,142,247,0.02)', display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-            {/* AI Analysis */}
-            <div>
-              <div style={st}>AI Analysis</div>
               {!isPro ? (
-                <div style={{ background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: 12, padding: 20, textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>🔒</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f4ff', marginBottom: 6 }}>AI Game Analysis</div>
-                  <div style={{ fontSize: 11, color: '#4a5a7a', marginBottom: 14 }}>Get sharp analysis on every game with Pro</div>
-                  <button onClick={() => window.dispatchEvent(new CustomEvent('open-upgrade'))} style={{ background: 'rgba(79,142,247,0.2)', border: '1px solid rgba(79,142,247,0.4)', borderRadius: 10, padding: '9px 18px', fontSize: 12, fontWeight: 700, color: '#7aaff8', cursor: 'pointer', width: '100%' }}>Upgrade to Pro</button>
+                <div className="grid grid-cols-1 gap-2 opacity-30 select-none">
+                  {[1, 2, 3].map(i => <div key={i} className="h-14 rounded-2xl bg-white/5 border border-white/5" />)}
                 </div>
-              ) : aiLoading && !aiResult ? (
-                <div style={{ background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.15)', borderRadius: 12, padding: 20, textAlign: 'center' }}>
-                  <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 10 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: '#4f8ef7', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
-                  <div style={{ fontSize: 12, color: '#4a5a7a' }}>Analyzing matchup...</div>
-                </div>
-              ) : aiResult ? (
-                <div style={{ background: 'rgba(79,142,247,0.05)', border: '1px solid rgba(79,142,247,0.12)', borderRadius: 12, padding: 16 }}>
-                  <div style={{ fontSize: 12, color: '#6a7a9a', lineHeight: 1.7, marginBottom: bestBetText ? 12 : 0 }}>
-                    {analysisText}{aiLoading && <span style={{ display: 'inline-block', width: 6, height: 14, background: '#4f8ef7', marginLeft: 2, animation: 'pulse 0.8s infinite', verticalAlign: 'text-bottom' }} />}
-                  </div>
-                  {aiDone && bestBetText && (
-                    <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, padding: 10 }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1px', color: '#4ade80', textTransform: 'uppercase', marginBottom: 4 }}>Best Bet</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f4ff' }}>{bestBetText}</div>
-                    </div>
-                  )}
-                </div>
-              ) : null}
-            </div>
-
-            {/* Props */}
-            <div>
-              <div style={st}>Player Props {!isPro && '🔒'}</div>
-              {!isPro ? (
-                <div style={{ ...gc, textAlign: 'center', padding: 16 }}><div style={{ fontSize: 11, color: '#2a3a5a' }}>Props available with Pro</div></div>
               ) : propsLoading ? (
-                <div style={{ fontSize: 11, color: '#2a3a5a', textAlign: 'center', padding: 16 }}>Loading props...</div>
+                <div className="py-12 flex flex-col items-center gap-4">
+                   <div className="w-8 h-8 border-2 border-[#6C63FF] border-t-transparent rounded-full animate-spin" />
+                   <span className="text-[9px] font-black text-[#4E4E63] uppercase tracking-widest">Querying Data...</span>
+                </div>
               ) : propPlayers.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div className="space-y-6">
                   {propStats.slice(0, 2).map(stat => (
-                    <div key={stat}>
-                      <div style={{ fontSize: 9, color: '#1a2535', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 5 }}>{stat}</div>
+                    <div key={stat} className="space-y-3">
+                      <div className="text-[9px] font-black text-[#4E4E63] uppercase tracking-[0.3em]">{stat} OVER/UNDER</div>
                       {propPlayers.filter(p => props[p][stat]).slice(0, 3).map(player => (
-                        <div key={player} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 10px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 8, marginBottom: 4 }}>
+                        <div key={player} className="p-4 rounded-2xl bg-[#0D0D15] border border-white/5 flex items-center justify-between group hover:border-[#6C63FF]/30 transition-all">
                           <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#f0f4ff' }}>{player}</div>
-                            <div style={{ fontSize: 9, color: '#2a3a5a' }}>O/U {props[player][stat]?.line}</div>
+                            <div className="text-[11px] font-black text-[#F0F0FF]">{player}</div>
+                            <div className="text-[9px] font-black text-[#4E4E63] uppercase mt-1">LINE: {props[player][stat]?.line}</div>
                           </div>
-                          <div style={{ display: 'flex', gap: 4 }}>
-                            <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', color: '#4ade80', borderRadius: 5, padding: '3px 7px', fontSize: 9, fontWeight: 700 }}>O {formatOdds(props[player][stat]?.over)}</div>
-                            <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', borderRadius: 5, padding: '3px 7px', fontSize: 9, fontWeight: 700 }}>U {formatOdds(props[player][stat]?.under)}</div>
+                          <div className="flex gap-2">
+                             <div className="px-3 py-1.5 rounded-lg bg-[#00E5B4]/5 border border-[#00E5B4]/20 text-[9px] font-black text-[#00E5B4]">O {formatOdds(props[player][stat]?.over)}</div>
+                             <div className="px-3 py-1.5 rounded-lg bg-[#FF4560]/5 border border-[#FF4560]/20 text-[9px] font-black text-[#FF4560]">U {formatOdds(props[player][stat]?.under)}</div>
                           </div>
                         </div>
                       ))}
@@ -324,35 +326,41 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
                   ))}
                 </div>
               ) : (
-                <div style={{ fontSize: 11, color: '#2a3a5a', textAlign: 'center', padding: 16 }}>Props not available yet</div>
+                <div className="py-12 text-center text-[10px] font-black text-[#4E4E63] uppercase tracking-widest">No active props found</div>
               )}
             </div>
 
-            {/* Quick bet */}
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 14 }}>
-              <div style={st}>Log a Bet</div>
-              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 6, marginBottom: 10 }}>
-                {picks.map((p, i) => (
-                  <div key={i} onClick={() => setSelectedPick(p)}
-                    style={{ padding: '8px 6px', borderRadius: 8, fontSize: 10, fontWeight: 700, cursor: 'pointer', textAlign: 'center',
-                      background: selectedPick?.label === p.label ? 'rgba(79,142,247,0.15)' : 'rgba(255,255,255,0.03)',
-                      border: selectedPick?.label === p.label ? '1px solid rgba(79,142,247,0.4)' : '1px solid rgba(255,255,255,0.07)',
-                      color: selectedPick?.label === p.label ? '#7aaff8' : '#4a5a7a' }}>
-                    {p.label}
+            {/* BET SLIP HUD */}
+            <div className="p-8 rounded-[40px] bg-gradient-to-br from-[#6C63FF] to-[#4E4E63] shadow-2xl relative overflow-hidden">
+               <div className="absolute inset-0 bg-black/20" />
+               <div className="relative z-10">
+                <div className="text-[10px] font-black text-white/50 uppercase tracking-[0.5em] mb-8">Unified Terminal Log</div>
+                
+                <div className="grid grid-cols-2 gap-2 mb-6">
+                  {picks.map((p, i) => (
+                    <button key={i} onClick={() => setSelectedPick(p)}
+                      className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${selectedPick?.label === p.label ? 'bg-white text-[#6C63FF] border-white shadow-lg' : 'bg-white/10 border-white/10 text-white/70 hover:bg-white/20'}`}>
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="space-y-4">
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 font-black">$</span>
+                    <input type="number" value={stake} onChange={e => setStake(e.target.value)}
+                      className="w-full bg-black/20 border border-white/20 rounded-xl py-4 pl-10 pr-4 text-sm text-white font-black outline-none focus:border-white transition-all" />
                   </div>
-                ))}
-              </div>
-              <input type="number" value={stake} onChange={e => setStake(e.target.value)} placeholder="Stake ($)"
-                style={{ width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '8px 10px', color: '#f0f4ff', fontSize: 12, marginBottom: 10, boxSizing: 'border-box' }} />
-              <button onClick={logBet}
-                style={{ background: betLogged ? 'rgba(34,197,94,0.2)' : selectedPick ? '#4f8ef7' : 'rgba(79,142,247,0.1)', border: 'none', borderRadius: 8, padding: '10px', fontSize: 12, fontWeight: 700, color: betLogged ? '#4ade80' : 'white', cursor: selectedPick ? 'pointer' : 'not-allowed', width: '100%' }}>
-                {betLogged ? 'Bet logged!' : selectedPick ? 'Log this bet' : 'Select a pick above'}
-              </button>
+                  
+                  <button onClick={logBet} disabled={!selectedPick || betLogged}
+                    className={`w-full py-5 rounded-2xl font-black text-xs tracking-[0.4em] uppercase transition-all shadow-xl ${betLogged ? 'bg-[#00E5B4] text-black shadow-[#00E5B4]/20' : selectedPick ? 'bg-white text-black shadow-white/10 hover:scale-[1.02]' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}>
+                    {betLogged ? 'RELAY SUCCESSFUL' : selectedPick ? 'COMMIT TO JOURNAL' : 'SELECT TARGET'}
+                  </button>
+                </div>
+               </div>
             </div>
           </div>
         </div>
-
-        <style>{`@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}`}</style>
       </div>
     </div>
   );

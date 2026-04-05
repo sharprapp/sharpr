@@ -204,27 +204,27 @@ export default function Dashboard() {
       <SportsTicker />
 
       {tab === 'Home' ? (
-        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key="Home" className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><HomeTab onSwitchTab={switchTab} /></ErrorBoundary>
         </div>
       ) : tab === 'Signals' ? (
-        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key="Signals" className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><SharpSignal userPlan={tier} /></ErrorBoundary>
         </div>
       ) : tab === 'Events' ? (
-        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key="Events" className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><OddsBoard initialSport={eventsSport} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('dt-') ? (
-        <div className="tab-content" style={{padding: '32px 24px'}}>
+        <div key={tab} className="tab-content fade-in-up" style={{padding: '32px 24px'}}>
           <ErrorBoundary><DayTradingTab activeSubTab={tab.replace('dt-', '')} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('sb-') ? (
-        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key={tab} className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><SportsBettingTab tier={tier} activeSubTab={tab.replace('sb-', '')} /></ErrorBoundary>
         </div>
       ) : (
-        <div className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key={tab} className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><ErrorBoundary><PolymarketTab tier={tier} /></ErrorBoundary></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><ErrorBoundary><EVCalcTab /></ErrorBoundary></div>}
           {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><ErrorBoundary><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></ErrorBoundary></div>}
@@ -2242,7 +2242,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
       onPrefillConsumed?.();
     }
   }, [prefill]);
-  // Auto-submit prefill after category is set
+
   useEffect(() => {
     if (prefillRef.current && !loading) {
       const topic = prefillRef.current;
@@ -2279,7 +2279,6 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
 
       if (!res.ok) throw new Error('Request failed');
 
-      // Add empty AI message and stream into it
       setMessages(prev => [...prev, { id: aiMsgId, role: 'assistant', content: '', ts: new Date() }]);
       setStreaming(true);
 
@@ -2298,152 +2297,119 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
           if (!line.startsWith('data: ')) continue;
           const payload = line.slice(6).trim();
           if (payload === '[DONE]') {
-            // Fallback: append disclaimer if response has a recommendation but is missing it
-            if (accumulated && !accumulated.includes('data analysis only') && !accumulated.includes('not liable')) {
-              accumulated += '\n\n⚠️ *This is data analysis only, not financial or betting advice. Always do your own research.*';
+            if (accumulated && !accumulated.includes('data analysis only')) {
+              accumulated += '\n\n⚠️ *Institutional data analysis only. Not financial advice.*';
               setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
             }
             setStreaming(false); setLoading(false); return;
           }
           try {
             const parsed = JSON.parse(payload);
-            if (parsed.error) { setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: 'Something went wrong. Please try again.', isError: true } : m)); setStreaming(false); setLoading(false); return; }
-            if (parsed.status === 'streaming') { setStreaming(true); continue; }
+            if (parsed.error) throw new Error();
             if (parsed.text) {
-              if (!streaming) setStreaming(true);
               accumulated += parsed.text;
               setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
             }
           } catch {}
         }
       }
-      // Fallback disclaimer for stream that ended without [DONE]
-      if (accumulated && !accumulated.includes('data analysis only') && !accumulated.includes('not liable')) {
-        accumulated += '\n\n⚠️ *This is data analysis only, not financial or betting advice. Always do your own research.*';
-        setMessages(prev => prev.map(m => m.id === aiMsgId ? { ...m, content: accumulated } : m));
-      }
       setStreaming(false);
     } catch {
-      setMessages(prev => {
-        const hasAi = prev.some(m => m.id === aiMsgId);
-        if (hasAi) return prev.map(m => m.id === aiMsgId ? { ...m, content: 'Something went wrong. Please try again.', isError: true } : m);
-        return [...prev, { id: aiMsgId, role: 'assistant', content: 'Something went wrong. Please try again.', ts: new Date(), isError: true }];
-      });
-      setStreaming(false);
+      setMessages(prev => [...prev, { id: Date.now(), role: 'assistant', content: 'Connection lost. Please retry.', isError: true, ts: new Date() }]);
     }
     setLoading(false);
   }
 
   function onKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }
   const fmtTime = (d) => new Date(d).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const hasMessages = messages.length > 0 || loading;
 
   return (
-    <div className="flex flex-col w-full max-w-5xl mx-auto" style={{ height: 'calc(100vh - 200px)' }}>
-
-      {/* Header / Stats Overlay */}
-      <div className="flex items-center justify-between p-6 mb-2 rounded-2xl" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+    <div className="flex flex-col h-[calc(100vh-180px)] w-full max-w-6xl mx-auto relative">
+      <style>{`
+        @keyframes aiCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .ai-terminal-bg { background: radial-gradient(circle at 50% 0%, rgba(108, 99, 255, 0.05) 0%, transparent 70%); }
+        .message-user { align-self: flex-end; background: rgba(108, 99, 255, 0.15); border: 1px solid rgba(108, 99, 255, 0.3); box-shadow: 0 0 20px rgba(108, 99, 255, 0.1); }
+        .message-ai { align-self: flex-start; background: rgba(13, 13, 21, 0.9); border: 1px solid rgba(108, 99, 255, 0.1); }
+        .ai-cursor::after { content: '|'; animation: aiCursor 0.8s infinite; color: #00E5B4; margin-left: 2px; }
+      `}</style>
+      
+      {/* TERMINAL HEADER */}
+      <div className="flex items-center justify-between p-6 glass-card rounded-2xl mb-4 border-[#6C63FF]/20">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#6C63FF]/10 flex items-center justify-center text-2xl border border-[#6C63FF]/30 shadow-[0_0_20px_rgba(108,99,255,0.2)]">🔬</div>
-          <div>
-            <h1 className="text-lg font-black text-[#F0F0FF] tracking-tight">SHARPR TERMINAL AI</h1>
-            <p className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-widest">Global Intelligence Layer</p>
-          </div>
+          <div className="w-2 h-2 rounded-full bg-[#00E5B4] animate-pulse" />
+          <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#F0F0FF]">Sharpr Core Intelligence</h2>
         </div>
-        <button onClick={() => setMessages([])} className="px-5 py-2.5 rounded-xl border border-white/5 text-[10px] font-black uppercase tracking-widest text-[#6B6B8A] hover:text-[#F0F0FF] transition-all">Reset Session</button>
+        <div className="flex gap-2">
+          {CATS.map(c => (
+            <button key={c.key} onClick={() => setCategory(c.key)}
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${category === c.key ? 'bg-[#6C63FF] text-white shadow-[0_0_15px_rgba(108,99,255,0.4)]' : 'bg-white/5 text-[#6B6B8A] hover:bg-white/10'}`}>
+              {c.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Category Ticker */}
-      <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
-        {CATS.map(c => (
-          <button key={c.key} onClick={() => setCategory(c.key)}
-            className={`flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap border ${category === c.key ? 'bg-[#6C63FF]/15 border-[#6C63FF] text-[#F0F0FF]' : 'bg-black/20 border-white/5 text-[#4E4E63] hover:border-white/10'}`}>
-            <span>{c.emoji}</span>
-            <span>{c.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Messages area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto pr-4 mb-4 flex flex-col gap-6 custom-scrollbar">
-        {!hasMessages && (
-          <div className="flex flex-col items-center justify-center h-full gap-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl">
+      {/* CHAT AREA */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-2 mb-6 flex flex-col gap-6 custom-scrollbar ai-terminal-bg">
+        {messages.length === 0 && !loading && (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <div className="w-20 h-20 rounded-full bg-[#6C63FF]/10 flex items-center justify-center mb-6 border border-[#6C63FF]/20 shadow-[0_0_40px_rgba(108,99,255,0.1)]">
+              <span className="text-3xl">🧠</span>
+            </div>
+            <h3 className="text-xl font-black text-[#F0F0FF] mb-2 tracking-tight">System Ready.</h3>
+            <p className="text-sm text-[#6B6B8A] mb-8 font-bold uppercase tracking-widest">Awaiting operator prompt...</p>
+            
+            <div className="flex gap-3 overflow-x-auto w-full max-w-4xl no-scrollbar px-4">
               {(SUGGESTIONS[category] || []).map(s => (
                 <button key={s} onClick={() => send(s)}
-                  className="p-5 rounded-2xl bg-black/20 border border-[rgba(108,99,255,0.1)] text-left hover:border-[#6C63FF]/40 hover:bg-[#6C63FF]/5 transition-all group">
-                  <div className="text-[10px] font-black text-[#6B6B8A] uppercase tracking-widest mb-2 group-hover:text-[#6C63FF]">SUGGESTED QUERY</div>
-                  <div className="text-sm font-bold text-[#F0F0FF] leading-relaxed">{s}</div>
+                  className="px-6 py-4 rounded-2xl bg-black/40 border border-white/5 whitespace-nowrap text-xs font-bold text-[#F0F0FF] hover:border-[#6C63FF] hover:bg-[#6C63FF]/5 transition-all">
+                  {s}
                 </button>
               ))}
             </div>
-            <p className="text-[10px] font-black text-[#2a3a5a] uppercase tracking-widest">Or type your own prompt below</p>
           </div>
         )}
 
-        {messages.map(m => (
-          <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-6 rounded-2xl shadow-xl transition-all ${m.role === 'user' ? 'bg-[#6C63FF]/10 border border-[#6C63FF]/30 rounded-br-sm' : 'bg-black/40 border border-white/5 rounded-bl-sm backdrop-blur-md'}`}>
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`w-1.5 h-6 rounded-full ${m.role === 'user' ? 'bg-[#6C63FF]' : 'bg-[#00E5B4]'}`} />
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A]">
-                  {m.role === 'user' ? 'OPERATOR' : 'INTELLIGENCE'}
-                </span>
-                <span className="text-[10px] font-black text-[#2a3a5a] ml-auto">{fmtTime(m.ts)}</span>
+        {messages.map((m, i) => (
+          <div key={m.id} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} fade-in-up`} style={{ animationDelay: `${i * 0.1}s` }}>
+            <div className={`max-w-[80%] p-6 rounded-3xl ${m.role === 'user' ? 'message-user italic' : 'message-ai'}`}>
+              <div className="flex items-center gap-2 mb-3 opacity-50">
+                <span className="text-[9px] font-black uppercase tracking-widest">{m.role === 'user' ? 'Operator' : 'Intelligence'}</span>
+                <span className="text-[9px] font-bold">{fmtTime(m.ts)}</span>
               </div>
-              
-              <div className={`text-sm leading-relaxed ${m.role === 'user' ? 'text-[#F0F0FF] font-bold' : 'text-[#8899bb]'}`}>
-                {m.role === 'user' ? (
-                  <div className="whitespace-pre-wrap">{m.content}</div>
-                ) : (
-                  <ReactMarkdown components={{
-                    strong: ({ children }) => <strong className="text-[#F0F0FF] font-black tracking-tight">{children}</strong>,
-                    em: ({ children }) => <em className="text-[#6C63FF] not-italic font-bold">{children}</em>,
-                    h2: ({ children }) => <div className="text-lg font-black text-[#F0F0FF] mt-6 mb-3 tracking-tight">{children}</div>,
-                    h3: ({ children }) => <div className="text-sm font-black text-[#6C63FF] mt-4 mb-2 uppercase tracking-widest">{children}</div>,
-                    ul: ({ children }) => <ul className="space-y-2 my-4 list-none">{children}</ul>,
-                    ol: ({ children }) => <ol className="space-y-2 my-4 list-decimal pl-5 marker:text-[#6C63FF] marker:font-black">{children}</ol>,
-                    li: ({ children }) => (
-                      <li className="flex gap-3">
-                        <span className="text-[#6C63FF] mt-1.5">•</span>
-                        <span>{children}</span>
-                      </li>
-                    ),
-                    p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-                    hr: () => <div className="h-px bg-white/5 my-6" />,
-                    code: ({ children }) => <code className="px-2 py-0.5 rounded bg-[#6C63FF]/20 text-[#6C63FF] font-black text-xs">{children}</code>,
-                  }}>{m.content}</ReactMarkdown>
-                )}
-                {streaming && m.id === messages[messages.length - 1]?.id && (
-                  <span className="inline-block w-1.5 h-4 bg-[#6C63FF] ml-2 animate-pulse align-middle" />
-                )}
+              <div className={`text-sm leading-relaxed ${m.role === 'user' ? 'text-white' : 'text-[#8899bb]'} ${loading && i === messages.length - 1 && m.role === 'assistant' ? 'ai-cursor' : ''}`}>
+                <ReactMarkdown components={{
+                  strong: ({ children }) => <strong className="text-white font-black">{children}</strong>,
+                  p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
+                  ul: ({ children }) => <ul className="space-y-2 mb-4 list-disc pl-5">{children}</ul>,
+                  code: ({ children }) => <code className="px-1.5 py-0.5 rounded bg-white/5 text-[#00E5B4] text-xs">{children}</code>
+                }}>{m.content}</ReactMarkdown>
               </div>
-              <div style={{ fontSize: 10, color: '#1a2535', marginTop: 6, textAlign: m.role === 'user' ? 'right' : 'left' }}>{fmtTime(m.ts)}</div>
             </div>
           </div>
         ))}
 
         {loading && !streaming && (
-          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <div style={{ padding: '12px 16px', borderRadius: 16, background: '#1A1A24', border: '1px solid rgba(255,255,255,0.07)', borderBottomLeftRadius: 4 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ display: 'flex', gap: 4 }}>{[0, 1, 2].map(i => <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#6C63FF', animation: `pulse 1.2s infinite ${i * 0.2}s` }} />)}</div>
-                <span style={{ fontSize: 11, color: '#2a3a5a' }}>Searching...</span>
-              </div>
+          <div className="flex items-center gap-3 p-6 rounded-3xl message-ai fade-in-up w-fit">
+            <div className="flex gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00E5B4] animate-bounce" style={{ animationDelay: '0s' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00E5B4] animate-bounce" style={{ animationDelay: '0.2s' }} />
+              <div className="w-1.5 h-1.5 rounded-full bg-[#00E5B4] animate-bounce" style={{ animationDelay: '0.4s' }} />
             </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A]">Analyzing data streams...</span>
           </div>
         )}
       </div>
 
-      {/* Input bar */}
-      <div style={{ padding: '12px 0 0', borderTop: '1px solid #1E1E2E', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+      {/* INPUT AREA */}
+      <div className="mt-auto p-4 rounded-[24px] bg-[#0D0D15] border border-white/5 flex gap-4 items-center focus-within:border-[#00E5B4] transition-all">
         <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey}
-          placeholder={`Ask about ${CATS.find(c => c.key === category)?.label.toLowerCase() || 'anything'}...`}
+          placeholder="Enter intelligence request..."
           rows={1}
-          style={{ flex: 1, background: '#1A1A24', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '10px 14px', color: '#f0f4ff', fontSize: 14, outline: 'none', resize: 'none', minHeight: 42, maxHeight: 120, lineHeight: 1.4 }} />
-        <button onClick={send} disabled={loading || !input.trim()}
-          style={{ width: 42, height: 42, borderRadius: 12, background: input.trim() ? '#6C63FF' : 'rgba(108,99,255,0.2)', border: 'none', color: '#fff', fontSize: 16, cursor: input.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          ↑
+          className="flex-1 bg-transparent border-none text-[#F0F0FF] text-sm focus:outline-none resize-none py-2" />
+        <button onClick={() => send()} disabled={loading || !input.trim()}
+          className="w-10 h-10 rounded-xl bg-[#00E5B4] text-black flex items-center justify-center hover:scale-105 transition-all disabled:opacity-30 disabled:hover:scale-100">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
         </button>
       </div>
     </div>
