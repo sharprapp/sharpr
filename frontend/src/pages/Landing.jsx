@@ -1,14 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 
-/* ──────────────────────────────────────────────
-   NATIVE SCROLL & ANIMATION HOOKS
-─────────────────────────────────────────────── */
+/* =========================================================
+   HOOKS
+   ========================================================= */
 function useIntersectionObserver(options = {}) {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef(null);
-
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
@@ -18,65 +17,76 @@ function useIntersectionObserver(options = {}) {
         setIsIntersecting(false);
       }
     }, options);
-
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, [options.triggerOnce, options.threshold, options.rootMargin]);
-
   return [ref, isIntersecting];
 }
 
-function useCounter(end, duration = 2000, trigger = true) {
+function useCounter(targetPos, duration = 2000, trigger = true, decimals = 0) {
   const [count, setCount] = useState(0);
-
   useEffect(() => {
     if (!trigger) return;
-    let startTime = null;
-    let animationFrame;
-    const step = (timestamp) => {
-      if (!startTime) startTime = timestamp;
-      const progress = Math.min((timestamp - startTime) / duration, 1);
-      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress); // easeOutExpo
-      setCount(Math.floor(ease * end));
-      if (progress < 1) {
-        animationFrame = window.requestAnimationFrame(step);
-      }
+    let start = null;
+    let frame;
+    const step = (ts) => {
+      if (!start) start = ts;
+      const progress = Math.min((ts - start) / duration, 1);
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setCount(ease * targetPos);
+      if (progress < 1) frame = requestAnimationFrame(step);
     };
-    animationFrame = window.requestAnimationFrame(step);
-    return () => window.cancelAnimationFrame(animationFrame);
-  }, [end, duration, trigger]);
-
-  return count;
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [targetPos, duration, trigger]);
+  return Number(count.toFixed(decimals));
 }
 
-/* ──────────────────────────────────────────────
-   ANIMATED PRESENTATION COMPONENTS
-─────────────────────────────────────────────── */
-function FadeUp({ children, delay = 0, className = '' }) {
+/* =========================================================
+   COMPONENTS
+   ========================================================= */
+function FadeUp({ children, delay = 0, className = "" }) {
   const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true, threshold: 0.1 });
   return (
     <div ref={ref} className={className} style={{
       opacity: isVisible ? 1 : 0,
-      transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
-      transition: `all 0.8s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
+      transform: isVisible ? "translateY(0)" : "translateY(40px)",
+      transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) " + delay + "ms"
     }}>
       {children}
     </div>
   );
 }
 
-function AnimatedCounter({ end, duration = 2000, prefix = '', suffix = '' }) {
-  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true });
-  const count = useCounter(end, duration, isVisible);
-  return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>;
+function SlideInRight({ children, delay = 0, className = "" }) {
+  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true, threshold: 0.1 });
+  return (
+    <div ref={ref} className={className} style={{
+      opacity: isVisible ? 1 : 0,
+      transform: isVisible ? "translateX(0)" : "translateX(60px)",
+      transition: "all 0.8s cubic-bezier(0.16, 1, 0.3, 1) " + delay + "ms"
+    }}>
+      {children}
+    </div>
+  );
 }
 
-function RevealText({ text, delayOffset = 0 }) {
-  const words = text.split(' ');
+function AnimatedNumber({ end, decimals = 0, duration = 2000, prefix = "", suffix = "" }) {
+  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true });
+  const count = useCounter(end, duration, isVisible, decimals);
   return (
-    <span style={{ display: 'inline-block' }}>
+    <span ref={ref}>
+      {prefix}{count.toLocaleString(undefined, { minimumFractionDigits: decimals })}{suffix}
+    </span>
+  );
+}
+
+function HeroWordReveal({ text }) {
+  const words = text.split(" ");
+  return (
+    <span style={{ display: "inline-block" }}>
       {words.map((w, i) => (
-        <span key={i} className="word-reveal" style={{ animationDelay: `${delayOffset + (i * 0.1)}s`, display: 'inline-block', marginRight: '0.25em' }}>
+        <span key={i} className="hero-word" style={{ animationDelay: (i * 0.1) + "s", marginRight: "0.25em", display: "inline-block" }}>
           {w}
         </span>
       ))}
@@ -84,438 +94,332 @@ function RevealText({ text, delayOffset = 0 }) {
   );
 }
 
-/* ── FAQ accordion ── */
-function FAQItem({ q, a, delay }) {
-  const [open, setOpen] = useState(false);
+/* =========================================================
+   MOCK DATA COMPONENTS
+   ========================================================= */
+const INITIAL_TERMINAL_DATA = [
+  { id: 1, market: "US Fed Rate Cut 2024", prob: 64.2, change: "+2.4", vol: "14.2M" },
+  { id: 2, market: "Lakers to make Playoffs", prob: 41.8, change: "-1.2", vol: "8.1M" },
+  { id: 3, market: "Bitcoin > $100k (Dec)", prob: 73.5, change: "+5.1", vol: "28.5M" },
+  { id: 4, market: "OpenAI GPT-5 Release", prob: 88.0, change: "+0.3", vol: "5.4M" },
+  { id: 5, market: "Chiefs win Super Bowl", prob: 21.4, change: "-0.8", vol: "11.2M" },
+];
+
+function MockTerminal() {
+  const [data, setData] = useState(INITIAL_TERMINAL_DATA);
+
+  useEffect(() => {
+    const int = setInterval(() => {
+      setData(prev => prev.map(row => {
+        const shift = (Math.random() * 2 - 1);
+        let newProb = Math.max(1, Math.min(99, row.prob + shift));
+        let newChange = (parseFloat(row.change) + shift).toFixed(1);
+        if (!newChange.startsWith("-")) newChange = "+" + newChange;
+        return { ...row, prob: newProb, change: newChange };
+      }));
+    }, 2000);
+    return () => clearInterval(int);
+  }, []);
+
   return (
-    <FadeUp delay={delay}>
-      <div className="rounded-xl overflow-hidden premium-card">
-        <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between px-6 py-5 text-left gap-4"
-          style={{ background: open ? 'rgba(108,99,255,0.05)' : 'transparent', border: 'none' }}>
-          <span className="text-sm font-extrabold" style={{ color: '#F0F0FF', letterSpacing: '-0.01em' }}>{q}</span>
-          <span className="shrink-0 text-xl leading-none transition-transform"
-            style={{ color: '#6C63FF', display: 'inline-block', transform: open ? 'rotate(45deg)' : 'none' }}>+</span>
-        </button>
-        {open && (
-          <div className="px-6 pb-5 pt-4 text-sm leading-relaxed" style={{ color: '#6B6B8A', borderTop: '1px solid rgba(108,99,255,0.1)' }}>{a}</div>
-        )}
+    <div className="terminal-window mt-12 overflow-hidden mx-auto max-w-4xl rounded-2xl border" 
+         style={{ background: "rgba(17,17,32,0.6)", backdropFilter: "blur(20px)", borderColor: "rgba(108,99,255,0.3)", boxShadow: "0 0 40px rgba(108,99,255,0.15)" }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b" style={{ borderColor: "rgba(108,99,255,0.15)", background: "rgba(10,10,15,0.8)" }}>
+        <div className="w-3 h-3 rounded-full bg-[#FF4560]" style={{boxShadow: "0 0 10px rgba(255,69,96,0.6)"}}></div>
+        <div className="w-3 h-3 rounded-full bg-[#F59E0B]" style={{boxShadow: "0 0 10px rgba(245,158,11,0.6)"}}></div>
+        <div className="w-3 h-3 rounded-full bg-[#00E5B4]" style={{boxShadow: "0 0 10px rgba(0,229,180,0.6)"}}></div>
+        <div className="ml-4 text-xs font-mono font-bold tracking-widest text-[#6B6B8A]">LIVE·TERMINAL</div>
       </div>
-    </FadeUp>
+      <div className="p-4 sm:p-6 overflow-x-auto">
+        <table className="w-full text-left font-mono text-sm min-w-[600px]">
+          <thead>
+            <tr className="text-[#6B6B8A]">
+              <th className="pb-4 font-normal">MARKET</th>
+              <th className="pb-4 font-normal text-right">PROBABILITY</th>
+              <th className="pb-4 font-normal text-right">24H CHANGE</th>
+              <th className="pb-4 font-normal text-right">VOLUME</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row) => {
+              const isPos = !row.change.startsWith("-");
+              return (
+                <tr key={row.id} className="border-b transition-colors hover:bg-[rgba(108,99,255,0.1)]" style={{ borderColor: "rgba(108,99,255,0.1)" }}>
+                  <td className="py-4 text-[#F0F0FF]">{row.market}</td>
+                  <td className="py-4 text-right font-bold text-[#F0F0FF] transition-all duration-300">{(row.prob).toFixed(1)}%</td>
+                  <td className="py-4 text-right font-bold transition-all duration-300" style={{ color: isPos ? "#00E5B4" : "#FF4560", textShadow: isPos ? "0 0 10px rgba(0,229,180,0.4)" : "0 0 10px rgba(255,69,96,0.4)" }}>{row.change}%</td>
+                  <td className="py-4 text-right text-[#6B6B8A]">{row.vol}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
-/* ── Data ── */
-const ENTRY_CARDS = [
-  { icon: '📈', title: 'Day Trader', features: ['Trade journal & P&L tracking', 'Pre-market prep & levels', 'Position size & risk calculator', 'Performance pattern recognition'] },
-  { icon: '🎯', title: 'Sports Bettor', features: ['Live odds across 7+ major books', 'Arbitrage finder & parlay optimizer', 'Bet journal with win rate tracking', 'AI game analysis & Edge Score'] },
-  { icon: '🔮', title: 'Prediction Markets', features: ['Full Polymarket block browser', 'Polymarket vs sportsbook mispricings', 'Expected Value (EV) calculators', 'Claude-powered market breakdown'] },
+const INITIAL_STRIP_DATA = [
+  { match: "BTC > $100k", prob: 73.5 },
+  { match: "Lakers ML", prob: 45.2 },
+  { match: "Fed Rate Cut", prob: 64.2 },
+  { match: "GPT-5 Release", prob: 88.0 },
+  { match: "Chiefs Super Bowl", prob: 21.4 },
+  { match: "ETH ETF Approved", prob: 92.1 },
+  { match: "US Election '24", prob: 51.5 },
+  { match: "Yankees AL Pennant", prob: 34.0 }
 ];
 
-const FEATURE_TILES = [
-  { icon: '⚡', title: 'Sharp Signals', desc: 'Real-time mispricings between prediction markets and sportsbooks.' },
-  { icon: '🤖', title: 'AI Analysis', desc: 'Claude-powered game and market breakdowns with live web search.' },
-  { icon: '📊', title: 'Performance Tracking', desc: 'P&L, win rate, ROI over time with visual calendars and charts.' },
-  { icon: '🔴', title: 'Live Odds', desc: '7+ sportsbooks side by side with Edge Scores and line movement.' },
-  { icon: '📓', title: 'Journals', desc: 'Bets and trades in one place with notes, confidence, and duration.' },
-  { icon: '🧮', title: 'Calculators', desc: 'EV, arbitrage, position sizing, and Kelly criterion tools.' },
-];
+function LiveTickerStrip() {
+  const [data, setData] = useState(INITIAL_STRIP_DATA);
 
-const FREE_FEATURES = ['Live odds viewing', '5 bets and trades / month', '3 AI queries / day', 'Basic tracking', 'EV calculator'];
-const PRO_FEATURES = ['Everything in Free', 'Unlimited logging', 'Sharp Signals (full detail)', 'Unlimited AI queries', 'Advanced AI game analysis', 'Performance insights', 'CSV/PDF export'];
+  useEffect(() => {
+    const int = setInterval(() => {
+      setData(prev => prev.map(item => ({
+        ...item,
+        prob: Math.max(1, Math.min(99, item.prob + (Math.random() * 3 - 1.5)))
+      })));
+    }, 3000);
+    return () => clearInterval(int);
+  }, []);
 
-const FAQS = [
-  { q: 'Is Sharpr affiliated with Polymarket, ESPN, or any sportsbook?', a: "No. Sharpr is an independent research and journaling tool. We aggregate publicly available data. We do not facilitate actual betting or trading." },
-  { q: 'Can I cancel my Pro subscription anytime?', a: "Yes. No contracts or lock-in. Cancel anytime from settings and keep Pro access until the end of your billing period." },
-  { q: 'How is my data stored?', a: "Securely in a private PostgreSQL database with row-level security. Only you can access your data. We never sell or share personal data." },
-  { q: 'What sports and markets are covered?', a: "NFL, NBA, MLB, NHL, Soccer, UFC, Tennis, Golf, NCAA, and more. Plus 1,500+ Polymarket prediction markets across politics, crypto, finance, and current events." },
-];
-
-const TICKER_DATA = [
-  { match: "Lakers vs Celtics", edge: "+4.2%", type: "NBA" },
-  { match: "Bitcoin ETF Approval", edge: "+8.1%", type: "CRYPTO" },
-  { match: "Chiefs vs 49ers", edge: "+2.5%", type: "NFL" },
-  { match: "US Election 2024", edge: "+6.7%", type: "POLITICS" },
-  { match: "Fed Interest Rate Cut", edge: "+3.9%", type: "FINANCE" },
-  { match: "Yankees vs Dodgers", edge: "+1.8%", type: "MLB" },
-];
-
-function SectionLabel({ text }) {
-  return <FadeUp><div className="text-xs font-extrabold tracking-widest mb-4 uppercase" style={{ color: '#6C63FF', letterSpacing: '0.08em' }}>{text}</div></FadeUp>;
+  return (
+    <div className="w-full overflow-hidden border-y py-4 items-center flex" style={{ borderColor: "rgba(108,99,255,0.2)", background: "rgba(13,13,21,0.8)", backdropFilter: "blur(10px)" }}>
+      <div className="ticker-track">
+        {[...data, ...data].map((d, i) => (
+          <div key={i} className="flex flex-shrink-0 items-center gap-3 px-6 border-r" style={{ borderColor: "rgba(108,99,255,0.2)" }}>
+            <span className="text-sm font-bold text-[#F0F0FF]">{d.match}</span>
+            <span className="text-sm font-mono font-bold transition-all duration-500" style={{ color: "#00E5B4", textShadow: "0 0 10px rgba(0,229,180,0.5)" }}>{(d.prob).toFixed(1)}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   LANDING PAGE COMPONENT
-══════════════════════════════════════════════════════════════ */
+const SIGNALS_DATA = [
+  { market: "Clippers vs Suns (Over 224.5)", pm: "62.4%", sb: "-110 (52.4%)", edge: "+10.0%" },
+  { market: "Trump Election Win", pm: "51.2%", sb: "+125 (44.4%)", edge: "+6.8%" },
+  { market: "Ohtani MVP", pm: "82.5%", sb: "-250 (71.4%)", edge: "+11.1%" },
+];
+
+/* =========================================================
+   MAIN LANDING PAGE
+   ========================================================= */
 export default function Landing() {
   
-  // Inject global animations once
   useEffect(() => {
-    if (document.getElementById('sharpr-animations')) return;
-    const style = document.createElement('style');
-    style.id = 'sharpr-animations';
-    style.innerHTML = `
-      html { scroll-behavior: smooth; }
-      body { background: #0A0A0F; color: #F0F0FF; overflow-x: hidden; }
-
-      @keyframes orbFloat {
-        0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-        33% { transform: translate(5vw, -5vh) scale(1.1) rotate(5deg); }
-        66% { transform: translate(-3vw, 4vh) scale(0.9) rotate(-5deg); }
-        100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-      }
-      
-      @keyframes orbFloatReverse {
-        0% { transform: translate(0, 0) scale(1) rotate(0deg); }
-        33% { transform: translate(-4vw, 6vh) scale(0.9) rotate(-5deg); }
-        66% { transform: translate(6vw, -3vh) scale(1.1) rotate(5deg); }
-        100% { transform: translate(0, 0) scale(1) rotate(0deg); }
-      }
-
-      @keyframes pulseGlow {
-        0% { box-shadow: 0 4px 14px rgba(108,99,255,0.4); }
-        50% { box-shadow: 0 4px 30px rgba(108,99,255,0.8); }
-        100% { box-shadow: 0 4px 14px rgba(108,99,255,0.4); }
-      }
-
-      @keyframes textGlow {
-        0% { text-shadow: 0 0 20px rgba(108,99,255,0.2); }
-        50% { text-shadow: 0 0 40px rgba(108,99,255,0.6); }
-        100% { text-shadow: 0 0 20px rgba(108,99,255,0.2); }
-      }
-
-      @keyframes slideLeft {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-      }
-
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      .animated-orb {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(140px);
-        opacity: 0.4;
-        pointer-events: none;
-        z-index: 0;
-      }
-
-      .hero-content { position: relative; z-index: 10; }
-      
-      .premium-card {
-        background: #111118;
-        border: 1px solid rgba(108,99,255,0.15);
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      }
-      .premium-card:hover {
-        border-color: rgba(108,99,255,0.5);
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(10,10,15,0.9), 0 0 30px rgba(108,99,255,0.15) !important;
-      }
-      
-      .premium-card-teal:hover {
-        border-color: rgba(0,229,180,0.5);
-        box-shadow: 0 20px 40px rgba(10,10,15,0.9), 0 0 30px rgba(0,229,180,0.15) !important;
-      }
-
-      .ticker-track {
-        display: flex;
-        width: max-content;
-        animation: slideLeft 40s linear infinite;
-      }
-      .ticker-track:hover { animation-play-state: paused; }
-
-      .word-reveal {
-        opacity: 0;
-        animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-    `;
+    // Inject global CSS securely.
+    if (document.getElementById("sharpr-landing-css")) return;
+    const style = document.createElement("style");
+    style.id = "sharpr-landing-css";
+    style.innerHTML = "html { scroll-behavior: smooth; } body { background-color: #0A0A0F; color: #F0F0FF; margin: 0; overflow-x: hidden; font-family: 'Inter', system-ui, sans-serif; }\n" +
+      "@keyframes flowOrbs { 0% { transform: translateY(0) scale(1) rotate(0deg); } 33% { transform: translateY(-5vh) translateX(4vw) scale(1.1) rotate(5deg); } 66% { transform: translateY(4vh) translateX(-3vw) scale(0.9) rotate(-5deg); } 100% { transform: translateY(0) scale(1) rotate(0deg); } }\n" +
+      "@keyframes wordFade { from { opacity: 0; transform: translateY(20px); filter: blur(10px); } to { opacity: 1; transform: translateY(0); filter: blur(0px); } }\n" +
+      "@keyframes neonPulse { 0% { box-shadow: 0 0 15px rgba(0,229,180,0.1); border-color: rgba(0,229,180,0.4); } 50% { box-shadow: 0 0 40px rgba(0,229,180,0.5); border-color: rgba(0,229,180,1); } 100% { box-shadow: 0 0 15px rgba(0,229,180,0.1); border-color: rgba(0,229,180,0.4); } }\n" +
+      "@keyframes scrollMarquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }\n" +
+      ".hero-word { opacity: 0; animation: wordFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }\n" +
+      ".orb-1 { position: absolute; width: 80vw; height: 80vw; background: rgba(108,99,255,0.25); filter: blur(160px); top: -30%; left: -20%; animation: flowOrbs 18s infinite ease-in-out; border-radius: 50%; z-index: 0; pointer-events: none; }\n" +
+      ".orb-2 { position: absolute; width: 70vw; height: 70vw; background: rgba(0,229,180,0.15); filter: blur(140px); top: 30%; right: -25%; animation: flowOrbs 22s infinite ease-in-out reverse; border-radius: 50%; z-index: 0; pointer-events: none; }\n" +
+      ".glass-btn-primary { background: rgba(108,99,255,0.9); backdrop-filter: blur(10px); color: #F0F0FF; border: 1px solid rgba(108,99,255,0.6); box-shadow: 0 0 20px rgba(108,99,255,0.4); transition: all 0.3s; }\n" +
+      ".glass-btn-primary:hover { background: rgba(108,99,255,1); box-shadow: 0 0 40px rgba(108,99,255,0.7); transform: translateY(-3px) scale(1.02); }\n" +
+      ".glass-btn-secondary { background: rgba(17,17,32,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(108,99,255,0.4); color: #F0F0FF; transition: all 0.3s; box-shadow: 0 0 15px rgba(108,99,255,0.1); }\n" +
+      ".glass-btn-secondary:hover { background: rgba(108,99,255,0.15); border-color: rgba(108,99,255,0.8); transform: translateY(-3px) scale(1.02); box-shadow: 0 0 25px rgba(108,99,255,0.3); }\n" +
+      ".ticker-track { display: flex; width: max-content; animation: scrollMarquee 40s linear infinite; }\n" +
+      ".feature-card { background: rgba(17,17,32,0.8); backdrop-filter: blur(20px); border: 1px solid rgba(108,99,255,0.3); border-radius: 16px; padding: 32px; transition: all 0.4s; box-shadow: 0 0 30px rgba(108,99,255,0.05); }\n" +
+      ".feature-card:hover { border-color: rgba(108,99,255,0.8); transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 40px rgba(108,99,255,0.2) !important; }\n" +
+      ".signal-card { background: rgba(17,17,32,0.8); backdrop-filter: blur(20px); border: 1px solid rgba(0,229,180,0.4); border-radius: 12px; transition: all 0.4s; }\n" +
+      ".signal-card:hover { animation: neonPulse 2s infinite ease-in-out; transform: translateY(-4px) scale(1.01); }\n";
     document.head.appendChild(style);
   }, []);
 
   return (
-    <div className="min-h-screen" style={{ background: '#0A0A0F', color: '#F0F0FF', position: 'relative' }}>
+    <div className="relative min-h-screen">
+      {/* BACKGROUND ORBS */}
+      <div className="orb-1"></div>
+      <div className="orb-2"></div>
 
-      {/* ── BACKGROUND PARALLAX ORBS ── */}
-      <div className="animated-orb" style={{ width: '60vw', height: '60vw', background: 'rgba(108,99,255,0.4)', top: '-20%', left: '-10%', animation: 'orbFloat 20s infinite ease-in-out' }} />
-      <div className="animated-orb" style={{ width: '50vw', height: '50vw', background: 'rgba(0,229,180,0.2)', top: '20%', right: '-15%', animation: 'orbFloatReverse 25s infinite ease-in-out' }} />
-      
-      {/* ── NAVBAR ── */}
-      <nav className="sticky top-0 z-50 border-b"
-        style={{ background: 'rgba(10,10,15,0.85)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderColor: '#1E1E2E' }}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-6">
+      {/* NAVBAR */}
+      <nav className="fixed w-full z-50 top-0 border-b transition-all" style={{ background: "rgba(13,13,21,0.7)", backdropFilter: "blur(20px)", borderColor: "rgba(108,99,255,0.2)", boxShadow: "0 10px 30px rgba(0,0,0,0.4)" }}>
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Logo />
-          <div className="hidden md:flex items-center gap-6 ml-4">
-            {['Features', 'Pricing', 'FAQ'].map(item => (
-              <a key={item} href={'#' + item.toLowerCase()}
-                className="text-sm font-bold transition-colors" style={{ color: '#6B6B8A' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#F0F0FF'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = '#6B6B8A'; }}>
-                {item}
-              </a>
+          <div className="hidden md:flex gap-8">
+            {["Platform", "Signals", "Pricing"].map(l => (
+              <a key={l} href={"#" + l.toLowerCase()} className="text-sm font-bold text-[#6B6B8A] hover:text-[#F0F0FF] transition-all hover:drop-shadow-[0_0_10px_rgba(108,99,255,0.8)]">{l}</a>
             ))}
           </div>
-          <div className="ml-auto flex items-center gap-3">
-            <Link to="/login" className="text-sm font-bold px-4 py-2 rounded-lg transition-colors"
-              style={{ color: '#6B6B8A' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#F0F0FF'; e.currentTarget.style.background = 'rgba(108,99,255,0.08)'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#6B6B8A'; e.currentTarget.style.background = 'transparent'; }}>
-              Sign in
-            </Link>
-            <Link to="/register" className="text-sm font-bold px-5 py-2.5 rounded-lg transition-all"
-              style={{ background: '#6C63FF', color: '#F0F0FF', boxShadow: '0 4px 14px rgba(108,99,255,0.4)' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#5850e6'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(108,99,255,0.6)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#6C63FF'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(108,99,255,0.4)'; }}>
-              Get started
-            </Link>
+          <div className="flex gap-4">
+            <Link to="/login" className="px-5 py-2.5 text-sm font-black text-[#F0F0FF] hover:bg-[rgba(108,99,255,0.1)] rounded-lg transition-all border border-transparent hover:border-[rgba(108,99,255,0.3)]">Sign In</Link>
+            <Link to="/register" className="glass-btn-primary px-5 py-2.5 text-sm font-black rounded-lg tracking-wide uppercase">Get Started</Link>
           </div>
         </div>
       </nav>
 
-      <div className="hero-content">
-        {/* ── HERO ── */}
-        <section className="pt-28 pb-20 px-4 sm:px-6 text-center max-w-5xl mx-auto">
+      {/* HERO SECTION */}
+      <section className="relative z-10 pt-48 pb-16 px-6 text-center">
+        <div className="max-w-5xl mx-auto">
           <FadeUp delay={100}>
-            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-lg text-xs font-extrabold tracking-widest mb-8 uppercase"
-              style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.3)', color: '#6C63FF' }}>
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00E5B4', boxShadow: '0 0 10px #00E5B4' }} />
-              Trade · Bet · Predict
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full text-xs font-black tracking-widest uppercase mb-8" style={{ background: "rgba(108,99,255,0.15)", border: "1px solid rgba(108,99,255,0.4)", color: "#F0F0FF", boxShadow: "0 0 20px rgba(108,99,255,0.2)" }}>
+              <span className="w-2 h-2 rounded-full bg-[#00E5B4]" style={{ boxShadow: "0 0 10px #00E5B4" }}></span>
+              Institutional Tools. Retail Scale.
             </div>
           </FadeUp>
-
-          <h1 className="text-5xl sm:text-6xl lg:text-8xl font-extrabold leading-tight mb-8" style={{ letterSpacing: '-0.04em' }}>
-            <RevealText text="The platform for " />
-            <span style={{ color: '#6C63FF', animation: 'textGlow 4s infinite ease-in-out' }}>
-              <RevealText text="sharp players" delayOffset={0.3} />
-            </span>
+          
+          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black mb-8 leading-[1.1] tracking-[-0.04em] drop-shadow-[0_0_30px_rgba(108,99,255,0.3)]">
+            <HeroWordReveal text="The Edge Lives Here" />
           </h1>
-
+          
           <FadeUp delay={600}>
-            <p className="text-xl sm:text-2xl mb-12 max-w-2xl mx-auto font-medium" style={{ color: '#6B6B8A', lineHeight: 1.6 }}>
-              The all-in-one terminal for algorithmic traders, arbitrage bettors, and prediction market sharks.
+            <p className="text-xl sm:text-2xl font-bold text-[#6B6B8A] max-w-3xl mx-auto mb-12">
+              The supreme terminal for algorithmic traders, arbitrage bettors, and prediction market sharks. Stop guessing.
             </p>
           </FadeUp>
 
           <FadeUp delay={800}>
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Link to="/register"
-                className="px-10 py-5 rounded-lg text-base font-bold transition-all"
-                style={{ background: '#6C63FF', color: '#F0F0FF', animation: 'pulseGlow 2.5s infinite ease-in-out' }}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}>
-                Find Your Edge — Free
-              </Link>
+            <div className="flex items-center justify-center gap-6 flex-wrap">
+              <Link to="/register" className="glass-btn-primary px-10 py-5 rounded-xl text-lg font-black uppercase tracking-wide">Start Free</Link>
+              <a href="#features" className="glass-btn-secondary px-10 py-5 rounded-xl text-lg font-black uppercase tracking-wide">See How It Works</a>
             </div>
           </FadeUp>
-        </section>
 
-        {/* ── SOCIAL PROOF COUNTERS ── */}
-        <section className="py-12 border-y border-[#1E1E2E] bg-[#111118]/40 backdrop-blur-sm">
-          <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center divide-y sm:divide-y-0 sm:divide-x divide-[#1E1E2E]">
-            <div className="pt-4 sm:pt-0">
-              <div className="text-4xl font-extrabold text-[#F0F0FF] mb-2"><AnimatedCounter end={1500} suffix="+" /></div>
-              <div className="text-sm font-bold text-[#6B6B8A] tracking-wider uppercase">Live Markets</div>
-            </div>
-            <div className="pt-8 sm:pt-0">
-              <div className="text-4xl font-extrabold text-[#00E5B4] mb-2" style={{ textShadow: '0 0 20px rgba(0,229,180,0.3)' }}><AnimatedCounter end={14} prefix="+" duration={1500} /></div>
-              <div className="text-sm font-bold text-[#6B6B8A] tracking-wider uppercase">Mispricings Today</div>
-            </div>
-            <div className="pt-8 sm:pt-0">
-              <div className="text-4xl font-extrabold text-[#6C63FF] mb-2"><AnimatedCounter end={7} duration={1000} /></div>
-              <div className="text-sm font-bold text-[#6B6B8A] tracking-wider uppercase">Sportsbooks Synced</div>
-            </div>
-          </div>
-        </section>
+          {/* MOCK TERMINAL */}
+          <FadeUp delay={1000}>
+            <MockTerminal />
+          </FadeUp>
+        </div>
+      </section>
 
-        {/* ── THREE ENTRY POINT CARDS ── */}
-        <section id="who" className="py-32 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-20">
-              <SectionLabel text="WHO IS SHARPR FOR?" />
-              <FadeUp delay={100}>
-                <h2 className="text-4xl sm:text-5xl font-extrabold" style={{ letterSpacing: '-0.03em' }}>Built for the 1%</h2>
-              </FadeUp>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {ENTRY_CARDS.map((card, idx) => (
-                <FadeUp key={card.title} delay={idx * 150}>
-                  <div className="premium-card p-8 rounded-xl h-full flex flex-col">
-                    <div className="text-4xl mb-6">{card.icon}</div>
-                    <h3 className="text-xl font-extrabold mb-6" style={{ color: '#F0F0FF', letterSpacing: '-0.01em' }}>{card.title}</h3>
-                    <ul className="flex flex-col gap-4 flex-1 mb-8">
-                      {card.features.map(f => (
-                        <li key={f} className="flex items-start gap-3 text-sm font-medium" style={{ color: '#6B6B8A' }}>
-                          <span style={{ color: '#6C63FF', marginTop: 2, flexShrink: 0, fontWeight: 800 }}>✓</span>
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </FadeUp>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── SHARP SIGNALS TICKER CALLOUT ── */}
-        <section className="py-24 relative overflow-hidden"
-          style={{ background: 'linear-gradient(180deg, rgba(108,99,255,0.05) 0%, rgba(10,10,15,1) 100%)', borderTop: '1px solid #1E1E2E', borderBottom: '1px solid #1E1E2E' }}>
-          
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center mb-16 relative z-10">
-            <SectionLabel text="LIVE SHARP SIGNALS" />
-            <FadeUp delay={100}>
-              <h2 className="text-3xl sm:text-5xl font-extrabold mb-6" style={{ letterSpacing: '-0.03em' }}>
-                <AnimatedCounter end={147} prefix="🔥 " /> edges surfaced in real-time
-              </h2>
-            </FadeUp>
-            <FadeUp delay={200}>
-              <p className="text-lg mb-8 font-medium max-w-2xl mx-auto" style={{ color: '#6B6B8A', lineHeight: 1.7 }}>
-                Our engine constantly cross-references Polymarket probabilities against global sportsbooks to surface guaranteed EV+.
-              </p>
-            </FadeUp>
-          </div>
-
-          {/* Infinite Marquee Ticker */}
-          <div className="w-full overflow-hidden relative" style={{ maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)' }}>
-            <div className="ticker-track">
-              {/* Double sequence for infinite scroll seamless loop */}
-              {[...TICKER_DATA, ...TICKER_DATA].map((signal, idx) => (
-                <div key={idx} className="premium-card premium-card-teal mx-3 p-5 rounded-xl flex items-center gap-6" style={{ width: 340, flexShrink: 0, background: 'rgba(10,10,15,0.9)' }}>
-                  <div>
-                    <div className="text-xs font-extrabold mb-1" style={{ color: '#6B6B8A' }}>{signal.type}</div>
-                    <div className="text-sm font-bold text-[#F0F0FF] truncate" style={{ width: 180 }}>{signal.match}</div>
-                  </div>
-                  <div className="ml-auto text-right">
-                    <div className="text-xs font-bold text-[#00E5B4] mb-1">EDGE</div>
-                    <div className="text-2xl font-extrabold" style={{ color: '#00E5B4', textShadow: '0 0 12px rgba(0,229,180,0.4)' }}>{signal.edge}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── FEATURES GRID ── */}
-        <section id="features" className="py-32 px-4 sm:px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-20">
-              <SectionLabel text="THE TERMINAL" />
-              <FadeUp delay={100}>
-                <h2 className="text-4xl sm:text-5xl font-extrabold mb-6" style={{ letterSpacing: '-0.03em' }}>
-                  Everything you need. <br />Nothing you don't.
-                </h2>
-              </FadeUp>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {FEATURE_TILES.map((f, idx) => (
-                <FadeUp key={f.title} delay={(idx % 3) * 150}>
-                  <div className="premium-card p-8 rounded-xl h-full flex flex-col gap-4 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#6C63FF] opacity-5 rounded-bl-full transition-transform group-hover:scale-110" />
-                    <div className="text-3xl mb-2">{f.icon}</div>
-                    <h3 className="text-lg font-extrabold" style={{ color: '#F0F0FF', letterSpacing: '-0.01em' }}>{f.title}</h3>
-                    <p className="text-sm leading-relaxed font-medium" style={{ color: '#6B6B8A' }}>{f.desc}</p>
-                  </div>
-                </FadeUp>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── PRICING ── */}
-        <section id="pricing" className="py-32 px-4 sm:px-6" style={{ borderTop: '1px solid #1E1E2E' }}>
-          <div className="max-w-5xl mx-auto text-center">
-            <SectionLabel text="PRICING" />
-            <FadeUp delay={100}>
-              <h2 className="text-4xl sm:text-6xl font-extrabold mb-16" style={{ letterSpacing: '-0.03em' }}>Institutional tools. <br/>Retail prices.</h2>
-            </FadeUp>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              <FadeUp delay={200}>
-                <div className="rounded-xl p-10 flex flex-col text-left transition-transform h-full" style={{ background: '#111118', border: '1px solid #1E1E2E' }}>
-                  <div className="mb-8">
-                    <div className="text-sm font-extrabold tracking-widest uppercase mb-3" style={{ color: '#6B6B8A' }}>Free</div>
-                    <div style={{ fontSize: 56, fontWeight: 900, color: '#F0F0FF', lineHeight: 1, letterSpacing: '-0.03em' }}>
-                      $0<span className="text-lg font-semibold" style={{ color: '#6B6B8A' }}>/mo</span>
-                    </div>
-                  </div>
-                  <ul className="flex flex-col gap-5 flex-1 mb-10">
-                    {FREE_FEATURES.map(f => (
-                      <li key={f} className="flex items-center gap-3 text-sm font-medium" style={{ color: '#6B6B8A' }}>
-                        <span style={{ color: '#6C63FF', fontSize: 14, fontWeight: 800 }}>✓</span> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to="/register" className="block text-center rounded-lg py-4 text-base font-bold transition-all"
-                    style={{ border: '2px solid #1E1E2E', background: '#1A1A24', color: '#F0F0FF' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.4)'; e.currentTarget.style.background = 'rgba(108,99,255,0.08)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#1E1E2E'; e.currentTarget.style.background = '#1A1A24'; }}>
-                    Get started free
-                  </Link>
-                </div>
-              </FadeUp>
-
-              <FadeUp delay={400}>
-                <div className="premium-card rounded-xl p-10 flex flex-col text-left relative h-full" style={{ border: '2px solid rgba(108,99,255,0.6)', boxShadow: '0 0 40px rgba(108,99,255,0.1)' }}>
-                  <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', fontSize: 11, fontWeight: 800, padding: '6px 20px', borderRadius: '8px', background: '#6C63FF', color: '#F0F0FF', textTransform: 'uppercase', letterSpacing: '0.08em', whiteSpace: 'nowrap', boxShadow: '0 4px 12px rgba(108,99,255,0.4)' }}>
-                    Most popular
-                  </div>
-                  <div className="mb-8">
-                    <div className="text-sm font-extrabold tracking-widest uppercase mb-3" style={{ color: '#6C63FF' }}>Pro</div>
-                    <div style={{ fontSize: 56, fontWeight: 900, color: '#F0F0FF', lineHeight: 1, letterSpacing: '-0.03em', textShadow: '0 0 24px rgba(108,99,255,0.3)' }}>
-                      $19<span className="text-lg font-semibold" style={{ color: '#6B6B8A' }}>/mo</span>
-                    </div>
-                  </div>
-                  <ul className="flex flex-col gap-5 flex-1 mb-10">
-                    {PRO_FEATURES.map(f => (
-                      <li key={f} className="flex items-center gap-3 text-sm font-medium" style={{ color: '#F0F0FF' }}>
-                        <span style={{ color: '#00E5B4', fontSize: 14, fontWeight: 800 }}>✓</span> {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Link to="/register" className="block text-center rounded-lg py-4 text-base font-bold transition-all"
-                    style={{ background: '#6C63FF', color: '#F0F0FF', boxShadow: '0 4px 14px rgba(108,99,255,0.3)' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#5850e6'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(108,99,255,0.5)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = '#6C63FF'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(108,99,255,0.3)'; }}>
-                    Upgrade to Pro
-                  </Link>
-                </div>
-              </FadeUp>
-            </div>
-          </div>
-        </section>
-
-        {/* ── FAQ & FOOTER ── */}
-        <section id="faq" className="py-32 px-4 sm:px-6" style={{ borderTop: '1px solid #1E1E2E' }}>
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-20">
-              <SectionLabel text="FAQ" />
-              <FadeUp delay={100}>
-                <h2 className="text-4xl sm:text-5xl font-extrabold" style={{ letterSpacing: '-0.03em' }}>Common questions</h2>
-              </FadeUp>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {FAQS.map((faq, idx) => <FAQItem key={faq.q} q={faq.q} a={faq.a} delay={idx * 150} />)}
-            </div>
-          </div>
-        </section>
-
-        <footer className="py-12 px-4 sm:px-6" style={{ borderTop: '1px solid #1E1E2E', background: '#0A0A0F' }}>
-          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="text-sm font-extrabold" style={{ color: '#6B6B8A', letterSpacing: '-0.01em' }}>Sharpr — Find Your Edge</div>
-            <div className="flex items-center gap-6">
-              {[ ['Terms', '#'], ['Privacy', '#'], ['Support', 'mailto:support@sharprapp.com'] ].map(([label, href]) => (
-                <a key={label} href={href} className="text-xs transition-colors font-bold tracking-wide uppercase" style={{ color: '#6B6B8A' }}
-                  onMouseEnter={e => e.currentTarget.style.color = '#F0F0FF'} onMouseLeave={e => e.currentTarget.style.color = '#6B6B8A'}>
-                  {label}
-                </a>
-              ))}
-            </div>
-          </div>
-        </footer>
-
+      {/* LIVE MARKETS STRIP */}
+      <div className="relative z-10 my-16">
+        <LiveTickerStrip />
       </div>
+
+      {/* SHARP SIGNALS SECTION */}
+      <section id="signals" className="relative z-10 py-32 px-6" style={{ background: "linear-gradient(180deg, rgba(13,13,21,0) 0%, rgba(13,13,21,0.8) 100%)", borderTop: "1px solid rgba(108,99,255,0.2)", borderBottom: "1px solid rgba(108,99,255,0.2)" }}>
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <FadeUp>
+              <div className="text-sm font-black tracking-widest uppercase mb-4 text-[#00E5B4] drop-shadow-[0_0_10px_rgba(0,229,180,0.5)]">Guaranteed EV+</div>
+              <h2 className="text-5xl lg:text-7xl font-black mb-6 tracking-[-0.03em] drop-shadow-[0_0_20px_rgba(108,99,255,0.2)]">Live Sharp Signals.</h2>
+              <p className="text-xl text-[#6B6B8A] font-bold mb-12 leading-relaxed">
+                Our engine aggregates 1,500+ global markets against 7 major sportsbooks in real-time, instantly surfacing massive mathematical mispricings. If there is an edge, we find it.
+              </p>
+              <div className="text-6xl font-black text-[#00E5B4] mb-2 drop-shadow-[0_0_20px_rgba(0,229,180,0.6)]">
+                <AnimatedNumber end={247} />
+              </div>
+              <div className="text-sm font-black text-[#6B6B8A] uppercase tracking-widest">
+                Edges Found This Week
+              </div>
+            </FadeUp>
+          </div>
+          
+          <div className="flex flex-col gap-6">
+            {SIGNALS_DATA.map((sig, i) => (
+              <SlideInRight key={i} delay={i * 200}>
+                <div className="signal-card p-6 flex flex-col sm:flex-row gap-6 justify-between items-center group cursor-pointer shadow-[0_0_30px_rgba(108,99,255,0.1)]">
+                  <div className="flex-1 text-left">
+                    <div className="text-xs font-black text-[#6B6B8A] tracking-wider mb-1">MARKET</div>
+                    <div className="text-xl font-black text-[#F0F0FF] truncate group-hover:text-[#00E5B4] transition-colors group-hover:drop-shadow-[0_0_5px_rgba(0,229,180,0.5)]">{sig.market}</div>
+                  </div>
+                  <div className="flex gap-8 text-left border-l border-[rgba(108,99,255,0.2)] pl-8">
+                    <div>
+                      <div className="text-xs font-black text-[#6B6B8A] tracking-wider mb-1">POLYMARKET</div>
+                      <div className="text-lg font-black text-[#F0F0FF]">{sig.pm}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-black text-[#6B6B8A] tracking-wider mb-1">SPORTSBOOK</div>
+                      <div className="text-lg font-black text-[#F0F0FF]">{sig.sb}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs font-black text-[#00E5B4] tracking-wider mb-1">EDGE</div>
+                      <div className="text-2xl font-black text-[#00E5B4] drop-shadow-[0_0_15px_rgba(0,229,180,0.8)]">{sig.edge}</div>
+                    </div>
+                  </div>
+                </div>
+              </SlideInRight>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES SECTION */}
+      <section id="platform" className="relative z-10 py-32 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <FadeUp>
+            <div className="text-sm font-black tracking-widest uppercase mb-4 text-[#6C63FF] drop-shadow-[0_0_10px_rgba(108,99,255,0.5)]">Terminal Architecture</div>
+            <h2 className="text-5xl lg:text-7xl font-black mb-20 tracking-[-0.03em] drop-shadow-[0_0_30px_rgba(108,99,255,0.2)]">Everything you need to print.</h2>
+          </FadeUp>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            <FadeUp delay={100}>
+              <div className="feature-card h-full">
+                <div className="text-5xl mb-6 drop-shadow-[0_0_20px_rgba(108,99,255,0.5)]">🧮</div>
+                <h3 className="text-2xl font-black mb-4 tracking-tight">Calculators & Tooling</h3>
+                <p className="text-[#6B6B8A] font-bold leading-relaxed">
+                  Suite of professional-grade Expected Value (EV), arbitrage, Kelly criterion, and position sizing calculators out of the box.
+                </p>
+              </div>
+            </FadeUp>
+            <FadeUp delay={300}>
+              <div className="feature-card h-full">
+                <div className="text-5xl mb-6 drop-shadow-[0_0_20px_rgba(108,99,255,0.5)]">🤖</div>
+                <h3 className="text-2xl font-black mb-4 tracking-tight">AI Market Intel</h3>
+                <p className="text-[#6B6B8A] font-bold leading-relaxed">
+                  Claude-powered intelligence layers web-search data onto active markets, giving you real-time summaries of news driving line movement.
+                </p>
+              </div>
+            </FadeUp>
+            <FadeUp delay={500}>
+              <div className="feature-card h-full">
+                <div className="text-5xl mb-6 drop-shadow-[0_0_20px_rgba(108,99,255,0.5)]">📓</div>
+                <h3 className="text-2xl font-black mb-4 tracking-tight">Advanced Journals</h3>
+                <p className="text-[#6B6B8A] font-bold leading-relaxed">
+                  Log your bets and trades flawlessly. Identify your most profitable strategies visually across fully interactive heatmaps.
+                </p>
+              </div>
+            </FadeUp>
+          </div>
+        </div>
+      </section>
+
+      {/* SOCIAL PROOF SECTION */}
+      <section className="relative z-10 py-24 bg-[rgba(13,13,21,0.8)] backdrop-blur-[20px] border-y border-[rgba(108,99,255,0.2)]">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+          <FadeUp delay={100}>
+            <div className="text-6xl font-black text-[#F0F0FF] mb-4 tracking-tight drop-shadow-[0_0_20px_rgba(240,240,255,0.2)]">
+              <AnimatedNumber end={12400} suffix="+" />
+            </div>
+            <div className="text-sm font-black text-[#6B6B8A] tracking-wider uppercase">Active Markets Tracked</div>
+          </FadeUp>
+          <FadeUp delay={300}>
+            <div className="text-6xl font-black text-[#00E5B4] mb-4 tracking-tight drop-shadow-[0_0_25px_rgba(0,229,180,0.4)]">
+              <AnimatedNumber end={89} suffix="%" />
+            </div>
+            <div className="text-sm font-black text-[#6B6B8A] tracking-wider uppercase">Signal Accuracy</div>
+          </FadeUp>
+          <FadeUp delay={500}>
+            <div className="text-6xl font-black text-[#6C63FF] mb-4 tracking-tight drop-shadow-[0_0_25px_rgba(108,99,255,0.4)]">
+              <AnimatedNumber end={2.3} decimals={1} prefix="$" suffix="M" />
+            </div>
+            <div className="text-sm font-black text-[#6B6B8A] tracking-wider uppercase">EV+ Identified (Monthly)</div>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="relative z-10 py-16 px-6 border-t border-[rgba(108,99,255,0.2)] bg-[#0A0A0F]">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col gap-2">
+            <Logo />
+            <span className="text-xs font-bold text-[#6B6B8A] tracking-wider uppercase mt-4">© 2024 Sharpr. The Edge Lives Here.</span>
+          </div>
+          <div className="flex gap-8">
+            <a href="#" className="font-bold text-sm text-[#6B6B8A] hover:text-[#00E5B4] transition-colors hover:drop-shadow-[0_0_10px_rgba(0,229,180,0.5)]">Privacy</a>
+            <a href="#" className="font-bold text-sm text-[#6B6B8A] hover:text-[#00E5B4] transition-colors hover:drop-shadow-[0_0_10px_rgba(0,229,180,0.5)]">Terms</a>
+            <a href="#" className="font-bold text-sm text-[#6B6B8A] hover:text-[#00E5B4] transition-colors hover:drop-shadow-[0_0_10px_rgba(0,229,180,0.5)]">Support</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
