@@ -2203,9 +2203,22 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
     news: ['Market news summary', 'Macro outlook this week', 'Crypto market update', 'What should I watch today'],
   };
 
+  const prefillRef = useRef(null);
   useEffect(() => {
-    if (prefill?.topic) { setInput(prefill.topic); if (prefill.type) setCategory(prefill.type); onPrefillConsumed?.(); }
+    if (prefill?.topic) {
+      if (prefill.type) setCategory(prefill.type);
+      prefillRef.current = prefill.topic;
+      onPrefillConsumed?.();
+    }
   }, [prefill]);
+  // Auto-submit prefill after category is set
+  useEffect(() => {
+    if (prefillRef.current && !loading) {
+      const topic = prefillRef.current;
+      prefillRef.current = null;
+      send(topic);
+    }
+  }, [prefillRef.current]);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -2213,8 +2226,8 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
 
   const [streaming, setStreaming] = useState(false);
 
-  async function send() {
-    const text = input.trim();
+  async function send(directText) {
+    const text = (directText || input).trim();
     if (!text || loading) return;
     posthog.capture('ai_research_run', { type: category });
     const aiMsgId = Date.now() + 1;
@@ -2333,7 +2346,7 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
         {!hasMessages && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginTop: 12 }}>
             {(SUGGESTIONS[category] || []).map(s => (
-              <button key={s} onClick={() => setInput(s)}
+              <button key={s} onClick={() => send(s)}
                 style={{ fontSize: 11, padding: '6px 14px', borderRadius: 100, background: '#111118', border: '1px solid rgba(255,255,255,0.07)', color: '#4E4E63', cursor: 'pointer', transition: 'all 0.15s' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; e.currentTarget.style.color = '#867fff'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = '#4E4E63'; }}>
