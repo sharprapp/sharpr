@@ -40,6 +40,8 @@ export default function HomeTab({ onSwitchTab }) {
   const [displaySignal, setDisplaySignal] = useState(0);
   const [typedName, setTypedName] = useState('');
 
+  const displayName = username ? `@${username}` : firstName(user?.email);
+
   useEffect(() => {
     // Sharp Signals count-up
     let start = 0;
@@ -125,7 +127,7 @@ export default function HomeTab({ onSwitchTab }) {
     return { ...g, pickTeam: isAway ? g.awayTeam : g.homeTeam, pickML: isAway ? g.awayML : g.homeML };
   }, [games]);
 
-  const displayName = username ? `@${username}` : firstName(user?.email);
+  // displayName moved to top
 
   return (
     <div className="flex flex-col gap-10">
