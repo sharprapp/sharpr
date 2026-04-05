@@ -30,14 +30,11 @@ export default function Success() {
             .eq('id', session.user.id)
             .single();
 
-          console.log('[Success] poll', attempts, '| profile:', profile, '| error:', error);
-
           const isPro = profile?.plan === 'pro' || profile?.tier === 'pro';
 
           if (isPro || attempts > 8) {
             await supabase.auth.refreshSession();
             await refreshProfile();
-            console.log('[Success] Plan confirmed, redirecting in 1s');
             posthog.capture('pro_upgraded', { plan: 'pro' });
             await new Promise(r => setTimeout(r, 1000));
             if (mountedRef.current) setStatus('success');

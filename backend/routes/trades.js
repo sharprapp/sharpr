@@ -4,14 +4,14 @@ const supabase = require('../lib/supabase');
 const { requireAuth } = require('../middleware/auth');
 const { TIER_LIMITS } = require('../lib/stripe');
 
-// GET all trades for user
+// GET all trades for user (limited to 500)
 router.get('/', requireAuth, async (req, res) => {
-  console.log('[trades GET] user:', req.user?.id);
   const { data, error } = await supabase
     .from('trades')
     .select('*')
     .eq('user_id', req.user.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(500);
 
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
@@ -19,8 +19,6 @@ router.get('/', requireAuth, async (req, res) => {
 
 // POST new trade
 router.post('/', requireAuth, async (req, res) => {
-  console.log('[trades POST] user:', req.user?.id, 'tier:', req.tier, 'body:', req.body);
-
   // Check entry limit for free users
   if (req.tier === 'free') {
     const { count } = await supabase
@@ -28,7 +26,6 @@ router.post('/', requireAuth, async (req, res) => {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', req.user.id);
 
-    console.log('[trades POST] free tier count:', count, 'limit:', TIER_LIMITS.free.trade_entries);
     if (count >= TIER_LIMITS.free.trade_entries) {
       return res.status(403).json({
         error: 'Trade entry limit reached',
@@ -41,6 +38,9 @@ router.post('/', requireAuth, async (req, res) => {
   const { ticker, direction, entry, exit, qty, setup, status, notes, multiplier, pnl: rawPnl } = req.body;
   if (!ticker || !direction || !entry || !qty) {
     return res.status(400).json({ error: 'ticker, direction, entry, qty required' });
+  }
+  if (isNaN(parseFloat(entry)) || isNaN(parseFloat(qty))) {
+    return res.status(400).json({ error: 'entry and qty must be valid numbers' });
   }
 
   // P&L is manually entered by user — no auto-calculation
@@ -56,8 +56,6 @@ router.post('/', requireAuth, async (req, res) => {
     status: finalStatus,
     notes, pnl: pnl != null ? Math.round(pnl * 100) / 100 : null
   };
-  console.log('[trades POST] inserting:', insertPayload);
-
   const { data, error } = await supabase
     .from('trades')
     .insert(insertPayload)
@@ -68,7 +66,6 @@ router.post('/', requireAuth, async (req, res) => {
     console.error('[trades POST] Supabase error:', error);
     return res.status(500).json({ error: error.message });
   }
-  console.log('[trades POST] success, id:', data?.id);
   res.status(201).json(data);
 });
 
@@ -119,7 +116,7 @@ router.get('/stats', requireAuth, async (req, res) => {
     .select('*')
     .eq('user_id', req.user.id);
 
-  if (!data) return res.json({});
+  if (!data || data.length === 0) return res.json({ total: 0, closed: 0, wins: 0, losses: 0, win_rate: 0, total_pnl: 0, avg_winner: 0 });
   const closed = data.filter(t => t.status !== 'open');
   const wins = closed.filter(t => t.status === 'win');
   const totalPnl = closed.reduce((s, t) => s + (t.pnl || 0), 0);

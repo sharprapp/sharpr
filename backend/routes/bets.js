@@ -12,7 +12,7 @@ function americanPayout(odds, stake) {
 
 router.get('/', requireAuth, async (req, res) => {
   const { sport } = req.query;
-  let query = supabase.from('bets').select('*').eq('user_id', req.user.id).order('created_at', { ascending: false });
+  let query = supabase.from('bets').select('*').eq('user_id', req.user.id).order('created_at', { ascending: false }).limit(500);
   if (sport) query = query.eq('sport', sport);
   const { data, error } = await query;
   if (error) return res.status(500).json({ error: error.message });
@@ -31,6 +31,7 @@ router.post('/', requireAuth, async (req, res) => {
   const { sport, type, match, odds, stake, result, notes } = req.body;
   if (!match || !odds || !stake) return res.status(400).json({ error: 'match, odds, stake required' });
   if (isNaN(parseFloat(stake))) return res.status(400).json({ error: 'stake must be a valid number' });
+  if (isNaN(parseInt(odds))) return res.status(400).json({ error: 'odds must be valid American format (e.g. -110, +150)' });
 
   const to_win = parseFloat(americanPayout(odds, stake).toFixed(2));
   const pnl = result === 'win' ? to_win : result === 'loss' ? -parseFloat(stake) : result === 'push' ? 0 : null;

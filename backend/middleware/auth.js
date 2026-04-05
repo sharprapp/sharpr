@@ -28,10 +28,10 @@ async function requireAuth(req, res, next) {
       .eq('id', user.id)
       .single();
 
+    if (!profile) return res.status(401).json({ error: 'User profile not found' });
     req.user = user;
-    req.profile = profile || {};
-    req.tier = profile?.plan || profile?.tier || 'free';
-    console.log('[auth] user:', user.id?.slice(0, 8), '| plan:', req.tier, '| raw:', { plan: profile?.plan, tier: profile?.tier });
+    req.profile = profile;
+    req.tier = profile.plan || profile.tier || 'free';
     next();
   } catch (err) {
     console.error('[auth] failed:', err.message);

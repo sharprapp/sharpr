@@ -143,10 +143,18 @@ Never say "As an AI" or add generic caveats before answers.`;
     res.write(`data: ${JSON.stringify({ status: 'streaming' })}\n\n`);
 
     let fullText = '';
+    const MAX_RESPONSE_SIZE = 50000;
     const stream = anthropic.messages.stream(messageParams);
 
     stream.on('text', (text) => {
       fullText += text;
+      if (fullText.length > MAX_RESPONSE_SIZE) {
+        stream.abort();
+        res.write(`data: ${JSON.stringify({ text: '\n\n[Response truncated — max length reached]' })}\n\n`);
+        res.write('data: [DONE]\n\n');
+        res.end();
+        return;
+      }
       res.write(`data: ${JSON.stringify({ text })}\n\n`);
     });
 

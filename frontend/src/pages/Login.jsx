@@ -13,7 +13,7 @@ export default function Login() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!/\S+@\S+\.\S+/.test(email)) { setError('Please enter a valid email address'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Please enter a valid email address'); return; }
     setError('');
     setLoading(true);
     try {

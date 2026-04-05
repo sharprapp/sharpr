@@ -34,6 +34,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
   const [selectedPick, setSelectedPick] = useState(null);
   const [stake, setStake] = useState('50');
   const [betLogged, setBetLogged] = useState(false);
+  const [betError, setBetError] = useState(null);
   const isPro = userPlan === 'pro' || userPlan === 'elite';
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -79,7 +80,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
       });
       setBetLogged(true);
       setTimeout(() => { setBetLogged(false); setSelectedPick(null); }, 2500);
-    } catch (e) { console.error('Bet translation failed:', e); }
+    } catch (e) { setBetError('Failed to log bet — try again'); setTimeout(() => setBetError(null), 3000); }
   }
 
   const picks = [
@@ -356,6 +357,7 @@ export default function GameDetailModal({ game: g, onClose, userPlan }) {
                     className={`w-full py-5 rounded-2xl font-black text-xs tracking-[0.4em] uppercase transition-all shadow-xl ${betLogged ? 'bg-[#00E5B4] text-black shadow-[#00E5B4]/20' : selectedPick ? 'bg-white text-black shadow-white/10 hover:scale-[1.02]' : 'bg-white/10 text-white/30 cursor-not-allowed'}`}>
                     {betLogged ? 'RELAY SUCCESSFUL' : selectedPick ? 'COMMIT TO JOURNAL' : 'SELECT TARGET'}
                   </button>
+                  {betError && <div className="text-xs font-bold text-[#FF4560] text-center mt-2">{betError}</div>}
                 </div>
                </div>
             </div>

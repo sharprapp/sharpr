@@ -107,6 +107,9 @@ router.post('/webhook', async (req, res) => {
         if (findErr) console.error('[Stripe] Find user by customer error:', findErr);
 
         if (profile?.id) {
+          // Idempotency: check if already pro before updating
+          const { data: current } = await supabase.from('profiles').select('plan').eq('id', profile.id).single();
+          if (current?.plan === 'pro') { console.log('[Stripe] User', profile.id, 'already pro — skipping'); break; }
           const { error: updateErr } = await supabase
             .from('profiles')
             .update({
@@ -116,7 +119,6 @@ router.post('/webhook', async (req, res) => {
             .eq('id', profile.id);
 
           if (updateErr) console.error('[Stripe] Update plan error:', updateErr);
-          else console.log('[Stripe] User', profile.id, 'upgraded to Pro via checkout.session.completed');
         }
       }
       break;

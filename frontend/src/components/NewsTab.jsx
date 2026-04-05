@@ -35,6 +35,15 @@ const CAT_GRADIENTS = {
   business: 'linear-gradient(135deg, #1a2a1a, #2a3a2a)', entertainment: 'linear-gradient(135deg, #2a0a1a, #3a0a2a)',
 };
 
+// Sanitize image URLs to prevent CSS injection via backgroundImage
+function safeImgUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+  if (!/^https:\/\//.test(url)) return null;
+  // Strip anything that could inject CSS: parentheses, semicolons, quotes, backslashes
+  if (/[();"'\\{}]/.test(url)) return null;
+  return `url(${url})`;
+}
+
 function timeAgo(dateStr) {
   if (!dateStr) return '';
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -215,7 +224,7 @@ export default function NewsTab({ initialType }) {
           <div onClick={() => setSelectedArticle(articles[0])}
             className="group relative h-[450px] rounded-[32px] overflow-hidden cursor-pointer border border-white/10 hover:border-[#6C63FF]/40 transition-all shadow-2xl">
             <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-              style={{ backgroundImage: articles[0].image && /^https?:\/\//.test(articles[0].image) ? `url(${articles[0].image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top) }} />
+              style={{ backgroundImage: safeImgUrl(articles[0].image) || (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top) }} />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-[#0A0A0F]/60 to-transparent" />
             
             <div className="absolute top-8 left-8 flex items-center gap-3">
@@ -235,7 +244,7 @@ export default function NewsTab({ initialType }) {
               <div key={i} onClick={() => setSelectedArticle(a)}
                 className="group flex flex-col rounded-3xl bg-black/20 border border-white/5 overflow-hidden hover:border-[#6C63FF]/30 hover:bg-black/40 transition-all cursor-pointer">
                 <div className="h-48 bg-cover bg-center group-hover:scale-105 transition-transform duration-500"
-                  style={{ backgroundImage: a.image && /^https?:\/\//.test(a.image) ? `url(${a.image})` : (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top) }} />
+                  style={{ backgroundImage: safeImgUrl(a.image) || (CAT_GRADIENTS[subCat] || CAT_GRADIENTS.top) }} />
                 <div className="p-6 flex flex-col gap-3">
                   <div className="flex items-center gap-3">
                     <span className="text-[9px] font-black text-[#6C63FF] uppercase tracking-widest">{a.source}</span>

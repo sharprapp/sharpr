@@ -13,26 +13,23 @@ export function AuthProvider({ children }) {
   const hasFetchedRef = useRef(false);
 
   const fetchProfile = useCallback(async () => {
-    // Prevent concurrent fetches
     if (fetchingRef.current) return tier;
     fetchingRef.current = true;
 
     let result = null;
 
-    // Try backend first
+    // Try backend first (source of truth)
     try {
       const { data } = await api.get('/api/auth/me');
       result = data.plan || data.tier || null;
       if (result) {
-        console.log('[useAuth] plan from /me:', result);
         setTier(result);
         setDisplayName(data.profile?.display_name || null);
         hasFetchedRef.current = true;
+        // UI hint only — never used for feature gating
         try { localStorage.setItem('sharpr_last_tier', result); } catch {}
       }
-    } catch (e) {
-      console.error('[useAuth] backend /me failed:', e.message);
-    }
+    } catch {}
 
     // Fallback: Supabase direct
     if (!result) {
@@ -46,37 +43,24 @@ export function AuthProvider({ children }) {
             .single();
           result = profile?.plan || profile?.tier || null;
           if (result) {
-            console.log('[useAuth] plan from Supabase:', result);
             setTier(result);
             setDisplayName(profile?.display_name || null);
             hasFetchedRef.current = true;
             try { localStorage.setItem('sharpr_last_tier', result); } catch {}
           }
         }
-      } catch (e) {
-        console.error('[useAuth] Supabase fallback failed:', e.message);
-      }
+      } catch {}
     }
 
-    // Only set free if we've never successfully fetched before
-    // Preserve last known tier from localStorage instead of defaulting to free
+    // If both sources failed and we've never fetched, default to free
+    // localStorage is UI hint only — never trust it for actual tier
     if (!result && !hasFetchedRef.current) {
-      const cached = localStorage.getItem('sharpr_last_tier');
-      if (cached && cached !== 'free') {
-        console.warn('[useAuth] Both sources failed — using cached tier:', cached);
-        setTier(cached);
-      } else {
-        setTier('free');
-      }
+      setTier('free');
     }
 
     fetchingRef.current = false;
     return result || tier;
   }, []);
-
-  useEffect(() => {
-    console.log('[useAuth] tier changed to:', tier);
-  }, [tier]);
 
   useEffect(() => {
     let mounted = true;
@@ -95,11 +79,9 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
-      console.log('[useAuth] authChange:', _event);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        // Skip duplicate fetch if getSession already triggered one
         if (_event === 'INITIAL_SESSION' && initialFetchDone) return;
         fetchProfile().finally(() => { if (mounted) setLoading(false); });
       } else {
@@ -145,7 +127,6 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    console.warn('[useAuth] called outside AuthProvider');
     return { user: null, tier: 'free', displayName: null, setDisplayName: () => {}, loading: true, signIn: async () => {}, signUp: async () => {}, signOut: async () => {}, refreshProfile: async () => 'free', isPro: false };
   }
   return ctx;
