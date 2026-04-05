@@ -84,6 +84,23 @@ const inpStyle = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)
 const inpFocus  = e => { e.target.style.borderColor = '#6C63FF'; };
 const inpBlur   = e => { e.target.style.borderColor = '#1E1E2E'; };
 
+/* ── Animated Number Utility ── */
+function AnimatedNumber({ value, duration = 1500, prefix = '', suffix = '', decimals = 0 }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    let startTimestamp = null;
+    const endValue = parseFloat(value) || 0;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      setDisplay(progress * endValue);
+      if (progress < 1) window.requestAnimationFrame(step);
+    };
+    window.requestAnimationFrame(step);
+  }, [value, duration]);
+  return <span>{prefix}{display.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}{suffix}</span>;
+}
+
 export default function Dashboard() {
   const [tab, setTab]     = useState(() => {
     const saved = sessionStorage.getItem('openTab');
@@ -188,12 +205,21 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#0A0A0F]" style={{ maxWidth: '100vw' }}>
+      <style>{`
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(30px,-20px); } }
+        @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-20px,30px); } }
+        @keyframes typewriter { from { width: 0; } to { width: 100%; } }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+        .tab-content { animation: fadeInUp 0.3s ease-out forwards; }
+      `}</style>
+
       {/* Institutional Dark Background System */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#6C63FF]/10 blur-[120px] animate-pulse" 
-          style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] right-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#00E5B4]/5 blur-[100px] animate-pulse"
-          style={{ animationDuration: '12s' }} />
+        <div className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#6C63FF]/10 blur-[120px]" 
+          style={{ animation: 'float1 20s infinite ease-in-out' }} />
+        <div className="absolute bottom-[-10%] right-[-15%] w-[50vw] h-[50vw] rounded-full bg-[#00E5B4]/5 blur-[100px]"
+          style={{ animation: 'float2 25s infinite ease-in-out' }} />
       </div>
   
       {showOnboarding && (
@@ -204,27 +230,27 @@ export default function Dashboard() {
       <SportsTicker />
 
       {tab === 'Home' ? (
-        <div key="Home" className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key="Home" className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><HomeTab onSwitchTab={switchTab} /></ErrorBoundary>
         </div>
       ) : tab === 'Signals' ? (
-        <div key="Signals" className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key="Signals" className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><SharpSignal userPlan={tier} /></ErrorBoundary>
         </div>
       ) : tab === 'Events' ? (
-        <div key="Events" className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key="Events" className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><OddsBoard initialSport={eventsSport} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('dt-') ? (
-        <div key={tab} className="tab-content fade-in-up" style={{padding: '32px 24px'}}>
+        <div key={tab} className="tab-content" style={{padding: '32px 24px'}}>
           <ErrorBoundary><DayTradingTab activeSubTab={tab.replace('dt-', '')} tier={tier} /></ErrorBoundary>
         </div>
       ) : tab.startsWith('sb-') ? (
-        <div key={tab} className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key={tab} className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><SportsBettingTab tier={tier} activeSubTab={tab.replace('sb-', '')} /></ErrorBoundary>
         </div>
       ) : (
-        <div key={tab} className="tab-content fade-in-up" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+        <div key={tab} className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           {visitedTabs.includes('Polymarket')     && <div style={{display: tab==='Polymarket'     ? 'block' : 'none'}}><ErrorBoundary><PolymarketTab tier={tier} /></ErrorBoundary></div>}
           {visitedTabs.includes('EV Calc')        && <div style={{display: tab==='EV Calc'        ? 'block' : 'none'}}><ErrorBoundary><EVCalcTab /></ErrorBoundary></div>}
           {visitedTabs.includes('AI Research')    && <div style={{display: tab==='AI Research'    ? 'block' : 'none'}}><ErrorBoundary><AIResearchTab prefill={aiFill} onPrefillConsumed={() => setAiFill(null)} /></ErrorBoundary></div>}
@@ -1292,7 +1318,9 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
       <div className="flex items-end justify-between mt-2">
         <div className="flex flex-col">
           <div className="flex items-baseline gap-2">
-            <span style={{ fontSize: 44, fontWeight: 900, color: isUp ? '#00E5B4' : '#6C63FF', letterSpacing: '-0.05em', lineHeight: 1 }}>{pct}%</span>
+            <span style={{ fontSize: 44, fontWeight: 900, color: isUp ? '#00E5B4' : '#6C63FF', letterSpacing: '-0.05em', lineHeight: 1 }}>
+              <AnimatedNumber value={pct} suffix="%" decimals={0} />
+            </span>
             <span className="text-xl font-black" style={{ color: isUp ? '#00E5B4' : '#6C63FF' }}>{isUp ? '↗' : '↘'}</span>
           </div>
           <span className="text-[10px] font-black uppercase tracking-widest text-[#6B6B8A] mt-1">LATEST PROBABILITY</span>
@@ -1420,38 +1448,38 @@ function DayTradingTab({ activeSubTab, tier }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-2xl p-6 relative overflow-hidden" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+            <div className="rounded-2xl p-6 relative overflow-hidden fade-in-up" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)', animationDelay: '0.1s' }}>
               <div className="relative z-10">
                 <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Total Net P&L</div>
                 <div className="text-4xl font-black tracking-tighter" style={{ color: stats.pnl >= 0 ? '#00E5B4' : '#FF4560', textShadow: `0 0 30px ${stats.pnl >= 0 ? 'rgba(0,229,180,0.3)' : 'rgba(255,69,96,0.3)'}` }}>
-                  {(stats.pnl >= 0 ? '+' : '') + '$' + stats.pnl.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  {stats.pnl >= 0 ? '+' : '-'}<AnimatedNumber value={Math.abs(stats.pnl)} prefix="$" decimals={2} />
                 </div>
               </div>
               <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl">📈</div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+              <div className="rounded-2xl p-5 fade-in-up" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)', animationDelay: '0.2s' }}>
                 <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Win Rate</div>
-                <div className="text-2xl font-black text-[#F0F0FF]">{stats.wr}%</div>
+                <div className="text-2xl font-black text-[#F0F0FF]"><AnimatedNumber value={stats.wr} suffix="%" /></div>
                 <div className="h-1 mt-2 rounded-full bg-black/40 overflow-hidden">
-                  <div className="h-full bg-[#6C63FF]" style={{ width: `${stats.wr}%` }}></div>
+                  <div className="h-full bg-[#6C63FF] transition-all duration-1000" style={{ width: `${stats.wr}%` }}></div>
                 </div>
               </div>
-              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+              <div className="rounded-2xl p-5 fade-in-up" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)', animationDelay: '0.3s' }}>
                 <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Trades Today</div>
-                <div className="text-2xl font-black text-[#F0F0FF]">{todayTrades.length}</div>
+                <div className="text-2xl font-black text-[#F0F0FF]"><AnimatedNumber value={todayTrades.length} /></div>
                 <div className="text-[10px] font-bold mt-1" style={{ color: todayPnl >= 0 ? '#00E5B4' : '#FF4560' }}>
-                  {(todayPnl >= 0 ? '+' : '')}$ {todayPnl.toFixed(0)}
+                  {todayPnl >= 0 ? '+' : '-'}<AnimatedNumber value={Math.abs(todayPnl)} prefix="$" decimals={0} />
                 </div>
               </div>
-              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+              <div className="rounded-2xl p-5 fade-in-up" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)', animationDelay: '0.4s' }}>
                 <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Max Drawdown</div>
-                <div className="text-2xl font-black text-[#FF4560]">${Math.abs(maxDD).toFixed(0)}</div>
+                <div className="text-2xl font-black text-[#FF4560]"><AnimatedNumber value={Math.abs(maxDD)} prefix="$" decimals={0} /></div>
               </div>
-              <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+              <div className="rounded-2xl p-5 fade-in-up" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)', animationDelay: '0.5s' }}>
                 <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">Best Trade</div>
-                <div className="text-2xl font-black text-[#00E5B4]">${Math.max(...(trades.map(t => t.pnl || 0).concat(0))).toFixed(0)}</div>
+                <div className="text-2xl font-black text-[#00E5B4]"><AnimatedNumber value={Math.max(...(trades.map(t => t.pnl || 0).concat(0)))} prefix="$" decimals={0} /></div>
               </div>
             </div>
           </div>
@@ -1863,14 +1891,18 @@ function SportsBettingTab({ tier, activeSubTab }) {
         {/* ── Institutional Stats Banner ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            ['Total Bets', settled.length, '#F0F0FF'],
-            ['Win Rate', wr + '%', wr >= 50 ? '#00E5B4' : '#F0F0FF'],
-            ['Units Won', (totalPnl >= 0 ? '+' : '') + (totalPnl / unitSize).toFixed(1) + 'u', totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
-            ['ROI', (roi >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
-          ].map(([l, v, c]) => (
-            <div key={l} className="rounded-2xl p-5 relative overflow-hidden" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)' }}>
+            ['Total Bets', settled.length, '#F0F0FF', settled.length, ''],
+            ['Win Rate', wr, wr >= 50 ? '#00E5B4' : '#F0F0FF', wr, '%'],
+            ['Units Won', totalPnl / unitSize, totalPnl >= 0 ? '#00E5B4' : '#FF4560', totalPnl / unitSize, 'u'],
+            ['ROI', roi, parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560', roi, '%'],
+          ].map(([l, val, col, raw, suff], idx) => (
+            <div key={l} className="rounded-2xl p-5 relative overflow-hidden fade-in-up" 
+              style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.3)', animationDelay: `${idx * 0.1}s` }}>
               <div className="text-[10px] font-black uppercase tracking-[0.15em] text-[#6B6B8A] mb-1">{l}</div>
-              <div className="text-2xl font-black" style={{ color: c }}>{v}</div>
+              <div className="text-2xl font-black" style={{ color: col }}>
+                {l === 'Units Won' || l === 'ROI' ? (raw >= 0 ? '+' : '-') : ''}
+                <AnimatedNumber value={Math.abs(raw)} suffix={suff} decimals={l === 'Total Bets' || l === 'Win Rate' ? 0 : 1} />
+              </div>
             </div>
           ))}
         </div>
@@ -2143,21 +2175,24 @@ function EVCalcTab() {
   ];
 
   const RESULTS = [
-    ['Expected Value', (ev >= 0 ? '+' : '') + '$' + ev.toFixed(2), ev >= 0 ? '#00E5B4' : '#FF4560'],
-    ['ROI', (parseFloat(roi) >= 0 ? '+' : '') + roi + '%', parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560'],
-    ['Kelly Stake', kelly > 0 ? '$' + (kelly * br).toFixed(0) : 'Skip', kelly > 0 ? '#6C63FF' : '#4E4E63'],
-    ['Max Payout', '$' + (ba + payout).toFixed(0), '#F0F0FF'],
-    ['Edge %', (parseFloat(edge) > 0 ? '+' : '') + edge + '%', parseFloat(edge) > 0 ? '#00E5B4' : parseFloat(edge) < 0 ? '#FF4560' : '#4E4E63'],
+    ['Expected Value', ev, ev >= 0 ? '#00E5B4' : '#FF4560', '$', 2],
+    ['ROI', parseFloat(roi), parseFloat(roi) >= 0 ? '#00E5B4' : '#FF4560', '', 1, '%'],
+    ['Kelly Stake', kelly > 0 ? kelly * br : 0, kelly > 0 ? '#6C63FF' : '#4E4E63', '$', 0],
+    ['Max Payout', ba + payout, '#F0F0FF', '$', 0],
+    ['Edge %', parseFloat(edge), parseFloat(edge) > 0 ? '#00E5B4' : parseFloat(edge) < 0 ? '#FF4560' : '#4E4E63', '', 1, '%'],
   ];
 
   return (
     <div className="max-w-4xl mx-auto flex flex-col gap-8">
       {/* Hero Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {RESULTS.map(([l, v, c]) => (
-          <div key={l} className="p-5 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl">
+        {RESULTS.map(([l, val, col, pre, dec, suff], idx) => (
+          <div key={l} className="p-5 rounded-2xl bg-black/40 border border-white/5 backdrop-blur-xl fade-in-up" style={{ animationDelay: `${idx * 0.1}s` }}>
             <div className="text-[9px] font-black text-[#6B6B8A] uppercase tracking-widest mb-2">{l}</div>
-            <div className="text-xl font-black tracking-tight" style={{ color: c }}>{v}</div>
+            <div className="text-xl font-black tracking-tight" style={{ color: col }}>
+              {l === 'Expected Value' || l === 'ROI' || l === 'Edge %' ? (val >= 0 ? '+' : '-') : ''}
+              <AnimatedNumber value={Math.abs(val)} prefix={pre} suffix={suff} decimals={dec || 0} />
+            </div>
           </div>
         ))}
       </div>
@@ -2186,17 +2221,17 @@ function EVCalcTab() {
           <div>
             <h3 className="text-[10px] font-black text-[#6C63FF] uppercase tracking-[0.2em] mb-8">Edge Analysis</h3>
             <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center fade-in-up" style={{ animationDelay: '0.1s' }}>
                 <span className="text-xs font-bold text-[#6B6B8A]">Theoretical ROI</span>
-                <span className="text-sm font-black text-[#00E5B4]">{roi}%</span>
+                <span className="text-sm font-black text-[#00E5B4]"><AnimatedNumber value={roi} suffix="%" decimals={1} /></span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center fade-in-up" style={{ animationDelay: '0.2s' }}>
                 <span className="text-xs font-bold text-[#6B6B8A]">Prob. Spread</span>
-                <span className="text-sm font-black text-[#F0F0FF]">{edge}%</span>
+                <span className="text-sm font-black text-[#F0F0FF]"><AnimatedNumber value={edge} suffix="%" decimals={1} /></span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center fade-in-up" style={{ animationDelay: '0.3s' }}>
                 <span className="text-xs font-bold text-[#6B6B8A]">Kelly Units</span>
-                <span className="text-sm font-black text-[#6C63FF]">{(kelly * 100).toFixed(1)}u</span>
+                <span className="text-sm font-black text-[#6C63FF]"><AnimatedNumber value={kelly * 100} suffix="u" decimals={1} /></span>
               </div>
             </div>
           </div>
@@ -2334,15 +2369,16 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
       `}</style>
       
       {/* TERMINAL HEADER */}
-      <div className="flex items-center justify-between p-6 glass-card rounded-2xl mb-4 border-[#6C63FF]/20">
+      <div className="flex items-center justify-between p-6 glass-card rounded-2xl mb-4 border-[#6C63FF]/20 fade-in-up">
         <div className="flex items-center gap-4">
           <div className="w-2 h-2 rounded-full bg-[#00E5B4] animate-pulse" />
           <h2 className="text-xs font-black uppercase tracking-[0.4em] text-[#F0F0FF]">Sharpr Core Intelligence</h2>
         </div>
         <div className="flex gap-2">
-          {CATS.map(c => (
+          {CATS.map((c, idx) => (
             <button key={c.key} onClick={() => setCategory(c.key)}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${category === c.key ? 'bg-[#6C63FF] text-white shadow-[0_0_15px_rgba(108,99,255,0.4)]' : 'bg-white/5 text-[#6B6B8A] hover:bg-white/10'}`}>
+              className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all fade-in-up ${category === c.key ? 'bg-[#6C63FF] text-white shadow-[0_0_15px_rgba(108,99,255,0.4)]' : 'bg-white/5 text-[#6B6B8A] hover:bg-white/10'}`}
+              style={{ animationDelay: `${idx * 0.05}s` }}>
               {c.label}
             </button>
           ))}
