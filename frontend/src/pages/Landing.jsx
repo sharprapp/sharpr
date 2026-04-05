@@ -244,8 +244,8 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <Logo />
           <div className="hidden md:flex gap-8">
-            {["Platform", "Signals", "Pricing"].map(l => (
-              <a key={l} href={"#" + l.toLowerCase()} className="text-sm font-bold text-[#6B6B8A] hover:text-[#F0F0FF] transition-all hover:drop-shadow-[0_0_10px_rgba(108,99,255,0.8)]">{l}</a>
+            {[["Platform", "#platform"], ["Signals", "#signals"], ["Pricing", "#pricing"]].map(([l, href]) => (
+              <a key={l} href={href} className="text-sm font-bold text-[#6B6B8A] hover:text-[#F0F0FF] transition-all hover:drop-shadow-[0_0_10px_rgba(108,99,255,0.8)]">{l}</a>
             ))}
           </div>
           <div className="flex gap-4">
@@ -265,13 +265,13 @@ export default function Landing() {
             </div>
           </FadeUp>
           
-          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black mb-8 leading-[1.1] tracking-[-0.04em] drop-shadow-[0_0_30px_rgba(108,99,255,0.3)]">
-            <HeroWordReveal text="The Edge Lives Here" />
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black mb-8 leading-[1.1] tracking-[-0.04em] drop-shadow-[0_0_30px_rgba(108,99,255,0.3)]">
+            The platform for{' '}<span style={{ color: '#6C63FF', textShadow: '0 0 32px rgba(108,99,255,0.4)' }}>sharp players</span>
           </h1>
           
           <FadeUp delay={600}>
             <p className="text-xl sm:text-2xl font-bold text-[#6B6B8A] max-w-3xl mx-auto mb-12">
-              The supreme terminal for algorithmic traders, arbitrage bettors, and prediction market sharks. Stop guessing.
+              The all-in-one platform for serious traders, bettors, and predictors — your edge lives here
             </p>
           </FadeUp>
 
@@ -376,6 +376,42 @@ export default function Landing() {
                 <p className="text-[#6B6B8A] font-bold leading-relaxed">
                   Log your bets and trades flawlessly. Identify your most profitable strategies visually across fully interactive heatmaps.
                 </p>
+              </div>
+            </FadeUp>
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING SECTION */}
+      <section id="pricing" className="relative z-10 py-32 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <FadeUp><div className="text-xs font-black tracking-[0.2em] uppercase text-[#6C63FF] mb-4">PRICING</div></FadeUp>
+          <FadeUp delay={100}><h2 className="text-4xl sm:text-5xl font-black tracking-[-0.03em] mb-4">Find Your Edge</h2></FadeUp>
+          <FadeUp delay={200}><p className="text-base font-bold text-[#6B6B8A] mb-12">Choose the plan that fits your game</p></FadeUp>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            <FadeUp delay={300}>
+              <div className="rounded-xl p-8 flex flex-col text-left" style={{ background: '#111118', border: '1px solid #1E1E2E' }}>
+                <div className="text-sm font-black tracking-widest uppercase mb-2" style={{ color: '#6B6B8A' }}>Free</div>
+                <div className="text-5xl font-black mb-6" style={{ color: '#F0F0FF', letterSpacing: '-0.03em' }}>$0<span className="text-base font-semibold text-[#6B6B8A]">/mo</span></div>
+                <ul className="flex flex-col gap-4 flex-1 mb-8">
+                  {['Live odds viewing', '5 bets and trades', '3 AI queries/day', 'Basic tracking', 'EV calculator'].map(f => (
+                    <li key={f} className="flex items-center gap-3 text-sm font-medium text-[#6B6B8A]"><span className="text-[#6C63FF] font-black">✓</span> {f}</li>
+                  ))}
+                </ul>
+                <Link to="/register" className="block text-center rounded-lg py-3.5 text-sm font-bold transition-all" style={{ border: '1px solid #1E1E2E', background: '#1A1A24', color: '#F0F0FF' }}>Get started free</Link>
+              </div>
+            </FadeUp>
+            <FadeUp delay={400}>
+              <div className="rounded-xl p-8 flex flex-col text-left relative" style={{ background: '#111118', border: '2px solid rgba(108,99,255,0.6)', boxShadow: '0 0 40px rgba(108,99,255,0.1)' }}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-black px-4 py-1 rounded-lg bg-[#6C63FF] text-white uppercase tracking-wider" style={{ boxShadow: '0 4px 12px rgba(108,99,255,0.4)' }}>Most popular</div>
+                <div className="text-sm font-black tracking-widest uppercase mb-2" style={{ color: '#6C63FF' }}>Pro</div>
+                <div className="text-5xl font-black mb-6" style={{ color: '#F0F0FF', letterSpacing: '-0.03em', textShadow: '0 0 24px rgba(108,99,255,0.3)' }}>$19<span className="text-base font-semibold text-[#6B6B8A]">/mo</span></div>
+                <ul className="flex flex-col gap-4 flex-1 mb-8">
+                  {['Everything in Free', 'Unlimited logging', 'Sharp Signals', 'Unlimited AI queries', 'AI game analysis', 'Performance insights', 'Push notifications', 'CSV/PDF export'].map(f => (
+                    <li key={f} className="flex items-center gap-3 text-sm font-medium text-[#F0F0FF]"><span className="text-[#00E5B4] font-black">✓</span> {f}</li>
+                  ))}
+                </ul>
+                <Link to="/register" className="block text-center rounded-lg py-3.5 text-sm font-bold transition-all bg-[#6C63FF] text-white" style={{ boxShadow: '0 4px 14px rgba(108,99,255,0.3)' }}>Upgrade to Pro</Link>
               </div>
             </FadeUp>
           </div>

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-
 export default function Logo({ size = 'md' }) {
   const sizes = {
     sm: { box: 28, svg: 16, text: 15 },
@@ -7,28 +6,24 @@ export default function Logo({ size = 'md' }) {
     lg: { box: 52, svg: 32, text: 28 }
   }
   const s = sizes[size] || sizes.md
-
   return (
     <Link to="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', textDecoration: 'none' }}>
       <div style={{
         width: s.box, height: s.box,
-        background: 'rgba(17,17,32,0.8)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(108, 99, 255, 0.4)',
-        boxShadow: '0 0 15px rgba(108, 99, 255, 0.2)',
-        borderRadius: Math.round(s.box * 0.2),
+        background: '#050e2a',
+        border: '1px solid rgba(108,99,255,0.3)',
+        borderRadius: Math.round(s.box * 0.28),
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0
       }}>
         <svg width={s.svg} height={s.svg} viewBox="0 0 40 40" fill="none">
           <defs>
-            <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="logo-caret-grad" x1="8" y1="30" x2="32" y2="10">
               <stop offset="0%" stopColor="#6C63FF" />
               <stop offset="100%" stopColor="#00E5B4" />
             </linearGradient>
           </defs>
-          <path d="M20 4 L36 20 L20 36 L4 20 Z" fill="url(#logo-gradient)" />
-          <path d="M20 12 L28 20 L20 28 L12 20 Z" fill="#0A0A0F" />
+          <path d="M8 30 L20 10 L32 30" stroke="url(#logo-caret-grad)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
       <span style={{
@@ -38,7 +33,7 @@ export default function Logo({ size = 'md' }) {
         letterSpacing: '-0.03em',
         lineHeight: 1
       }}>
-        sharp<span style={{ color: '#00E5B4', textShadow: '0 0 10px rgba(0,229,180,0.5)' }}>r</span>
+        sharp<span style={{ color: '#00E5B4' }}>r</span>
       </span>
     </Link>
   )
