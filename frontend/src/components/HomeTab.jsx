@@ -78,19 +78,18 @@ export default function HomeTab({ onSwitchTab }) {
   }, [displayName]);
 
   useEffect(() => {
-    // Simulated live signal count increment
-    const base = 40 + Math.floor(new Date().getHours() * 8);
-    setSignalCount(base);
-    const interval = setInterval(() => setSignalCount(c => c + (Math.random() > 0.7 ? 1 : 0)), 15000);
-    
+    // Real signal count from API
+    api.get('/api/sharpsignal/signals').then(r => {
+      const signals = r.data?.signals || r.data || [];
+      setSignalCount(Array.isArray(signals) ? signals.length : 0);
+    }).catch(() => setSignalCount(0));
+
     Promise.all([
       api.get('/api/trades').then(r => setTrades(r.data || [])),
       api.get('/api/bets').then(r => setBets(r.data || [])),
       api.get('/api/markets/polymarket?offset=0').then(r => setMarkets((r.data.markets || []).slice(0, 12))),
       api.get('/api/odds/games?sport=nba').then(r => setGames(r.data?.games || [])),
     ]).catch(() => {}).finally(() => setLoading(false));
-
-    return () => clearInterval(interval);
   }, []);
 
   const todayTrades = useMemo(() => trades.filter(t => isToday(t.created_at)), [trades]);

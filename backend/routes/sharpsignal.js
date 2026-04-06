@@ -8,10 +8,10 @@ const notifiedSignals = new Set();
 /* ── Thresholds ── */
 const MIN_EDGE = 8;            // minimum edge % for sports signals
 const MIN_POLY_VOL = 75000;    // minimum Polymarket volume for sports cross-ref
-const MIN_POLY_ONLY_VOL = 100000; // minimum volume for poly-only signals
+const MIN_POLY_ONLY_VOL = 50000;  // minimum volume for poly-only signals
 const PUSH_THRESHOLD = 15;     // edge % to trigger push notification
 const MAX_DAYS_SPORTS = 14;    // max days to close for sports signals
-const MAX_DAYS_POLY_ONLY = 7;  // max days to close for poly-only signals
+const MAX_DAYS_POLY_ONLY = 30; // max days to close for poly-only signals
 
 /* ── Junk market filters ── */
 const JUNK_RE = /weather|temperature|rainfall|degrees|celsius|fahrenheit|wind speed|tornado|hurricane|snow.*inches/i;
