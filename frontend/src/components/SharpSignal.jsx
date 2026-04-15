@@ -29,7 +29,7 @@ export default function SharpSignal({ userPlan }) {
   const JUNK_SIGNAL_RE = /weather|temperature|rain|snow|hurricane|entertainment|local.*election|mayor|city.*council/i;
   const qualitySignals = signals.filter(s =>
     (s.volume || 0) >= 25000 &&
-    Math.abs(s.edge || 0) >= 7 &&
+    (s.type === 'polymarket' || Math.abs(s.edge || 0) >= 7) &&
     !JUNK_SIGNAL_RE.test(s.event || '') && !JUNK_SIGNAL_RE.test(s.title || '')
   );
   const filtered = qualitySignals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? s.confidence === 'HIGH' : true);
