@@ -72,7 +72,7 @@ export default function SharpSignal({ userPlan }) {
       <div style={{ ...gc, padding: 16, marginBottom: 20, background: 'rgba(108,99,255,0.04)', borderColor: 'rgba(108,99,255,0.15)' }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff', marginBottom: 8, letterSpacing: '1px', textTransform: 'uppercase' }}>How it works</div>
         <div style={{ fontSize: 12, color: '#4E4E63', lineHeight: 1.7 }}>
-          We compare Polymarket YES probabilities against implied probabilities from DraftKings, FanDuel, and BetMGM. When they diverge by &gt;5%, there may be a mispricing. <span style={{ color: '#0A0A0F' }}>POLY_HIGHER</span> = Polymarket overvalues, consider sportsbook side. <span style={{ color: '#f59e0b' }}>BOOK_HIGHER</span> = sportsbooks overvalue, consider Polymarket YES.
+          Sharp Signals scans Polymarket prediction markets for high-volume opportunities. When a market has significant money behind it and closes within 90 days, it appears here as a signal worth tracking.
         </div>
       </div>
 
@@ -83,6 +83,11 @@ export default function SharpSignal({ userPlan }) {
         ))}
         <span style={{ marginLeft: 'auto', fontSize: 11, color: '#2a3a5a', alignSelf: 'center' }}>{filtered.length} signals</span>
       </div>
+
+      {/* Explanation */}
+      {isPro && filtered.length > 0 && (
+        <div style={{ fontSize: 12, color: '#4E4E63', marginBottom: 12, fontStyle: 'italic' }}>These markets have high volume and notable pricing — worth watching for edge opportunities.</div>
+      )}
 
       {/* Pro gate */}
       {!isPro && (
@@ -110,8 +115,8 @@ export default function SharpSignal({ userPlan }) {
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
             {/* Badges */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff' }}>{sig.sport}</span>
-              <span style={{ background: cs.bg, border: `1px solid ${cs.border}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: cs.color }}>{sig.confidence}</span>
+              <span style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff' }}>{sig.sport === 'MULTI' ? 'PREDICTION MARKET' : sig.sport}</span>
+              <span style={{ background: cs.bg, border: `1px solid ${cs.border}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: cs.color }}>{sig.confidence === 'HIGH' ? 'HIGH CONFIDENCE' : sig.confidence === 'MEDIUM' ? 'MEDIUM CONFIDENCE' : sig.confidence}</span>
               {sig.edge != null && <span style={{ background: Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', border: `1px solid ${Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: Math.abs(sig.edge) > 10 ? '#0A0A0F' : '#fbbf24' }}>{sig.edge > 0 ? '+' : ''}{sig.edge}% EDGE</span>}
             </div>
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f4ff', marginBottom: 4 }}>{sig.event || sig.polyMarket}</div>
@@ -138,8 +143,8 @@ export default function SharpSignal({ userPlan }) {
             {sig.type === 'polymarket' && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
                 <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>YES Price</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#a78bfa' }}>{sig.polyYesProb}¢</div>
+                  <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Polymarket Probability</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#a78bfa' }}>{sig.polyYesProb}% <span style={{ fontSize: 11, fontWeight: 600, color: '#4E4E63' }}>chance</span></div>
                 </div>
                 <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
                   <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Volume</div>
@@ -150,9 +155,9 @@ export default function SharpSignal({ userPlan }) {
 
             {/* Footer */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: 12, color: '#4E4E63', fontStyle: 'italic' }}>💡 {sig.signal}</div>
+              <div style={{ fontSize: 12, color: '#4E4E63', fontStyle: 'italic' }}>💡 {sig.type === 'polymarket' ? `Polymarket prices this at ${sig.polyYesProb}% probability with $${sig.volume >= 1e6 ? (sig.volume / 1e6).toFixed(1) + 'M' : (sig.volume / 1000).toFixed(0) + 'K'} in volume. Closes in ${Math.round(sig.daysToClose)} days.` : sig.signal}</div>
               <div style={{ display: 'flex', gap: 8 }}>
-                {sig.polyUrl && <a href={sig.polyUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#a78bfa', textDecoration: 'none' }}>View on Poly →</a>}
+                {sig.polyUrl && <a href={sig.polyUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#a78bfa', textDecoration: 'none' }}>View on Polymarket →</a>}
                 {sig.type === 'sports' && <button onClick={() => setHedgeModal(sig)} style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#0A0A0F', cursor: 'pointer' }}>Hedge Calc</button>}
               </div>
             </div>

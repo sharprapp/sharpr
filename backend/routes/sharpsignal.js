@@ -216,6 +216,116 @@ router.get('/signals', async (req, res) => {
       console.log(`[SharpSignals] ${unmatchedGames}/${allGames.length} games had no Polymarket match`);
     }
 
+    // ── Futures cross-reference (Polymarket vs sportsbook outrights) ──
+    const FUTURES_SPORTS = [
+      { key: 'icehockey_nhl', keywords: ['stanley cup', 'nhl'] },
+      { key: 'basketball_nba', keywords: ['nba champion', 'nba title', 'nba finals'] },
+      { key: 'americanfootball_nfl', keywords: ['super bowl', 'nfl champion'] },
+      { key: 'baseball_mlb', keywords: ['world series', 'mlb champion'] },
+    ];
+    if (API_KEY) {
+      for (const fs of FUTURES_SPORTS) {
+        let outrights = [];
+        try {
+          const r = await fetch(`https://api.the-odds-api.com/v4/sports/${fs.key}/odds?apiKey=${API_KEY}&regions=us&markets=outrights&oddsFormat=american`, { headers: { Accept: 'application/json' } });
+          if (r.ok) outrights = await r.json();
+        } catch {}
+        if (!Array.isArray(outrights) || outrights.length === 0) continue;
+
+        // Build team→odds map from sportsbooks (prefer DraftKings)
+        const teamOdds = {};
+        for (const evt of outrights) {
+          for (const bk of evt.bookmakers || []) {
+            const outright = bk.markets?.find(m => m.key === 'outrights');
+            if (!outright) continue;
+            for (const oc of outright.outcomes || []) {
+              const team = normalizeTeam(oc.name);
+              const existing = teamOdds[team];
+              // Prefer DraftKings, then any book
+              if (!existing || bk.key === 'draftkings' || (!existing.isDK && bk.key !== 'draftkings')) {
+                teamOdds[team] = { odds: oc.price, book: bk.title, isDK: bk.key === 'draftkings' };
+              }
+            }
+          }
+        }
+
+        // Match Polymarket futures markets against sportsbook outrights
+        for (const m of polyMarkets) {
+          const title = (m.question || m.title || '').toLowerCase();
+          // Must match one of the sport keywords
+          if (!fs.keywords.some(kw => title.includes(kw))) continue;
+
+          let prices = []; try { prices = JSON.parse(m.outcomePrices || '[]'); } catch {}
+          const polyProb = prices[0] ? parseFloat(prices[0]) : null;
+          if (!polyProb || polyProb < 0.03 || polyProb > 0.97) continue;
+
+          const vol = parseFloat(m.volume || 0);
+          if (vol < 10000) continue;
+
+          // Extract team name from title (e.g. "Will the Dallas Stars win the 2026 NHL Stanley Cup?")
+          const titleNorm = normalizeTeam(title);
+
+          // Find best matching team in sportsbook outrights
+          let bestMatch = null, bestSim = 0;
+          for (const [team, data] of Object.entries(teamOdds)) {
+            const sim = wordSimilarity(team, titleNorm);
+            // Also check if sportsbook team name appears in poly title
+            const directMatch = team.split(' ').filter(w => w.length > 3).some(w => titleNorm.includes(w));
+            const score = directMatch ? Math.max(sim, 0.6) : sim;
+            if (score > bestSim && score >= 0.4) { bestSim = score; bestMatch = { team, ...data }; }
+          }
+
+          if (!bestMatch) continue;
+
+          const bookProb = americanToProb(bestMatch.odds);
+          if (!bookProb) continue;
+
+          const edge = Math.round((polyProb * 100 - bookProb * 100) * 10) / 10;
+          if (Math.abs(edge) < 5) continue;
+
+          // Skip if already in signals
+          const polyTitle = m.question || m.title || '';
+          if (signals.some(s => s.polyMarket === polyTitle)) continue;
+
+          const close = new Date(m.endDate || m.closeTime);
+          const days = (close - Date.now()) / 86400000;
+
+          const sig = {
+            id: `futures-${m.id}`, type: 'sports',
+            sport: fs.key.replace(/basketball_|americanfootball_|baseball_|icehockey_/g, '').toUpperCase(),
+            event: polyTitle, title: polyTitle,
+            awayTeam: null, homeTeam: bestMatch.team,
+            polyMarket: polyTitle,
+            polyUrl: `https://polymarket.com/event/${m.slug}`,
+            polymarket_prob: Math.round(polyProb * 100),
+            polyYesProb: Math.round(polyProb * 100),
+            book_prob: Math.round(bookProb * 100),
+            bookHomeProb: Math.round(bookProb * 100),
+            bookAwayProb: null,
+            bookHomeML: bestMatch.odds,
+            bookAwayML: null,
+            bookOdds: bestMatch.odds,
+            book: bestMatch.book,
+            edge,
+            signal_type: edge > 0 ? 'POLY_HIGHER' : 'BOOK_HIGHER',
+            direction: edge > 0 ? 'POLY_HIGHER' : 'BOOK_HIGHER',
+            signal: edge > 0
+              ? `Polymarket prices at ${Math.round(polyProb*100)}% vs ${bestMatch.book} implied ${Math.round(bookProb*100)}% — ${Math.abs(edge).toFixed(1)}pt divergence`
+              : `${bestMatch.book} implies ${Math.round(bookProb*100)}% vs Polymarket ${Math.round(polyProb*100)}% — ${Math.abs(edge).toFixed(1)}pt divergence`,
+            confidence: Math.abs(edge) > 15 ? 'HIGH' : Math.abs(edge) > 8 ? 'MEDIUM' : 'LOW',
+            volume: vol,
+            category: 'Sports',
+            closes_at: close.toISOString(),
+            daysToClose: Math.round(days * 10) / 10,
+            sharp_money: false,
+            quality_score: 0,
+          };
+          sig.quality_score = calcQualityScore(sig);
+          signals.push(sig);
+        }
+      }
+    }
+
     // ── Pure Polymarket signals ──
     const POLY_EXCLUDED_CATS = ['Entertainment']; // Allow all except Entertainment (weather already filtered by JUNK_RE)
     for (const m of polyMarkets.slice(0, 200)) {
