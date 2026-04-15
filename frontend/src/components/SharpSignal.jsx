@@ -122,26 +122,52 @@ export default function SharpSignal({ userPlan }) {
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f4ff', marginBottom: 4 }}>{sig.event || sig.polyMarket}</div>
             {sig.type === 'sports' && sig.polyMarket !== sig.event && <div style={{ fontSize: 11, color: '#2a3a5a', marginBottom: 8 }}>Poly: {sig.polyMarket}</div>}
 
-            {/* Stats grid */}
-            {sig.type === 'sports' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 12 }}>
-                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Polymarket YES</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#a78bfa' }}>{sig.polyYesProb}¢</div>
+            {/* Sports cross-ref card layout */}
+            {sig.type === 'sports' && sig.edge != null && (() => {
+              const polyHigher = sig.edge > 0;
+              const edgeColor = polyHigher ? '#00E5B4' : '#FF4560';
+              const bookName = sig.book || 'Sportsbook';
+              const volStr = sig.volume >= 1e6 ? '$' + (sig.volume / 1e6).toFixed(1) + 'M' : '$' + (sig.volume / 1000).toFixed(0) + 'K';
+              return (<>
+                {/* Edge hero */}
+                <div style={{ textAlign: 'center', padding: '12px 0 8px', marginBottom: 8 }}>
+                  <div style={{ fontSize: 9, color: '#4E4E63', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Edge vs {bookName}</div>
+                  <div style={{ fontSize: 36, fontWeight: 900, color: edgeColor, lineHeight: 1 }}>{sig.edge > 0 ? '+' : ''}{sig.edge}%</div>
                 </div>
-                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Book Implied</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#867fff' }}>{sig.bookHomeProb}%</div>
-                  <div style={{ fontSize: 10, color: '#4E4E63' }}>{fmtOdds(sig.bookHomeML)} ML</div>
+                {/* Side by side comparison */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                  <div style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: 10, padding: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 9, color: '#a78bfa', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6 }}>Polymarket</div>
+                    <div style={{ fontSize: 28, fontWeight: 900, color: '#a78bfa' }}>{sig.polymarket_prob || sig.polyYesProb}%</div>
+                  </div>
+                  <div style={{ background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 10, padding: '12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 9, color: '#867fff', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6 }}>{bookName}</div>
+                    <div style={{ fontSize: 28, fontWeight: 900, color: '#867fff' }}>{sig.book_prob || sig.bookHomeProb}%</div>
+                    {sig.bookOdds != null && <div style={{ fontSize: 11, color: '#4E4E63', marginTop: 2 }}>{fmtOdds(sig.bookOdds || sig.bookHomeML)}</div>}
+                  </div>
                 </div>
-                <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Mispricing</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: sig.edge > 0 ? '#0A0A0F' : '#f59e0b' }}>{sig.edge > 0 ? '+' : ''}{sig.edge}%</div>
+                {/* Recommendation box */}
+                <div style={{ background: polyHigher ? 'rgba(0,229,180,0.08)' : 'rgba(255,69,96,0.08)', border: `1px solid ${polyHigher ? 'rgba(0,229,180,0.25)' : 'rgba(255,69,96,0.25)'}`, borderRadius: 10, padding: '10px 14px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: edgeColor }}>
+                    {polyHigher
+                      ? `Polymarket prices higher than ${bookName} — market may be overvaluing this outcome`
+                      : `${bookName} implies higher probability than Polymarket — market may be undervaluing this outcome`}
+                  </div>
                 </div>
-              </div>
-            )}
-            {sig.type === 'polymarket' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                {/* Footer */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ fontSize: 11, color: '#4E4E63' }}>{volStr} volume · Closes in {Math.round(sig.daysToClose)} days</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {sig.polyUrl && <a href={sig.polyUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, color: '#a78bfa', textDecoration: 'none' }}>View on Polymarket →</a>}
+                    <button onClick={() => setHedgeModal(sig)} style={{ background: 'rgba(0,229,180,0.1)', border: '1px solid rgba(0,229,180,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, color: '#00E5B4', cursor: 'pointer' }}>Hedge Calc</button>
+                  </div>
+                </div>
+              </>);
+            })()}
+
+            {/* Poly-only card layout */}
+            {(sig.type === 'polymarket' || (sig.type === 'sports' && sig.edge == null)) && (<>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 8 }}>
                 <div style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '10px 12px', textAlign: 'center' }}>
                   <div style={{ fontSize: 9, color: '#2a3a5a', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 4 }}>Polymarket Probability</div>
                   <div style={{ fontSize: 22, fontWeight: 900, color: '#a78bfa' }}>{sig.polyYesProb}% <span style={{ fontSize: 11, fontWeight: 600, color: '#4E4E63' }}>chance</span></div>
@@ -151,16 +177,14 @@ export default function SharpSignal({ userPlan }) {
                   <div style={{ fontSize: 18, fontWeight: 800, color: '#867fff' }}>${sig.volume >= 1e6 ? (sig.volume / 1e6).toFixed(1) + 'M' : (sig.volume / 1000).toFixed(0) + 'K'}</div>
                 </div>
               </div>
-            )}
-
-            {/* Footer */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: 12, color: '#4E4E63', fontStyle: 'italic' }}>💡 {sig.type === 'polymarket' ? `Polymarket prices this at ${sig.polyYesProb}% probability with $${sig.volume >= 1e6 ? (sig.volume / 1e6).toFixed(1) + 'M' : (sig.volume / 1000).toFixed(0) + 'K'} in volume. Closes in ${Math.round(sig.daysToClose)} days.` : sig.signal}</div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {sig.polyUrl && <a href={sig.polyUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#a78bfa', textDecoration: 'none' }}>View on Polymarket →</a>}
-                {sig.type === 'sports' && <button onClick={() => setHedgeModal(sig)} style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#0A0A0F', cursor: 'pointer' }}>Hedge Calc</button>}
+              <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 8, fontStyle: 'italic' }}>MARKET WATCH — no sportsbook comparison available</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: 11, color: '#4E4E63' }}>Closes in {Math.round(sig.daysToClose)} days</div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {sig.polyUrl && <a href={sig.polyUrl} target="_blank" rel="noopener noreferrer" style={{ background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: 8, padding: '5px 12px', fontSize: 11, fontWeight: 800, color: '#a78bfa', textDecoration: 'none' }}>View on Polymarket →</a>}
+                </div>
               </div>
-            </div>
+            </>)}
           </div>
         );
       })}
