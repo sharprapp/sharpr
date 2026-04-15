@@ -218,10 +218,10 @@ router.get('/signals', async (req, res) => {
 
     // ── Futures cross-reference (Polymarket vs sportsbook outrights) ──
     const FUTURES_SPORTS = [
-      { key: 'icehockey_nhl', keywords: ['stanley cup', 'nhl'] },
-      { key: 'basketball_nba', keywords: ['nba champion', 'nba title', 'nba finals'] },
-      { key: 'americanfootball_nfl', keywords: ['super bowl', 'nfl champion'] },
-      { key: 'baseball_mlb', keywords: ['world series', 'mlb champion'] },
+      { key: 'icehockey_nhl_championship_winner', keywords: ['stanley cup', 'nhl'] },
+      { key: 'basketball_nba_championship_winner', keywords: ['nba champion', 'nba title', 'nba finals'] },
+      { key: 'americanfootball_nfl_super_bowl_winner', keywords: ['super bowl', 'nfl champion'] },
+      { key: 'baseball_mlb_world_series_winner', keywords: ['world series', 'mlb champion'] },
     ];
     if (API_KEY) {
       for (const fs of FUTURES_SPORTS) {
