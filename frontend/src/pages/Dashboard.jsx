@@ -558,12 +558,21 @@ function MobileNavDrawer({ tab, setTab, displayName, user, navigate, setEventsSp
   const sections = [
     { label: '🏠 Home', key: 'Home' },
     { label: '⚡ Signals', key: 'Signals' },
-    { label: '📈 Trade', children: [{ l: '📓 Journal', k: 'dt-journal' }, { l: '🌅 Pre-Market', k: 'dt-premarket' }, { l: '🧠 Strategy AI', k: 'dt-strategy' }] },
-    { label: '🎰 Bet', children: [{ l: '📓 Journal', k: 'sb-journal' }, { l: '📊 Analytics', k: 'sb-analytics' }] },
+    { label: '📈 Trade', children: [{ l: '📓 Journal', k: 'dt-journal' }, { l: '🌅 Pre-Market', k: 'dt-premarket' }, { l: '🎯 Risk Calc', k: 'dt-riskcalc' }, { l: '📊 Reports', k: 'dt-reports' }, { l: '🧠 Strategy AI', k: 'dt-strategy' }] },
+    { label: '🎰 Bet', children: [{ l: '📓 Journal', k: 'sb-journal' }, { l: '⚖️ Arbitrage', k: 'sb-arbitrage' }, { l: '🎯 Parlay Builder', k: 'sb-parlay' }, { l: '📊 Analytics', k: 'sb-analytics' }] },
     { label: '🔮 Predict', children: [{ l: '📊 Polymarket', k: 'Polymarket' }, { l: '🧮 EV Calc', k: 'EV Calc' }] },
     { label: '🤖 AI Research', key: 'AI Research' },
-    { label: '🏆 Events', children: [{ l: 'NBA', k: 'nba' }, { l: 'NFL', k: 'nfl' }, { l: 'MLB', k: 'mlb' }, { l: 'NHL', k: 'nhl' }, { l: 'NCAAB', k: 'ncaab' }, { l: 'NCAAF', k: 'ncaaf' }], isEvent: true },
-    { label: '📰 News', children: [{ l: '🏅 Sports News', k: 'news-sports' }, { l: '💹 Trading News', k: 'news-trading' }] },
+    { label: '🏆 Events', children: [
+      { l: '🏀 NBA', k: 'nba' }, { l: '🏈 NFL', k: 'nfl' }, { l: '⚾ MLB', k: 'mlb' }, { l: '🏒 NHL', k: 'nhl' },
+      { l: '🏀 NCAAB', k: 'ncaab' }, { l: '🏈 NCAAF', k: 'ncaaf' }, { l: '🏐 WNBA', k: 'wnba' },
+      { l: '🥊 Boxing', k: 'boxing' }, { l: '🥋 UFC', k: 'ufc' },
+      { l: '⚽ EPL', k: 'soccer_epl' }, { l: '⚽ La Liga', k: 'soccer_laliga' }, { l: '⚽ Serie A', k: 'soccer_seriea' },
+      { l: '⚽ Bundesliga', k: 'soccer_bundesliga' }, { l: '⚽ MLS', k: 'soccer_mls' },
+      { l: '🎾 ATP Tennis', k: 'tennis_atp' }, { l: '🎾 WTA Tennis', k: 'tennis_wta' },
+      { l: '🏉 Rugby', k: 'rugby' }, { l: '🏏 Cricket', k: 'cricket' },
+      { l: '🏎️ F1', k: 'f1' }, { l: '🏌️ PGA Golf', k: 'golf_pga' }, { l: '🏁 NASCAR', k: 'nascar' },
+    ], isEvent: true },
+    { label: '📰 News', children: [{ l: '🏅 Sports News', k: 'news-sports' }, { l: '💹 Trading News', k: 'news-trading' }, { l: '🌍 World News', k: 'news-world' }] },
   ];
   const isActive = (key) => tab === key;
   return (
