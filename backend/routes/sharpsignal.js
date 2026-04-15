@@ -8,10 +8,10 @@ const notifiedSignals = new Set();
 /* ── Thresholds ── */
 const MIN_EDGE = 8;            // minimum edge % for sports signals
 const MIN_POLY_VOL = 75000;    // minimum Polymarket volume for sports cross-ref
-const MIN_POLY_ONLY_VOL = 50000;  // minimum volume for poly-only signals
+const MIN_POLY_ONLY_VOL = 25000;  // minimum volume for poly-only signals
 const PUSH_THRESHOLD = 15;     // edge % to trigger push notification
 const MAX_DAYS_SPORTS = 14;    // max days to close for sports signals
-const MAX_DAYS_POLY_ONLY = 30; // max days to close for poly-only signals
+const MAX_DAYS_POLY_ONLY = 90; // max days to close for poly-only signals
 
 /* ── Junk market filters ── */
 const JUNK_RE = /weather|temperature|rainfall|degrees|celsius|fahrenheit|wind speed|tornado|hurricane|snow.*inches/i;
@@ -102,10 +102,10 @@ function calcQualityScore(signal) {
 /* ── Detect category from title ── */
 function detectCategory(title) {
   const t = (title || '').toLowerCase();
-  if (/nba|nfl|mlb|nhl|soccer|premier league|champions league|ufc|mma|tennis|golf|ncaa/i.test(t)) return 'Sports';
-  if (/bitcoin|btc|eth|crypto|solana|defi|token/i.test(t)) return 'Crypto';
-  if (/president|congress|senate|election|governor|federal|democrat|republican|trump|biden/i.test(t)) return 'US Politics';
-  if (/stock|s&p|nasdaq|fed|rate|gdp|inflation|earnings/i.test(t)) return 'Finance';
+  if (/nba|nfl|mlb|nhl|soccer|premier league|champions league|ufc|mma|tennis|golf|ncaa|championship|playoff|super bowl|world cup|league|tournament|match|game.*win|beat/i.test(t)) return 'Sports';
+  if (/bitcoin|btc|eth|crypto|solana|defi|token|blockchain|coinbase|binance|altcoin/i.test(t)) return 'Crypto';
+  if (/president|congress|senate|house.*rep|election|vote|governor|federal|democrat|republican|trump|biden|bill.*pass|law.*sign|policy|impeach|supreme court|parliament|minister/i.test(t)) return 'US Politics';
+  if (/stock|s&p|nasdaq|fed|rate|gdp|inflation|earnings|tariff|trade.*war|recession|market.*crash|economy|dollar|treasury|bond|yield|ipo|merger|acquisition/i.test(t)) return 'Finance';
   if (ENTERTAINMENT_RE.test(t)) return 'Entertainment';
   return 'Other';
 }
@@ -217,7 +217,7 @@ router.get('/signals', async (req, res) => {
     }
 
     // ── Pure Polymarket signals ──
-    const POLY_ONLY_CATS = ['Sports', 'Crypto', 'US Politics'];
+    const POLY_EXCLUDED_CATS = ['Entertainment']; // Allow all except Entertainment (weather already filtered by JUNK_RE)
     for (const m of polyMarkets.slice(0, 200)) {
       let prices = []; try { prices = JSON.parse(m.outcomePrices || '[]'); } catch {}
       const prob = prices[0] ? parseFloat(prices[0]) : null;
@@ -234,7 +234,7 @@ router.get('/signals', async (req, res) => {
       if (days < 0 || days > MAX_DAYS_POLY_ONLY) continue;
 
       const category = detectCategory(title);
-      if (!POLY_ONLY_CATS.includes(category)) continue;
+      if (POLY_EXCLUDED_CATS.includes(category)) continue;
 
       // Skip if already matched as a sports signal
       if (signals.some(s => s.polyMarket === title)) continue;
