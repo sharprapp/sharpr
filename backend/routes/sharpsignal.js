@@ -6,11 +6,11 @@ let webpush; try { webpush = require('web-push'); webpush.setVapidDetails(proces
 const notifiedSignals = new Set();
 
 /* ── Thresholds ── */
-const MIN_EDGE = 8;            // minimum edge % for sports signals
-const MIN_POLY_VOL = 75000;    // minimum Polymarket volume for sports cross-ref
-const MIN_POLY_ONLY_VOL = 25000;  // minimum volume for poly-only signals
+const MIN_EDGE = 6;            // minimum edge % for sports signals
+const MIN_POLY_VOL = 50000;    // minimum Polymarket volume for sports cross-ref
+const MIN_POLY_ONLY_VOL = 20000;  // minimum volume for poly-only signals
 const PUSH_THRESHOLD = 15;     // edge % to trigger push notification
-const MAX_DAYS_SPORTS = 14;    // max days to close for sports signals
+const MAX_DAYS_SPORTS = 30;    // max days to close for sports signals
 const MAX_DAYS_POLY_ONLY = 90; // max days to close for poly-only signals
 
 /* ── Junk market filters ── */
@@ -54,26 +54,19 @@ function wordSimilarity(a, b) {
   return matches / Math.max(wa.size, wb.size);
 }
 
-function eventsMatch(polyTitle, homeTeam, awayTeam, gameTime) {
+// Returns 'both' | 'home' | 'away' | null
+function eventsMatch(polyTitle, homeTeam, awayTeam) {
   const p = normalizeTeam(polyTitle);
   const h = normalizeTeam(homeTeam);
   const a = normalizeTeam(awayTeam);
-
-  // Check both teams appear with >80% word similarity
   const hSim = wordSimilarity(h, p);
   const aSim = wordSimilarity(a, p);
-
-  // At least one team must match strongly and the other partially
-  const homeMatch = hSim >= 0.5 || h.split(' ').some(w => w.length > 3 && p.includes(w));
-  const awayMatch = aSim >= 0.5 || a.split(' ').some(w => w.length > 3 && p.includes(w));
-
-  if (!homeMatch || !awayMatch) return false;
-
-  // Combined similarity must be above 80%
-  const combined = (hSim + aSim) / 2;
-  if (combined < 0.3 && !(homeMatch && awayMatch)) return false;
-
-  return true;
+  const homeMatch = hSim >= 0.5 || h.split(' ').filter(w => w.length > 3).some(w => p.includes(w));
+  const awayMatch = aSim >= 0.5 || a.split(' ').filter(w => w.length > 3).some(w => p.includes(w));
+  if (homeMatch && awayMatch) return 'both';
+  if (homeMatch) return 'home';
+  if (awayMatch) return 'away';
+  return null;
 }
 
 /* ── Quality score (1-10) ── */
@@ -122,7 +115,7 @@ router.get('/signals', async (req, res) => {
     let polyMarkets = [];
 
     try {
-      const r = await fetch('https://gamma-api.polymarket.com/markets?limit=200&active=true&closed=false', { headers: { Accept: 'application/json' } });
+      const r = await fetch('https://gamma-api.polymarket.com/markets?limit=500&active=true&closed=false&order=volume&ascending=false', { headers: { Accept: 'application/json' } });
       if (r.ok) { const d = await r.json(); polyMarkets = Array.isArray(d) ? d : (d.markets || []); }
     } catch {}
 
@@ -139,12 +132,11 @@ router.get('/signals', async (req, res) => {
     // ── Sports cross-reference signals ──
     let unmatchedGames = 0;
     for (const game of allGames) {
-      const matching = polyMarkets.filter(m => {
-        const title = m.question || m.title || '';
-        return eventsMatch(title, game.home_team, game.away_team, game.commence_time);
-      });
+      const matchingWithType = polyMarkets
+        .map(m => ({ m, matchType: eventsMatch(m.question || m.title || '', game.home_team, game.away_team) }))
+        .filter(x => x.matchType !== null);
 
-      if (!matching.length) { unmatchedGames++; continue; }
+      if (!matchingWithType.length) { unmatchedGames++; continue; }
 
       let bestHomeML = null, bestAwayML = null;
       for (const bk of game.bookmakers || []) {
@@ -158,24 +150,35 @@ router.get('/signals', async (req, res) => {
       if (!bestHomeML || !bestAwayML) continue;
       const bookHP = americanToProb(bestHomeML), bookAP = americanToProb(bestAwayML);
 
-      for (const poly of matching) {
+      for (const { m: poly, matchType } of matchingWithType) {
         let prices = []; try { prices = JSON.parse(poly.outcomePrices || '[]'); } catch {}
         const polyYes = prices[0] ? parseFloat(prices[0]) : null;
         if (!polyYes || polyYes < 0.05 || polyYes > 0.95) continue;
 
-        const vol = parseFloat(poly.volume || 0);
+        const vol = parseFloat(poly.volume || poly.volumeNum || 0);
         if (vol < MIN_POLY_VOL) continue;
 
         const title = poly.question || poly.title || '';
         if (isJunkMarket(title, vol)) continue;
 
-        const close = new Date(poly.endDate || poly.closeTime);
+        const close = new Date(poly.endDate || poly.end_date_iso || poly.closeTime);
         const days = (close - Date.now()) / 86400000;
         if (days < 0 || days > MAX_DAYS_SPORTS) continue;
 
-        const hEdge = ((polyYes - bookHP) / bookHP) * 100;
-        const aEdge = ((polyYes - bookAP) / bookAP) * 100;
-        const edge = Math.abs(hEdge) > Math.abs(aEdge) ? hEdge : aEdge;
+        // Edge calc depends on which team(s) matched
+        let edge, bookProbForEdge;
+        if (matchType === 'both') {
+          const hEdge = ((polyYes - bookHP) / bookHP) * 100;
+          const aEdge = ((polyYes - bookAP) / bookAP) * 100;
+          edge = Math.abs(hEdge) > Math.abs(aEdge) ? hEdge : aEdge;
+          bookProbForEdge = Math.abs(hEdge) > Math.abs(aEdge) ? bookHP : bookAP;
+        } else if (matchType === 'home') {
+          edge = ((polyYes - bookHP) / bookHP) * 100;
+          bookProbForEdge = bookHP;
+        } else {
+          edge = ((polyYes - bookAP) / bookAP) * 100;
+          bookProbForEdge = bookAP;
+        }
         if (Math.abs(edge) < MIN_EDGE) continue;
 
         const category = detectCategory(title);
@@ -183,13 +186,13 @@ router.get('/signals', async (req, res) => {
           id: `${game.id}-${poly.id}`, type: 'sports',
           sport: game.sport?.replace(/basketball_|americanfootball_|baseball_|icehockey_/g, '').toUpperCase(),
           event: `${game.away_team} @ ${game.home_team}`,
-          title: title,
+          title,
           awayTeam: game.away_team, homeTeam: game.home_team,
           commenceTime: game.commence_time,
           polyMarket: title,
           polyUrl: `https://polymarket.com/event/${poly.slug}`,
           polymarket_prob: Math.round(polyYes * 100),
-          book_prob: Math.round((Math.abs(hEdge) > Math.abs(aEdge) ? bookHP : bookAP) * 100),
+          book_prob: Math.round(bookProbForEdge * 100),
           polyYesProb: Math.round(polyYes * 100),
           bookHomeProb: Math.round(bookHP * 100), bookAwayProb: Math.round(bookAP * 100),
           bookHomeML: bestHomeML, bookAwayML: bestAwayML,
@@ -197,8 +200,8 @@ router.get('/signals', async (req, res) => {
           signal_type: edge > 0 ? 'POLY_HIGHER' : 'BOOK_HIGHER',
           direction: edge > 0 ? 'POLY_HIGHER' : 'BOOK_HIGHER',
           signal: edge > 0
-            ? `Polymarket pricing ${Math.round(polyYes*100)}% vs sportsbook implied ${Math.round((Math.abs(hEdge)>Math.abs(aEdge)?bookHP:bookAP)*100)}% — ${Math.abs(edge).toFixed(1)} point divergence`
-            : `Sportsbook implied ${Math.round((Math.abs(hEdge)>Math.abs(aEdge)?bookHP:bookAP)*100)}% vs Polymarket ${Math.round(polyYes*100)}% — ${Math.abs(edge).toFixed(1)} point divergence`,
+            ? `Polymarket pricing ${Math.round(polyYes*100)}% vs sportsbook implied ${Math.round(bookProbForEdge*100)}% — ${Math.abs(edge).toFixed(1)} point divergence`
+            : `Sportsbook implied ${Math.round(bookProbForEdge*100)}% vs Polymarket ${Math.round(polyYes*100)}% — ${Math.abs(edge).toFixed(1)} point divergence`,
           confidence: Math.abs(edge) > 18 ? 'HIGH' : Math.abs(edge) > 12 ? 'MEDIUM' : 'LOW',
           volume: vol,
           category,
@@ -327,26 +330,25 @@ router.get('/signals', async (req, res) => {
     }
 
     // ── Pure Polymarket signals ──
-    const POLY_EXCLUDED_CATS = ['Entertainment']; // Allow all except Entertainment (weather already filtered by JUNK_RE)
-    for (const m of polyMarkets.slice(0, 200)) {
+    const POLY_EXCLUDED_CATS = ['Entertainment'];
+    for (const m of polyMarkets) {
       let prices = []; try { prices = JSON.parse(m.outcomePrices || '[]'); } catch {}
       const prob = prices[0] ? parseFloat(prices[0]) : null;
       if (!prob || prob < 0.05 || prob > 0.95) continue;
 
-      const vol = parseFloat(m.volume || 0);
+      const vol = parseFloat(m.volume || m.volumeNum || 0);
       if (vol < MIN_POLY_ONLY_VOL) continue;
 
       const title = m.question || m.title || '';
       if (isJunkMarket(title, vol)) continue;
 
-      const close = new Date(m.endDate || m.closeTime);
+      const close = new Date(m.endDate || m.end_date_iso || m.closeTime);
       const days = (close - Date.now()) / 86400000;
       if (days < 0 || days > MAX_DAYS_POLY_ONLY) continue;
 
       const category = detectCategory(title);
       if (POLY_EXCLUDED_CATS.includes(category)) continue;
 
-      // Skip if already matched as a sports signal
       if (signals.some(s => s.polyMarket === title)) continue;
 
       const sig = {

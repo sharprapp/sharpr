@@ -25,11 +25,10 @@ export default function SharpSignal({ userPlan }) {
     finally { setLoading(false); }
   }
 
-  // Quality filter: min $25K volume, min 7% edge, exclude junk categories
   const JUNK_SIGNAL_RE = /weather|temperature|rain|snow|hurricane|entertainment|local.*election|mayor|city.*council/i;
   const qualitySignals = signals.filter(s =>
-    (s.volume || 0) >= 25000 &&
-    (s.type === 'polymarket' || Math.abs(s.edge || 0) >= 7) &&
+    (s.volume || 0) >= 20000 &&
+    (s.type === 'polymarket' || Math.abs(s.edge || 0) >= 5) &&
     !JUNK_SIGNAL_RE.test(s.event || '') && !JUNK_SIGNAL_RE.test(s.title || '')
   );
   const filtered = qualitySignals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? s.confidence === 'HIGH' : true);

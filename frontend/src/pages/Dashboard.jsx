@@ -1739,7 +1739,7 @@ function AIStrategyAnalyzer({ tier }) {
           <div className="sm:col-span-3">
             <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Describe your setup</label>
             <textarea
-              placeholder="e.g. NQ long at 18,450 on VWAP bounce. Previous support at 18,400, resistance at 18,550. Volume declining into the pullback. Plan to risk 20 pts for 60 pt target..."
+              placeholder="e.g. SPY long at 520 on VWAP reclaim. Previous support at 518, resistance at 523. Volume declining into the pullback. Plan to risk $0.80 for $2.40 target..."
               value={setup} onChange={e => setSetup(e.target.value)}
               rows={3}
               className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
@@ -2882,10 +2882,10 @@ function PreMarketPanel() {
         ))}
       </div>
 
-      {/* MNQ/NQ Levels */}
+      {/* Key Levels */}
       <div style={card}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
-          📊 NQ / MNQ Key Levels
+          📊 Key Levels
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
           {NQ_FIELDS.map(([k, label]) => (
@@ -2969,7 +2969,6 @@ function RiskCalcPanel() {
   const targetN = parseFloat(target) || 0;
   const stopDist = entryN && stopN ? Math.abs(entryN - stopN) : 0;
   const shares   = stopDist > 0 ? Math.floor(riskDollars / stopDist) : 0;
-  const mnqContr = stopDist > 0 ? Math.floor(riskDollars / (stopDist * 2)) : 0; // MNQ tick value ~$2
   const rr       = targetN && stopDist ? ((Math.abs(targetN - entryN) / stopDist)).toFixed(2) : null;
 
   const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
@@ -3029,7 +3028,6 @@ function RiskCalcPanel() {
           ['Dollar risk',      `$${riskDollars.toFixed(0)}`, '#f59e0b'],
           ['Stop distance',    stopDist > 0 ? `$${stopDist.toFixed(2)}` : '—', '#6B6B8A'],
           ['Max shares',       shares > 0 ? shares.toLocaleString() : '—', '#F0F0FF'],
-          ['MNQ contracts',    mnqContr > 0 ? mnqContr : '—', '#60a5fa'],
           ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#0A0A0F' : '#f59e0b']] : []),
         ].map(([l, v, c]) => (
           <div key={l} style={out}>
