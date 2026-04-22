@@ -30,23 +30,26 @@ function isThisMonth(dateStr) {
 }
 
 export default function HomeTab({ onSwitchTab }) {
-  const { user, tier, username } = useAuth();
+  const { user, tier, username, displayName: authDisplayName } = useAuth();
   const [trades, setTrades] = useState([]);
   const [bets, setBets] = useState([]);
   const [markets, setMarkets] = useState([]);
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [signalCount, setSignalCount] = useState(0);
+  const [signalCount, setSignalCount] = useState(null); // null = loading, 0 = loaded with none
   const [displaySignal, setDisplaySignal] = useState(0);
   const [typedName, setTypedName] = useState('');
 
-  const displayName = username ? `@${username}` : firstName(user?.email);
+  // Use display_name from profile first, then username, then 'Trader'
+  const displayName = authDisplayName
+    ? authDisplayName.split(' ')[0]
+    : username || 'Trader';
 
   useEffect(() => {
     // Sharp Signals count-up
     let start = 0;
     const end = signalCount || 0;
-    if (end === 0) return;
+    if (end === 0) { setDisplaySignal(0); return; }
     const duration = 1500;
     const frameRate = 1000 / 60;
     const totalFrames = duration / frameRate;
@@ -78,7 +81,6 @@ export default function HomeTab({ onSwitchTab }) {
   }, [displayName]);
 
   useEffect(() => {
-    // Real signal count from API
     api.get('/api/sharpsignal/signals').then(r => {
       const signals = r.data?.signals || r.data || [];
       setSignalCount(Array.isArray(signals) ? signals.length : 0);
@@ -154,15 +156,30 @@ export default function HomeTab({ onSwitchTab }) {
             {greeting().toUpperCase()},<br/> 
             <span className="text-[#F0F0FF]">{typedName}</span>
           </h1>
-          <p className="text-[rgba(240,240,255,0.5)] font-bold uppercase tracking-[0.2em] text-xs">The Edge has arrived. You're ready.</p>
+          <p className="text-[rgba(240,240,255,0.5)] font-bold uppercase tracking-[0.2em] text-xs mb-4">Your signals are live.</p>
+          <button onClick={() => onSwitchTab('Signals')}
+            className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#6C63FF] border border-[#6C63FF]/40 px-4 py-2 rounded-full hover:bg-[#6C63FF]/10 transition-all w-fit">
+            View Sharp Signals ↗
+          </button>
         </div>
-        <div className="flex flex-col items-center md:items-end gap-2 relative z-10">
-          <div className="text-7xl font-black text-[#00E5B4] tabular-nums drop-shadow-[0_0_20px_rgba(0,229,180,0.2)]">
-            {displaySignal}
-          </div>
-          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6B6B8A] bg-white/5 px-4 py-1 rounded-full border border-white/5">
-            Sharp Signals Today
-          </div>
+        <div className="flex flex-col items-center md:items-end gap-2 relative z-10 cursor-pointer" onClick={() => onSwitchTab('Signals')}>
+          {signalCount === null ? (
+            <div className="text-3xl font-black text-[#6B6B8A] tabular-nums">—</div>
+          ) : signalCount === 0 ? (
+            <div className="text-center">
+              <div className="text-xs font-black text-[#6B6B8A] uppercase tracking-widest mb-1">Scanning markets...</div>
+              <div className="text-[10px] text-[#4E4E63]">Check back in a moment</div>
+            </div>
+          ) : (
+            <div className="text-7xl font-black text-[#00E5B4] tabular-nums drop-shadow-[0_0_20px_rgba(0,229,180,0.2)]">
+              {displaySignal}
+            </div>
+          )}
+          {signalCount !== null && signalCount > 0 && (
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#6B6B8A] bg-white/5 px-4 py-1 rounded-full border border-white/5">
+              Sharp Signals Live
+            </div>
+          )}
         </div>
       </div>
 
@@ -199,18 +216,27 @@ export default function HomeTab({ onSwitchTab }) {
               <h3 className="text-[10px] font-black text-[#6C63FF] uppercase tracking-[0.3em]">Sharpr Score</h3>
               <span className="text-[8px] font-bold bg-[#6C63FF]/20 text-[#6C63FF] px-2 py-1 rounded uppercase">Live Analytics</span>
             </div>
-            <div className="flex items-center gap-8">
-              <div className="text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-[#6C63FF] to-[#F0F0FF]">{sharprScore ?? '--'}</div>
-              <div className="flex-1">
-                <div className="w-full h-1 bg-white/5 rounded-full mb-3 overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-[#6C63FF] to-[#00E5B4] transition-all duration-1000" 
-                    style={{ width: `${sharprScore || 0}%` }} />
+            {sharprScore === null ? (
+              <div>
+                <p className="text-xs text-[#6B6B8A] mb-3">Log your first trade or bet to see your score.</p>
+                <div className="flex gap-3">
+                  <button onClick={() => onSwitchTab('dt-journal')} className="text-[10px] font-black uppercase text-[#6C63FF] border border-[#6C63FF]/30 px-3 py-1.5 rounded-lg hover:bg-[#6C63FF]/10 transition-all">+ Trade</button>
+                  <button onClick={() => onSwitchTab('sb-journal')} className="text-[10px] font-black uppercase text-[#6C63FF] border border-[#6C63FF]/30 px-3 py-1.5 rounded-lg hover:bg-[#6C63FF]/10 transition-all">+ Bet</button>
                 </div>
-                <p className="text-[10px] font-bold text-[#6B6B8A] uppercase leading-relaxed">
-                  {sharprScore >= 75 ? 'Institutional Grade performance detected.' : sharprScore >= 50 ? 'Consistency is building. Keep tight stops.' : 'Discipline is the only edge. Re-evaluate entries.'}
-                </p>
               </div>
-            </div>
+            ) : (
+              <div className="flex items-center gap-8">
+                <div className="text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-[#6C63FF] to-[#F0F0FF]">{sharprScore}</div>
+                <div className="flex-1">
+                  <div className="w-full h-1 bg-white/5 rounded-full mb-3 overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-[#6C63FF] to-[#00E5B4] transition-all duration-1000" style={{ width: `${sharprScore}%` }} />
+                  </div>
+                  <p className="text-[10px] font-bold text-[#6B6B8A] uppercase leading-relaxed">
+                    {sharprScore >= 75 ? 'Institutional grade performance detected.' : sharprScore >= 50 ? 'Consistency is building. Keep tight stops.' : 'Discipline is the only edge. Re-evaluate entries.'}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -219,7 +245,9 @@ export default function HomeTab({ onSwitchTab }) {
           {/* Top Market */}
           <div className="glass-card rounded-3xl p-8 border-[#00E5B4]/30 fade-in-up" style={{ animationDelay: '0.4s' }}>
             <h3 className="text-[10px] font-black text-[#00E5B4] uppercase tracking-[0.3em] mb-6">Predict Edge</h3>
-            {topMarket ? (
+            {loading ? (
+              <div className="text-xs text-[#4E4E63]">Loading...</div>
+            ) : topMarket ? (
               <div className="group cursor-pointer" onClick={() => onSwitchTab('Polymarket')}>
                 <div className="text-sm font-bold text-[#F0F0FF] mb-4 line-clamp-2 leading-relaxed">{topMarket.title}</div>
                 <div className="flex items-end gap-3">
@@ -227,13 +255,20 @@ export default function HomeTab({ onSwitchTab }) {
                   <div className="text-[10px] font-black text-[#6B6B8A] uppercase mb-1">Probability</div>
                 </div>
               </div>
-            ) : <div className="text-xs text-[#6B6B8A]">Analyzing high-volume markets...</div>}
+            ) : (
+              <div>
+                <p className="text-xs text-[#6B6B8A] mb-3">No high-volume markets found right now.</p>
+                <button onClick={() => onSwitchTab('Polymarket')} className="text-[10px] font-black uppercase text-[#00E5B4] border border-[#00E5B4]/30 px-3 py-1.5 rounded-lg hover:bg-[#00E5B4]/10 transition-all">Browse Polymarket →</button>
+              </div>
+            )}
           </div>
 
           {/* Underdog Pick */}
           <div className="glass-card rounded-3xl p-8 fade-in-up" style={{ animationDelay: '0.5s' }}>
             <h3 className="text-[10px] font-black text-[#FF4560] uppercase tracking-[0.3em] mb-6">High Value Underdog</h3>
-            {valuePick ? (
+            {loading ? (
+              <div className="text-xs text-[#4E4E63]">Loading...</div>
+            ) : valuePick ? (
               <div className="flex justify-between items-center group cursor-pointer" onClick={() => onSwitchTab('Events')}>
                 <div>
                   <div className="text-[10px] font-black text-[#6B6B8A] uppercase mb-1">{valuePick.awayTeam} @ {valuePick.homeTeam}</div>
@@ -241,25 +276,26 @@ export default function HomeTab({ onSwitchTab }) {
                 </div>
                 <div className="text-2xl font-black text-[#00E5B4] bg-[#00E5B4]/10 px-4 py-2 rounded-2xl">+{valuePick.pickML}</div>
               </div>
-            ) : <div className="text-xs text-[#6B6B8A]">Scanning markets for mispriced odds...</div>}
+            ) : (
+              <div>
+                <p className="text-xs text-[#6B6B8A] mb-3">No live underdog value found right now.</p>
+                <button onClick={() => onSwitchTab('Events')} className="text-[10px] font-black uppercase text-[#FF4560] border border-[#FF4560]/30 px-3 py-1.5 rounded-lg hover:bg-[#FF4560]/10 transition-all">Browse Live Odds →</button>
+              </div>
+            )}
           </div>
 
-          {/* Live Signals Ticker Area */}
-          <div className="glass-card rounded-3xl p-8 bg-black/40 fade-in-up" style={{ animationDelay: '0.6s' }}>
-             <h3 className="text-[10px] font-black text-[#F0F0FF] uppercase tracking-[0.3em] mb-6">Recent Sharp Activity</h3>
-             <div className="flex flex-col gap-4">
-                {[
-                  { m: 'BTC > $100k', s: '🐋 Whale Entry', t: 'Institutional Buy' },
-                  { m: 'NBA: Lakers ML', s: '🎯 Heavy Public', t: 'Sharp Contrarian' },
-                  { m: 'Pol: US Election', s: '📈 Vol Spike', t: 'Model Adjustment' }
-                ].map((sig, i) => (
-                  <div key={i} className="flex items-center gap-4 text-[10px]">
-                    <div className="w-1 h-1 rounded-full bg-[#00E5B4]" />
-                    <div className="flex-1 font-bold text-[#F0F0FF]">{sig.m}</div>
-                    <div className="text-[#6B6B8A] font-black italic">{sig.s}</div>
-                  </div>
-                ))}
-             </div>
+          {/* Sharp Signals CTA */}
+          <div className="glass-card rounded-3xl p-8 bg-black/40 fade-in-up cursor-pointer hover:border-[#6C63FF]/50 transition-all" style={{ animationDelay: '0.6s' }} onClick={() => onSwitchTab('Signals')}>
+            <h3 className="text-[10px] font-black text-[#6C63FF] uppercase tracking-[0.3em] mb-4">Sharp Signals</h3>
+            <p className="text-xs text-[#6B6B8A] leading-relaxed mb-6">
+              Live mispricings between Polymarket and sportsbook odds. Edge detected when markets diverge.
+            </p>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#6C63FF]">
+                {signalCount === null ? 'Scanning...' : signalCount === 0 ? 'No signals right now' : `${signalCount} signals live`}
+              </span>
+              <span className="text-[#6C63FF] text-lg">↗</span>
+            </div>
           </div>
         </div>
 
