@@ -94,13 +94,12 @@ export default function SportsOdds({ initialSport, tier }) {
         setError('Live odds temporarily unavailable — quota refreshes daily');
         setQuotaExceeded(true);
         setGames([]);
-      } else if (data.error && !data.games?.length) {
-        setError(data.message || 'Could not load odds right now');
-        setGames([]);
       } else {
         setGames(data.games || []);
         if (data.requestsRemaining != null) setRequestsRemaining(data.requestsRemaining);
-        oddsCache[cacheKey] = { games: data.games || [], remaining: data.requestsRemaining, ts: Date.now() };
+        oddsCache[cacheKey] = { games: data.games || [], remaining: data.requestsRemaining, ts: Date.now(), offSeason: data.offSeason };
+        if (data.offSeason) setError('off-season');
+        else setError('');
       }
     } catch (e) {
       setError('Could not load games — try refreshing');
@@ -171,7 +170,7 @@ export default function SportsOdds({ initialSport, tier }) {
         </div>
       </div>
 
-      {error && <div style={{ ...gc, padding: 16, borderColor: 'rgba(239,68,68,0.2)', color: '#FF4560', fontSize: 13 }}>{error}</div>}
+      {error && error !== 'off-season' && <div style={{ ...gc, padding: 16, borderColor: 'rgba(239,68,68,0.2)', color: '#FF4560', fontSize: 13 }}>{error}</div>}
 
       {loading && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -179,11 +178,15 @@ export default function SportsOdds({ initialSport, tier }) {
         </div>
       )}
 
-      {!loading && games.length === 0 && !error && (
+      {!loading && games.length === 0 && (
         <div style={{ ...gc, padding: 40, textAlign: 'center' }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🏟️</div>
-          <div style={{ fontSize: 14, fontWeight: 500, color: '#6B6B8A' }}>No {SPORT_LABELS[sport] || sport} games right now</div>
-          <div style={{ fontSize: 12, color: '#4E4E63', marginTop: 4 }}>Check back on game days</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: '#6B6B8A' }}>
+            {error === 'off-season' ? `${SPORT_LABELS[sport] || sport} is off-season` : `No ${SPORT_LABELS[sport] || sport} games right now`}
+          </div>
+          <div style={{ fontSize: 12, color: '#4E4E63', marginTop: 4 }}>
+            {error === 'off-season' ? 'Season not yet started — check back closer to opening week' : 'Check back on game days'}
+          </div>
         </div>
       )}
 

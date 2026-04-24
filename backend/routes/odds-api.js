@@ -142,7 +142,8 @@ router.get('/games', async (req, res) => {
       if (errData.error_code === 'OUT_OF_USAGE_CREDITS' || r.status === 422) {
         return res.json({ error: 'odds_quota_exceeded', message: 'Odds data temporarily unavailable', games: [], quotaExceeded: true });
       }
-      return res.status(r.status).json({ error: 'odds_unavailable', message: 'Could not load odds', games: [] });
+      // Return 200 with empty games so the frontend doesn't throw — sport may be off-season
+      return res.json({ games: [], sport, total: 0, offSeason: r.status === 404, message: r.status === 404 ? 'No games scheduled — sport may be off-season' : 'Odds unavailable right now' });
     }
 
     const data = await r.json();
