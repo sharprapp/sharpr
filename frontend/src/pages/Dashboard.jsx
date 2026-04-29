@@ -21,6 +21,7 @@ import UsernameModal from '../components/UsernameModal';
 import OddsBoard from '../components/OddsBoard';
 import { exportBetsCSV, exportTradesCSV, exportBetsPDF, exportTradesPDF } from '../lib/export';
 import OnboardingModal from '../components/OnboardingModal';
+import FantasyAssistant from '../components/FantasyAssistant';
 import KeyboardShortcutsModal from '../components/KeyboardShortcutsModal';
 import CommandPalette from '../components/CommandPalette';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
@@ -46,6 +47,9 @@ const NAV_GROUPS_LEFT = [
     { key: 'sb-arbitrage', label: 'Arbitrage', emoji: '⚖️', desc: 'Find +EV across books' },
     { key: 'sb-parlay', label: 'Parlay', emoji: '🎰', desc: 'Optimize parlay EV' },
     { key: 'sb-analytics', label: 'Analytics', emoji: '📈', desc: 'ROI & performance' },
+  ]},
+  { label: 'Fantasy', items: [
+    { key: 'Fantasy', label: 'Fantasy', emoji: '🏈', desc: 'AI fantasy football assistant' },
   ]},
   { label: 'Predict', items: [
     { key: 'Polymarket', label: 'Polymarket', emoji: '🎯', desc: '8,300+ live markets' },
@@ -248,6 +252,10 @@ export default function Dashboard() {
       ) : tab.startsWith('sb-') ? (
         <div key={tab} className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><SportsBettingTab tier={tier} activeSubTab={tab.replace('sb-', '')} /></ErrorBoundary>
+        </div>
+      ) : tab === 'Fantasy' ? (
+        <div key="Fantasy" className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+          <ErrorBoundary><FantasyAssistant tier={tier} /></ErrorBoundary>
         </div>
       ) : (
         <div key={tab} className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
@@ -560,6 +568,7 @@ function MobileNavDrawer({ tab, setTab, displayName, user, navigate, setEventsSp
     { label: '⚡ Signals', key: 'Signals' },
     { label: '📈 Trade', children: [{ l: '📓 Journal', k: 'dt-journal' }, { l: '🌅 Pre-Market', k: 'dt-premarket' }, { l: '🎯 Risk Calc', k: 'dt-riskcalc' }, { l: '📊 Reports', k: 'dt-reports' }, { l: '🧠 Strategy AI', k: 'dt-strategy' }] },
     { label: '🎰 Bet', children: [{ l: '📓 Journal', k: 'sb-journal' }, { l: '⚖️ Arbitrage', k: 'sb-arbitrage' }, { l: '🎯 Parlay Builder', k: 'sb-parlay' }, { l: '📊 Analytics', k: 'sb-analytics' }] },
+    { label: '🏈 Fantasy', key: 'Fantasy' },
     { label: '🔮 Predict', children: [{ l: '📊 Polymarket', k: 'Polymarket' }, { l: '🧮 EV Calc', k: 'EV Calc' }] },
     { label: '🤖 AI Research', key: 'AI Research' },
     { label: '🏆 Events', children: [

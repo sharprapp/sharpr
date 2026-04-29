@@ -90,6 +90,7 @@ app.use('/api/sharpsignal', require('./routes/sharpsignal'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/user',      require('./routes/user'));
 app.use('/api/performance', require('./routes/performance'));
+app.use('/api/fantasy',   require('./routes/fantasy'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
