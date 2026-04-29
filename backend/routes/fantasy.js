@@ -15,7 +15,7 @@ const SKILL_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE', 'K', 'DEF']);
 
 async function getSleeperPlayers() {
   if (_sleeperPlayers && Date.now() - _sleeperAt < SLEEPER_TTL) return _sleeperPlayers;
-  const { data } = await axios.get('https://api.sleeper.app/v1/players/nfl', { timeout: 20000 });
+  const { data } = await axios.get('https://api.sleeper.app/v1/players/nfl', { timeout: 30000 });
   _sleeperPlayers = Object.values(data)
     .filter(p => p.active && p.full_name && SKILL_POSITIONS.has(p.position))
     .map(p => ({
@@ -28,11 +28,16 @@ async function getSleeperPlayers() {
       yearsExp: p.years_exp || 0,
       headshot: `https://sleepercdn.com/content/nfl/players/${p.player_id}.jpg`,
     }))
-    .sort((a, b) => b.yearsExp - a.yearsExp); // veteran-first ordering
+    .sort((a, b) => b.yearsExp - a.yearsExp);
   _sleeperAt = Date.now();
   console.log(`[fantasy] Sleeper cache loaded: ${_sleeperPlayers.length} players`);
   return _sleeperPlayers;
 }
+
+// Pre-warm cache 8 seconds after boot so first user request is instant
+setTimeout(() => {
+  getSleeperPlayers().catch(err => console.error('[fantasy] Sleeper pre-warm failed:', err.message));
+}, 8000);
 
 // ── ESPN team cache (6h) ─────────────────────────────────────────────────────
 let _espnTeams = null;
@@ -76,20 +81,34 @@ router.get('/players', requireAuth, async (req, res) => {
 // ── GET /api/fantasy/trending ────────────────────────────────────────────────
 router.get('/trending', requireAuth, async (req, res) => {
   try {
-    const [{ data: raw }, all] = await Promise.all([
+    // Fetch trending and player DB in parallel with independent timeouts
+    const [trendResult, playersResult] = await Promise.allSettled([
       axios.get('https://api.sleeper.app/v1/players/nfl/trending/add?lookback_hours=24&limit=20', { timeout: 8000 }),
       getSleeperPlayers(),
     ]);
+
+    if (trendResult.status === 'rejected') {
+      return res.json({ trending: [] });
+    }
+
+    const raw = trendResult.value.data;
+    const all = playersResult.status === 'fulfilled' ? playersResult.value : [];
     const map = {};
     all.forEach(p => { map[p.id] = p; });
+
     const trending = raw
-      .map(t => map[t.player_id] ? { ...map[t.player_id], addCount: t.count } : null)
+      .map(t => {
+        const p = map[t.player_id];
+        if (!p) return null;
+        return { ...p, addCount: t.count };
+      })
       .filter(Boolean)
       .slice(0, 12);
+
     res.json({ trending });
   } catch (err) {
     console.error('[fantasy] trending error:', err.message);
-    res.status(500).json({ error: 'Trending unavailable', trending: [] });
+    res.json({ trending: [] });
   }
 });
 
