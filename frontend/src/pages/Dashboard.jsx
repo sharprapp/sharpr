@@ -49,7 +49,10 @@ const NAV_GROUPS_LEFT = [
     { key: 'sb-analytics', label: 'Analytics', emoji: '📈', desc: 'ROI & performance' },
   ]},
   { label: 'Fantasy', items: [
-    { key: 'Fantasy', label: 'Fantasy', emoji: '🏈', desc: 'AI fantasy football assistant' },
+    { key: 'fantasy-startsit', label: 'Start / Sit', emoji: '⚡', desc: 'Who to start this week' },
+    { key: 'fantasy-trade',    label: 'Trade Analyzer', emoji: '🔄', desc: 'Evaluate trade offers' },
+    { key: 'fantasy-waiver',  label: 'Waiver Wire', emoji: '📋', desc: 'Best available pickups' },
+    { key: 'fantasy-lineup',  label: 'Lineup Optimizer', emoji: '🎯', desc: 'Optimize your lineup' },
   ]},
   { label: 'Predict', items: [
     { key: 'Polymarket', label: 'Polymarket', emoji: '🎯', desc: '8,300+ live markets' },
@@ -253,9 +256,9 @@ export default function Dashboard() {
         <div key={tab} className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
           <ErrorBoundary><SportsBettingTab tier={tier} activeSubTab={tab.replace('sb-', '')} /></ErrorBoundary>
         </div>
-      ) : tab === 'Fantasy' ? (
-        <div key="Fantasy" className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
-          <ErrorBoundary><FantasyAssistant tier={tier} /></ErrorBoundary>
+      ) : tab.startsWith('fantasy-') ? (
+        <div key={tab} className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
+          <ErrorBoundary><FantasyAssistant activeTab={tab.replace('fantasy-', '')} tier={tier} /></ErrorBoundary>
         </div>
       ) : (
         <div key={tab} className="tab-content" style={{maxWidth: 1400, margin: '0 auto', padding: '32px 24px'}}>
@@ -568,7 +571,7 @@ function MobileNavDrawer({ tab, setTab, displayName, user, navigate, setEventsSp
     { label: '⚡ Signals', key: 'Signals' },
     { label: '📈 Trade', children: [{ l: '📓 Journal', k: 'dt-journal' }, { l: '🌅 Pre-Market', k: 'dt-premarket' }, { l: '🎯 Risk Calc', k: 'dt-riskcalc' }, { l: '📊 Reports', k: 'dt-reports' }, { l: '🧠 Strategy AI', k: 'dt-strategy' }] },
     { label: '🎰 Bet', children: [{ l: '📓 Journal', k: 'sb-journal' }, { l: '⚖️ Arbitrage', k: 'sb-arbitrage' }, { l: '🎯 Parlay Builder', k: 'sb-parlay' }, { l: '📊 Analytics', k: 'sb-analytics' }] },
-    { label: '🏈 Fantasy', key: 'Fantasy' },
+    { label: '🏈 Fantasy', children: [{ l: '⚡ Start/Sit', k: 'fantasy-startsit' }, { l: '🔄 Trade Analyzer', k: 'fantasy-trade' }, { l: '📋 Waiver Wire', k: 'fantasy-waiver' }, { l: '🎯 Lineup Optimizer', k: 'fantasy-lineup' }] },
     { label: '🔮 Predict', children: [{ l: '📊 Polymarket', k: 'Polymarket' }, { l: '🧮 EV Calc', k: 'EV Calc' }] },
     { label: '🤖 AI Research', key: 'AI Research' },
     { label: '🏆 Events', children: [
