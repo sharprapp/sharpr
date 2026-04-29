@@ -61,20 +61,49 @@ async function getESPNTeams() {
   return _espnTeams;
 }
 
+// ── ESPN fallback search ──────────────────────────────────────────────────────
+async function espnSearch(q) {
+  const { data } = await axios.get('https://site.api.espn.com/apis/common/v3/search', {
+    params: { query: q, limit: 8, type: 'player', sport: 'football', league: 'nfl' },
+    timeout: 6000,
+  });
+  const contents = data.results?.find(r => r.type === 'player')?.contents || [];
+  return contents.map(p => {
+    const [pos, team] = (p.description || '').split(' - ').map(s => s.trim());
+    return {
+      id: p.id,
+      name: p.displayName || '',
+      position: pos || '',
+      team: team || '',
+      injuryStatus: null,
+      headshot: `https://a.espncdn.com/i/headshots/nfl/players/full/${p.id}.png`,
+    };
+  });
+}
+
 // ── GET /api/fantasy/players?q= ──────────────────────────────────────────────
 router.get('/players', requireAuth, async (req, res) => {
   const { q } = req.query;
   if (!q || q.length < 2) return res.status(400).json({ error: 'Query too short' });
   try {
-    const all = await getSleeperPlayers();
-    const lo = q.toLowerCase();
-    const results = all
-      .filter(p => p.name.toLowerCase().includes(lo))
-      .slice(0, 10);
-    res.json({ players: results });
+    // If Sleeper cache is warm, use it — otherwise fall back to ESPN immediately
+    if (_sleeperPlayers) {
+      const lo = q.toLowerCase();
+      const results = _sleeperPlayers.filter(p => p.name.toLowerCase().includes(lo)).slice(0, 10);
+      return res.json({ players: results, source: 'sleeper' });
+    }
+    // Sleeper not ready — use ESPN (fast, always works)
+    const results = await espnSearch(q);
+    res.json({ players: results, source: 'espn' });
   } catch (err) {
     console.error('[fantasy] players search error:', err.message);
-    res.status(500).json({ error: 'Search failed', players: [] });
+    // Last resort — try ESPN
+    try {
+      const results = await espnSearch(q);
+      return res.json({ players: results, source: 'espn-fallback' });
+    } catch {
+      res.status(500).json({ error: 'Search failed', players: [] });
+    }
   }
 });
 
