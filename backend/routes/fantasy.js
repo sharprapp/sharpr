@@ -13,31 +13,35 @@ let _sleeperAt = 0;
 const SLEEPER_TTL = 24 * 60 * 60 * 1000;
 const SKILL_POSITIONS = new Set(['QB', 'RB', 'WR', 'TE', 'K', 'DEF']);
 
+let _sleeperFetching = false;
+
 async function getSleeperPlayers() {
   if (_sleeperPlayers && Date.now() - _sleeperAt < SLEEPER_TTL) return _sleeperPlayers;
-  const { data } = await axios.get('https://api.sleeper.app/v1/players/nfl', { timeout: 30000 });
-  _sleeperPlayers = Object.values(data)
-    .filter(p => p.active && p.full_name && SKILL_POSITIONS.has(p.position))
-    .map(p => ({
-      id: p.player_id,
-      name: p.full_name,
-      position: p.position,
-      team: p.team || 'FA',
-      number: p.number || null,
-      injuryStatus: p.injury_status || null,
-      yearsExp: p.years_exp || 0,
-      headshot: `https://sleepercdn.com/content/nfl/players/${p.player_id}.jpg`,
-    }))
-    .sort((a, b) => b.yearsExp - a.yearsExp);
-  _sleeperAt = Date.now();
-  console.log(`[fantasy] Sleeper cache loaded: ${_sleeperPlayers.length} players`);
-  return _sleeperPlayers;
+  if (_sleeperFetching) return _sleeperPlayers || []; // return whatever we have while loading
+  _sleeperFetching = true;
+  try {
+    const { data } = await axios.get('https://api.sleeper.app/v1/players/nfl', { timeout: 25000 });
+    _sleeperPlayers = Object.values(data)
+      .filter(p => p.active && p.full_name && SKILL_POSITIONS.has(p.position))
+      .map(p => ({
+        id: p.player_id,
+        name: p.full_name,
+        position: p.position,
+        team: p.team || 'FA',
+        number: p.number || null,
+        injuryStatus: p.injury_status || null,
+        yearsExp: p.years_exp || 0,
+        headshot: `https://sleepercdn.com/content/nfl/players/${p.player_id}.jpg`,
+      }))
+      .sort((a, b) => b.yearsExp - a.yearsExp);
+    _sleeperAt = Date.now();
+    console.log(`[fantasy] Sleeper cache loaded: ${_sleeperPlayers.length} players`);
+  } finally {
+    _sleeperFetching = false;
+  }
+  return _sleeperPlayers || [];
 }
 
-// Pre-warm cache 8 seconds after boot so first user request is instant
-setTimeout(() => {
-  getSleeperPlayers().catch(err => console.error('[fantasy] Sleeper pre-warm failed:', err.message));
-}, 8000);
 
 // ── ESPN team cache (6h) ─────────────────────────────────────────────────────
 let _espnTeams = null;
@@ -82,28 +86,21 @@ async function espnSearch(q) {
 }
 
 // ── GET /api/fantasy/players?q= ──────────────────────────────────────────────
+// ESPN is primary (fast, reliable). Sleeper cache used only if already warm.
 router.get('/players', requireAuth, async (req, res) => {
   const { q } = req.query;
   if (!q || q.length < 2) return res.status(400).json({ error: 'Query too short' });
   try {
-    // If Sleeper cache is warm, use it — otherwise fall back to ESPN immediately
     if (_sleeperPlayers) {
       const lo = q.toLowerCase();
       const results = _sleeperPlayers.filter(p => p.name.toLowerCase().includes(lo)).slice(0, 10);
       return res.json({ players: results, source: 'sleeper' });
     }
-    // Sleeper not ready — use ESPN (fast, always works)
     const results = await espnSearch(q);
     res.json({ players: results, source: 'espn' });
   } catch (err) {
     console.error('[fantasy] players search error:', err.message);
-    // Last resort — try ESPN
-    try {
-      const results = await espnSearch(q);
-      return res.json({ players: results, source: 'espn-fallback' });
-    } catch {
-      res.status(500).json({ error: 'Search failed', players: [] });
-    }
+    res.status(500).json({ error: 'Search failed', players: [] });
   }
 });
 
