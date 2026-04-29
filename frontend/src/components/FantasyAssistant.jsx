@@ -4,6 +4,30 @@ import api from '../lib/api';
 
 const FREE_LIMIT = 5;
 
+// Popular players shown on focus before typing (Sleeper IDs → Sleeper CDN headshots)
+const POPULAR_PLAYERS = [
+  { id: '4046',  name: 'Patrick Mahomes',    position: 'QB', team: 'KC'  },
+  { id: '4984',  name: 'Josh Allen',          position: 'QB', team: 'BUF' },
+  { id: '4272',  name: 'Lamar Jackson',       position: 'QB', team: 'BAL' },
+  { id: '5850',  name: 'Jalen Hurts',         position: 'QB', team: 'PHI' },
+  { id: '2449',  name: 'Dak Prescott',        position: 'QB', team: 'DAL' },
+  { id: '4034',  name: 'Christian McCaffrey', position: 'RB', team: 'SF'  },
+  { id: '4988',  name: 'Saquon Barkley',      position: 'RB', team: 'PHI' },
+  { id: '9753',  name: 'Bijan Robinson',      position: 'RB', team: 'ATL' },
+  { id: '7528',  name: 'Jonathan Taylor',     position: 'RB', team: 'IND' },
+  { id: '8137',  name: 'Breece Hall',         position: 'RB', team: 'NYJ' },
+  { id: '6794',  name: 'Justin Jefferson',    position: 'WR', team: 'MIN' },
+  { id: '4374',  name: 'Tyreek Hill',         position: 'WR', team: 'MIA' },
+  { id: '7561',  name: 'CeeDee Lamb',         position: 'WR', team: 'DAL' },
+  { id: '7578',  name: 'Amon-Ra St. Brown',   position: 'WR', team: 'DET' },
+  { id: '6904',  name: 'DK Metcalf',          position: 'WR', team: 'SEA' },
+  { id: '6786',  name: 'Deebo Samuel',        position: 'WR', team: 'SF'  },
+  { id: '2409',  name: 'Travis Kelce',        position: 'TE', team: 'KC'  },
+  { id: '8205',  name: 'Sam LaPorta',         position: 'TE', team: 'DET' },
+  { id: '5045',  name: 'Nick Chubb',          position: 'RB', team: 'CLE' },
+  { id: '3294',  name: 'Davante Adams',       position: 'WR', team: 'LV'  },
+].map(p => ({ ...p, injuryStatus: null, headshot: `https://sleepercdn.com/content/nfl/players/${p.id}.jpg` }));
+
 // Current NFL season — offseason-aware
 const NFL_SEASON = (() => {
   const now = new Date();
@@ -46,16 +70,17 @@ function useDebounce(val, ms) {
   return d;
 }
 
-// ── Player Search (Sleeper-backed) ───────────────────────────────────────────
+// ── Player Search ─────────────────────────────────────────────────────────────
 function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, onSelect, onClear }) {
   const [q, setQ] = useState('');
   const [results, setResults] = useState([]);
+  const [focused, setFocused] = useState(false);
   const [busy, setBusy] = useState(false);
-  const dq = useDebounce(q, 300);
+  const dq = useDebounce(q, 150);
   const ref = useRef(null);
 
   useEffect(() => {
-    if (dq.length < 2) { setResults([]); return; }
+    if (dq.length < 2) { setResults([]); setBusy(false); return; }
     setBusy(true);
     api.get(`/api/fantasy/players?q=${encodeURIComponent(dq)}`)
       .then(r => setResults(r.data.players || []))
@@ -64,10 +89,15 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
   }, [dq]);
 
   useEffect(() => {
-    function h(e) { if (ref.current && !ref.current.contains(e.target)) setResults([]); }
+    function h(e) { if (ref.current && !ref.current.contains(e.target)) setFocused(false); }
     document.addEventListener('mousedown', h);
     return () => document.removeEventListener('mousedown', h);
   }, []);
+
+  // What to show in dropdown
+  const showPopular = focused && q.length < 2 && results.length === 0;
+  const displayList = showPopular ? POPULAR_PLAYERS : results;
+  const showDropdown = focused && (busy || displayList.length > 0);
 
   if (selected) return <PlayerCard player={selected} onClear={onClear} />;
 
@@ -77,6 +107,7 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
       <input
         value={q}
         onChange={e => setQ(e.target.value)}
+        onFocus={() => setFocused(true)}
         placeholder={placeholder}
         style={{
           width: '100%', boxSizing: 'border-box',
@@ -87,22 +118,28 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
         onFocus={e => { e.target.style.borderColor = '#6C63FF'; }}
         onBlur={e => { e.target.style.borderColor = 'rgba(108,99,255,0.25)'; }}
       />
-      {(busy || results.length > 0) && (
+      {showDropdown && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
           background: '#0D0D1A', border: '1px solid rgba(108,99,255,0.2)',
           borderRadius: 12, zIndex: 100, overflow: 'hidden',
           boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          maxHeight: 320, overflowY: 'auto',
         }}>
+          {showPopular && (
+            <div style={{ padding: '7px 14px 4px', fontSize: 10, fontWeight: 700, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Top Players
+            </div>
+          )}
           {busy && <div style={{ padding: '12px 14px', color: '#6B6B8A', fontSize: 13 }}>Searching…</div>}
-          {results.map(p => (
+          {displayList.map(p => (
             <button key={p.id}
-              onClick={() => { onSelect(p); setQ(''); setResults([]); }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
+              onClick={() => { onSelect(p); setQ(''); setFocused(false); setResults([]); }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '9px 14px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.1)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <PlayerAvatar player={p} size={38} />
+              <PlayerAvatar player={p} size={36} />
               <div style={{ textAlign: 'left', flex: 1 }}>
                 <div style={{ fontWeight: 700, fontSize: 13, color: '#F0F0FF' }}>{p.name}</div>
                 <div style={{ fontSize: 11, color: '#6B6B8A', marginTop: 1 }}>{p.position} · {p.team}</div>
