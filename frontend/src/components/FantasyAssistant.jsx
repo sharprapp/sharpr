@@ -210,8 +210,8 @@ function PlayerCard({ player, onClear, verdict, projPts, compact }) {
   );
 }
 
-// ── Walter Response ───────────────────────────────────────────────────────────
-function WalterResponse({ text, loading }) {
+// ── Sharp AI Response ───────────────────────────────────────────────────────────
+function Sharp AIResponse({ text, loading }) {
   if (!text && !loading) return null;
   return (
     <div style={{
@@ -221,7 +221,7 @@ function WalterResponse({ text, loading }) {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <span style={{ fontSize: 16 }}>🏈</span>
-        <span style={{ fontWeight: 800, fontSize: 13, color: '#6C63FF' }}>Walter's Analysis</span>
+        <span style={{ fontWeight: 800, fontSize: 13, color: '#6C63FF' }}>Sharp AI's Analysis</span>
       </div>
       {loading ? (
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '6px 0' }}>
@@ -243,8 +243,8 @@ function WalterResponse({ text, loading }) {
   );
 }
 
-// ── Shared Walter call ────────────────────────────────────────────────────────
-async function askWalter(message, { setLoading, setReply, setLimitHit, setUsageRemaining }) {
+// ── Shared Sharp AI call ────────────────────────────────────────────────────────
+async function askSharp AI(message, { setLoading, setReply, setLimitHit, setUsageRemaining }) {
   setLoading(true);
   setReply('');
   try {
@@ -254,7 +254,7 @@ async function askWalter(message, { setLoading, setReply, setLimitHit, setUsageR
   } catch (err) {
     const d = err.response?.data;
     if (err.response?.status === 429 || d?.limitHit) { setLimitHit(true); setUsageRemaining(0); }
-    else setReply('Walter ran into a problem. Try again.');
+    else setReply('Sharp AI ran into a problem. Try again.');
   } finally {
     setLoading(false);
   }
@@ -359,7 +359,7 @@ function StartSitTab() {
       : '';
     const injStr = [a, b].filter(p => p.injuryStatus).map(p => `${p.name} is ${p.injuryStatus}`).join(', ');
     const msg = `Start/Sit: ${a.name} (${a.position}, ${a.team}) vs ${b.name} (${b.position}, ${b.team}) in a ${format} league.${projStr}${injStr ? ` Injury notes: ${injStr}.` : ''} Who should I start this week?`;
-    await askWalter(msg, { setLoading, setReply: (t) => { setReply(t); detectVerdicts(t); }, setLimitHit, setUsageRemaining });
+    await askSharp AI(msg, { setLoading, setReply: (t) => { setReply(t); detectVerdicts(t); }, setLimitHit, setUsageRemaining });
   }
 
   return (
@@ -370,8 +370,8 @@ function StartSitTab() {
         <div style={{ color: '#2a3a5a', fontWeight: 900, fontSize: 18, textAlign: 'center', paddingTop: 32, userSelect: 'none' }}>VS</div>
         <PlayerSearch label="Player B" selected={b} onSelect={p => { setB(p); setReply(''); setVA(null); setVB(null); }} onClear={() => { setB(null); setReply(''); setVA(null); setVB(null); }} />
       </div>
-      {a && b && !reply && <ActionBtn onClick={analyze} loading={loading}>{loading ? 'Asking Walter…' : "Get Walter's Pick"}</ActionBtn>}
-      <WalterResponse text={reply} loading={loading} />
+      {a && b && !reply && <ActionBtn onClick={analyze} loading={loading}>{loading ? 'Asking Sharp AI…' : "Get Sharp AI's Pick"}</ActionBtn>}
+      <Sharp AIResponse text={reply} loading={loading} />
       {reply && <button onClick={reset} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, color: '#6B6B8A', fontSize: 13, fontWeight: 700, padding: '10px 20px', cursor: 'pointer', alignSelf: 'flex-start' }}>New Comparison</button>}
       {limitHit && <LimitBanner />}
     </div>
@@ -400,7 +400,7 @@ function TradeTab() {
     const gStr = giveList.map(p => `${p.name} (${p.position}, ${p.team}${p.injuryStatus ? `, ${p.injuryStatus}` : ''})`).join(' + ');
     const rStr = receiveList.map(p => `${p.name} (${p.position}, ${p.team}${p.injuryStatus ? `, ${p.injuryStatus}` : ''})`).join(' + ');
     const msg = `Evaluate this trade: I give ${gStr} and receive ${rStr}.${need ? ` My team needs: ${need}.` : ''} Give me a trade grade (A through F) and your reasoning.`;
-    await askWalter(msg, { setLoading, setReply, setLimitHit, setUsageRemaining });
+    await askSharp AI(msg, { setLoading, setReply, setLimitHit, setUsageRemaining });
   }
 
   function reset() { setGive([null, null]); setReceive([null, null]); setNeed(''); setReply(''); }
@@ -440,7 +440,7 @@ function TradeTab() {
           </div>
         </div>
       )}
-      <WalterResponse text={reply} loading={loading} />
+      <Sharp AIResponse text={reply} loading={loading} />
       {reply && <button onClick={reset} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, color: '#6B6B8A', fontSize: 13, fontWeight: 700, padding: '10px 20px', cursor: 'pointer', alignSelf: 'flex-start' }}>New Trade</button>}
       {limitHit && <LimitBanner />}
     </div>
@@ -475,7 +475,7 @@ function WaiverTab() {
     const sub = injured ? `${injured.name} (${injured.team}) is injured/on bye` : `My ${pos} is injured or on bye`;
     const injStatus = injured?.injuryStatus ? ` Status: ${injured.injuryStatus}.` : '';
     const msg = `${sub}.${injStatus} Give me the top 3-4 best available waiver wire pickups at ${pos} for a ${format} league. Lead with the top pickup and give brief reasons for each.`;
-    await askWalter(msg, { setLoading, setReply, setLimitHit, setUsageRemaining });
+    await askSharp AI(msg, { setLoading, setReply, setLimitHit, setUsageRemaining });
   }
 
   return (
@@ -538,7 +538,7 @@ function WaiverTab() {
       <PlayerSearch label="Who's injured or on bye? (optional)" placeholder="Search player…" selected={injured} onSelect={p => { setInjured(p); setReply(''); }} onClear={() => { setInjured(null); setReply(''); }} />
 
       <ActionBtn onClick={find} loading={loading}>{loading ? 'Finding Pickups…' : `Find Best ${pos} Waiver Pickups`}</ActionBtn>
-      <WalterResponse text={reply} loading={loading} />
+      <Sharp AIResponse text={reply} loading={loading} />
       {limitHit && <LimitBanner />}
     </div>
   );
@@ -579,7 +579,7 @@ function LineupTab() {
     }).filter(Boolean).join('\n');
 
     const msg = `Optimize my fantasy lineup for ${week ? `Week ${week}` : 'this week'} in a ${format} league.\n\nMy available players:\n${rosterStr}\n\nTell me the optimal starting lineup, who to sit, and why.`;
-    await askWalter(msg, { setLoading, setReply, setLimitHit, setUsageRemaining });
+    await askSharp AI(msg, { setLoading, setReply, setLimitHit, setUsageRemaining });
   }
 
   return (
@@ -611,7 +611,7 @@ function LineupTab() {
       </div>
 
       {canOptimize && !reply && <ActionBtn onClick={optimize} loading={loading}>{loading ? 'Optimizing…' : 'Optimize My Lineup'}</ActionBtn>}
-      <WalterResponse text={reply} loading={loading} />
+      <Sharp AIResponse text={reply} loading={loading} />
       {reply && <button onClick={() => setReply('')} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, color: '#6B6B8A', fontSize: 13, fontWeight: 700, padding: '10px 20px', cursor: 'pointer', alignSelf: 'flex-start' }}>Re-Optimize</button>}
       {limitHit && <LimitBanner />}
     </div>
@@ -638,7 +638,7 @@ export default function FantasyAssistant({ activeTab = 'startsit', tier }) {
           <div>
             <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, letterSpacing: '-0.04em', color: '#F0F0FF' }}>Fantasy Assistant</h1>
             <div style={{ fontSize: 11, color: '#6C63FF', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: 1 }}>
-              Walter · AI Fantasy Analyst{CURRENT_WEEK ? ` · Week ${CURRENT_WEEK}` : ' · Offseason'}
+              Sharp AI · AI Fantasy Analyst{CURRENT_WEEK ? ` · Week ${CURRENT_WEEK}` : ' · Offseason'}
             </div>
           </div>
         </div>
