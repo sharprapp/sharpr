@@ -73,18 +73,27 @@ function useDebounce(val, ms) {
 // ── Player Search ─────────────────────────────────────────────────────────────
 function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, onSelect, onClear }) {
   const [q, setQ] = useState('');
-  const [results, setResults] = useState([]);
+  const [apiResults, setApiResults] = useState([]);
   const [focused, setFocused] = useState(false);
   const [busy, setBusy] = useState(false);
-  const dq = useDebounce(q, 150);
+  const dq = useDebounce(q, 200);
   const ref = useRef(null);
 
+  // Instant client-side filter against popular list
+  const localHits = q.length >= 2
+    ? POPULAR_PLAYERS.filter(p => p.name.toLowerCase().includes(q.toLowerCase()))
+    : [];
+
+  // Hit backend only if query not satisfied by local hits
   useEffect(() => {
-    if (dq.length < 2) { setResults([]); setBusy(false); return; }
+    if (dq.length < 2) { setApiResults([]); setBusy(false); return; }
+    if (POPULAR_PLAYERS.filter(p => p.name.toLowerCase().includes(dq.toLowerCase())).length >= 5) {
+      setApiResults([]); setBusy(false); return;
+    }
     setBusy(true);
     api.get(`/api/fantasy/players?q=${encodeURIComponent(dq)}`)
-      .then(r => setResults(r.data.players || []))
-      .catch(() => setResults([]))
+      .then(r => setApiResults(r.data.players || []))
+      .catch(() => setApiResults([]))
       .finally(() => setBusy(false));
   }, [dq]);
 
@@ -94,9 +103,13 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  // What to show in dropdown
-  const showPopular = focused && q.length < 2 && results.length === 0;
-  const displayList = showPopular ? POPULAR_PLAYERS : results;
+  // Merge: local hits first, then API results not already in local
+  const localIds = new Set(localHits.map(p => p.id));
+  const merged = [...localHits, ...apiResults.filter(p => !localIds.has(p.id))].slice(0, 12);
+
+  const showPopular = focused && q.length < 2;
+  const sortedPopular = [...POPULAR_PLAYERS].sort((a, b) => a.name.localeCompare(b.name));
+  const displayList = showPopular ? sortedPopular : merged;
   const showDropdown = focused && (busy || displayList.length > 0);
 
   if (selected) return <PlayerCard player={selected} onClear={onClear} />;
@@ -107,7 +120,8 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
       <input
         value={q}
         onChange={e => setQ(e.target.value)}
-        onFocus={() => setFocused(true)}
+        onFocus={e => { setFocused(true); e.target.style.borderColor = '#6C63FF'; }}
+        onBlur={e => { e.target.style.borderColor = 'rgba(108,99,255,0.25)'; }}
         placeholder={placeholder}
         style={{
           width: '100%', boxSizing: 'border-box',
@@ -115,8 +129,6 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
           borderRadius: 10, padding: '10px 14px', color: '#F0F0FF', fontSize: 14, outline: 'none',
           transition: 'border-color 0.15s',
         }}
-        onFocus={e => { e.target.style.borderColor = '#6C63FF'; }}
-        onBlur={e => { e.target.style.borderColor = 'rgba(108,99,255,0.25)'; }}
       />
       {showDropdown && (
         <div style={{
@@ -127,14 +139,14 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
           maxHeight: 320, overflowY: 'auto',
         }}>
           {showPopular && (
-            <div style={{ padding: '7px 14px 4px', fontSize: 10, fontWeight: 700, color: '#2a3a5a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Top Players
+            <div style={{ padding: '7px 14px 4px', fontSize: 10, fontWeight: 700, color: '#6B6B8A', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Players A–Z · type to search more
             </div>
           )}
           {busy && <div style={{ padding: '12px 14px', color: '#6B6B8A', fontSize: 13 }}>Searching…</div>}
           {displayList.map(p => (
             <button key={p.id}
-              onClick={() => { onSelect(p); setQ(''); setFocused(false); setResults([]); }}
+              onClick={() => { onSelect(p); setQ(''); setFocused(false); setApiResults([]); }}
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '9px 14px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.1)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}

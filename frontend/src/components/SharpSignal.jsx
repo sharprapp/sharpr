@@ -145,12 +145,18 @@ export default function SharpSignal({ userPlan }) {
                     {sig.bookOdds != null && <div style={{ fontSize: 11, color: '#4E4E63', marginTop: 2 }}>{fmtOdds(sig.bookOdds || sig.bookHomeML)}</div>}
                   </div>
                 </div>
-                {/* Recommendation box */}
-                <div style={{ background: polyHigher ? 'rgba(0,229,180,0.08)' : 'rgba(255,69,96,0.08)', border: `1px solid ${polyHigher ? 'rgba(0,229,180,0.25)' : 'rgba(255,69,96,0.25)'}`, borderRadius: 10, padding: '10px 14px', marginBottom: 12 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: edgeColor }}>
+                {/* THE PICK */}
+                <div style={{ background: polyHigher ? 'rgba(0,229,180,0.1)' : 'rgba(108,99,255,0.1)', border: `2px solid ${edgeColor}`, borderRadius: 12, padding: '14px 16px', marginBottom: 12 }}>
+                  <div style={{ fontSize: 9, color: edgeColor, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 800, marginBottom: 6 }}>The Pick</div>
+                  <div style={{ fontSize: 17, fontWeight: 900, color: edgeColor, letterSpacing: '-0.03em', marginBottom: 4 }}>
                     {polyHigher
-                      ? `Polymarket prices higher than ${bookName} — market may be overvaluing this outcome`
-                      : `${bookName} implies higher probability than Polymarket — market may be undervaluing this outcome`}
+                      ? `✅ Back YES at ${bookName}${sig.bookOdds != null ? ` (${fmtOdds(sig.bookOdds || sig.bookHomeML)})` : ''}`
+                      : `✅ Buy YES on Polymarket at ${sig.polymarket_prob || sig.polyYesProb}¢`}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#6B6B8A', lineHeight: 1.5 }}>
+                    {polyHigher
+                      ? `Polymarket (${sig.polymarket_prob || sig.polyYesProb}%) is pricing this ${sig.edge}% higher than ${bookName} (${sig.book_prob || sig.bookHomeProb}%) — sportsbook is undervaluing the outcome. Edge is at the book.`
+                      : `${bookName} (${sig.book_prob || sig.bookHomeProb}%) is pricing this ${Math.abs(sig.edge)}% higher than Polymarket (${sig.polymarket_prob || sig.polyYesProb}%) — Polymarket is undervaluing the outcome. Edge is on Poly YES.`}
                   </div>
                 </div>
                 {/* Footer */}
