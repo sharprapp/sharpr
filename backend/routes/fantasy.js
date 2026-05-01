@@ -85,6 +85,19 @@ async function espnSearch(q) {
   });
 }
 
+// ── GET /api/fantasy/browse ──────────────────────────────────────────────────
+// Returns all active skill-position players A-Z for the dropdown
+router.get('/browse', requireAuth, async (req, res) => {
+  try {
+    const players = await getSleeperPlayers();
+    const sorted = [...players].sort((a, b) => a.name.localeCompare(b.name));
+    res.json({ players: sorted });
+  } catch (err) {
+    console.error('[fantasy] browse error:', err.message);
+    res.status(500).json({ error: 'Browse failed', players: [] });
+  }
+});
+
 // ── GET /api/fantasy/players?q= ──────────────────────────────────────────────
 // ESPN is primary (fast, reliable). Sleeper cache used only if already warm.
 router.get('/players', requireAuth, async (req, res) => {

@@ -4,29 +4,23 @@ import api from '../lib/api';
 
 const FREE_LIMIT = 5;
 
-// Popular players shown on focus before typing (Sleeper IDs → Sleeper CDN headshots)
-const POPULAR_PLAYERS = [
-  { id: '4046',  name: 'Patrick Mahomes',    position: 'QB', team: 'KC'  },
-  { id: '4984',  name: 'Josh Allen',          position: 'QB', team: 'BUF' },
-  { id: '4272',  name: 'Lamar Jackson',       position: 'QB', team: 'BAL' },
-  { id: '5850',  name: 'Jalen Hurts',         position: 'QB', team: 'PHI' },
-  { id: '2449',  name: 'Dak Prescott',        position: 'QB', team: 'DAL' },
-  { id: '4034',  name: 'Christian McCaffrey', position: 'RB', team: 'SF'  },
-  { id: '4988',  name: 'Saquon Barkley',      position: 'RB', team: 'PHI' },
-  { id: '9753',  name: 'Bijan Robinson',      position: 'RB', team: 'ATL' },
-  { id: '7528',  name: 'Jonathan Taylor',     position: 'RB', team: 'IND' },
-  { id: '8137',  name: 'Breece Hall',         position: 'RB', team: 'NYJ' },
-  { id: '6794',  name: 'Justin Jefferson',    position: 'WR', team: 'MIN' },
-  { id: '4374',  name: 'Tyreek Hill',         position: 'WR', team: 'MIA' },
-  { id: '7561',  name: 'CeeDee Lamb',         position: 'WR', team: 'DAL' },
-  { id: '7578',  name: 'Amon-Ra St. Brown',   position: 'WR', team: 'DET' },
-  { id: '6904',  name: 'DK Metcalf',          position: 'WR', team: 'SEA' },
-  { id: '6786',  name: 'Deebo Samuel',        position: 'WR', team: 'SF'  },
-  { id: '2409',  name: 'Travis Kelce',        position: 'TE', team: 'KC'  },
-  { id: '8205',  name: 'Sam LaPorta',         position: 'TE', team: 'DET' },
-  { id: '5045',  name: 'Nick Chubb',          position: 'RB', team: 'CLE' },
-  { id: '3294',  name: 'Davante Adams',       position: 'WR', team: 'LV'  },
-].map(p => ({ ...p, injuryStatus: null, headshot: `https://sleepercdn.com/content/nfl/players/${p.id}.jpg` }));
+// Global player cache — loaded once on first mount, shared across all PlayerSearch instances
+let _allPlayers = [];
+let _allPlayersLoaded = false;
+let _allPlayersPromise = null;
+
+async function loadAllPlayers() {
+  if (_allPlayersLoaded) return _allPlayers;
+  if (_allPlayersPromise) return _allPlayersPromise;
+  _allPlayersPromise = api.get('/api/fantasy/browse')
+    .then(r => {
+      _allPlayers = r.data.players || [];
+      _allPlayersLoaded = true;
+      return _allPlayers;
+    })
+    .catch(() => { _allPlayersLoaded = true; return []; });
+  return _allPlayersPromise;
+}
 
 // Current NFL season — offseason-aware
 const NFL_SEASON = (() => {
@@ -73,29 +67,16 @@ function useDebounce(val, ms) {
 // ── Player Search ─────────────────────────────────────────────────────────────
 function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, onSelect, onClear }) {
   const [q, setQ] = useState('');
-  const [apiResults, setApiResults] = useState([]);
+  const [allPlayers, setAllPlayers] = useState(_allPlayers);
   const [focused, setFocused] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const dq = useDebounce(q, 200);
+  const dq = useDebounce(q, 150);
   const ref = useRef(null);
 
-  // Instant client-side filter against popular list
-  const localHits = q.length >= 2
-    ? POPULAR_PLAYERS.filter(p => p.name.toLowerCase().includes(q.toLowerCase()))
-    : [];
-
-  // Hit backend only if query not satisfied by local hits
+  // Load full player list on mount (singleton fetch)
   useEffect(() => {
-    if (dq.length < 2) { setApiResults([]); setBusy(false); return; }
-    if (POPULAR_PLAYERS.filter(p => p.name.toLowerCase().includes(dq.toLowerCase())).length >= 5) {
-      setApiResults([]); setBusy(false); return;
-    }
-    setBusy(true);
-    api.get(`/api/fantasy/players?q=${encodeURIComponent(dq)}`)
-      .then(r => setApiResults(r.data.players || []))
-      .catch(() => setApiResults([]))
-      .finally(() => setBusy(false));
-  }, [dq]);
+    if (_allPlayersLoaded) { setAllPlayers(_allPlayers); return; }
+    loadAllPlayers().then(players => setAllPlayers(players));
+  }, []);
 
   useEffect(() => {
     function h(e) { if (ref.current && !ref.current.contains(e.target)) setFocused(false); }
@@ -103,14 +84,12 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
-  // Merge: local hits first, then API results not already in local
-  const localIds = new Set(localHits.map(p => p.id));
-  const merged = [...localHits, ...apiResults.filter(p => !localIds.has(p.id))].slice(0, 12);
+  const lo = dq.toLowerCase();
+  const filtered = dq.length >= 1
+    ? allPlayers.filter(p => p.name.toLowerCase().includes(lo)).slice(0, 20)
+    : allPlayers; // full A-Z list when no query
 
-  const showPopular = focused && q.length < 2;
-  const sortedPopular = [...POPULAR_PLAYERS].sort((a, b) => a.name.localeCompare(b.name));
-  const displayList = showPopular ? sortedPopular : merged;
-  const showDropdown = focused && (busy || displayList.length > 0);
+  const showDropdown = focused && allPlayers.length > 0;
 
   if (selected) return <PlayerCard player={selected} onClear={onClear} />;
 
@@ -134,19 +113,16 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
         <div style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
           background: '#0D0D1A', border: '1px solid rgba(108,99,255,0.2)',
-          borderRadius: 12, zIndex: 100, overflow: 'hidden',
+          borderRadius: 12, zIndex: 100,
           boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-          maxHeight: 320, overflowY: 'auto',
+          maxHeight: 340, overflowY: 'auto',
         }}>
-          {showPopular && (
-            <div style={{ padding: '7px 14px 4px', fontSize: 10, fontWeight: 700, color: '#6B6B8A', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Players A–Z · type to search more
-            </div>
-          )}
-          {busy && <div style={{ padding: '12px 14px', color: '#6B6B8A', fontSize: 13 }}>Searching…</div>}
-          {displayList.map(p => (
+          <div style={{ padding: '7px 14px 4px', fontSize: 10, fontWeight: 700, color: '#6B6B8A', letterSpacing: '0.06em', textTransform: 'uppercase', position: 'sticky', top: 0, background: '#0D0D1A', zIndex: 1 }}>
+            {dq.length >= 1 ? `${filtered.length} results` : `All Players A–Z · ${allPlayers.length} total`}
+          </div>
+          {filtered.map(p => (
             <button key={p.id}
-              onClick={() => { onSelect(p); setQ(''); setFocused(false); setApiResults([]); }}
+              onClick={() => { onSelect(p); setQ(''); setFocused(false); }}
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '9px 14px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.1)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
