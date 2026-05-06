@@ -46,7 +46,7 @@ function useCounter(targetPos, duration = 2000, trigger = true, decimals = 0) {
    COMPONENTS
    ========================================================= */
 function FadeUp({ children, delay = 0, className = "" }) {
-  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true, threshold: 0.1 });
+  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true, threshold: 0 });
   return (
     <div ref={ref} className={className} style={{
       opacity: isVisible ? 1 : 0,
@@ -59,7 +59,7 @@ function FadeUp({ children, delay = 0, className = "" }) {
 }
 
 function SlideInRight({ children, delay = 0, className = "" }) {
-  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true, threshold: 0.1 });
+  const [ref, isVisible] = useIntersectionObserver({ triggerOnce: true, threshold: 0 });
   return (
     <div ref={ref} className={className} style={{
       opacity: isVisible ? 1 : 0,
@@ -447,7 +447,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-8">
           <div className="flex flex-col gap-2">
             <Logo />
-            <span className="text-xs font-bold text-[#6B6B8A] tracking-wider uppercase mt-4">© 2024 Sharpr. The Edge Lives Here.</span>
+            <span className="text-xs font-bold text-[#6B6B8A] tracking-wider uppercase mt-4">© 2026 Sharpr. The Edge Lives Here.</span>
           </div>
           <div className="flex gap-8">
             <a href="#" className="font-bold text-sm text-[#6B6B8A] hover:text-[#00E5B4] transition-colors hover:drop-shadow-[0_0_10px_rgba(0,229,180,0.5)]">Privacy</a>

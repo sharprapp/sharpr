@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
 import Logo from '../components/Logo';
 
 export default function Login() {
@@ -10,6 +11,18 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resendSent, setResendSent] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const isUnconfirmed = error.toLowerCase().includes('not confirmed') || error.toLowerCase().includes('email not confirmed');
+
+  async function handleResend() {
+    setResendLoading(true);
+    try {
+      await supabase.auth.resend({ type: 'signup', email });
+      setResendSent(true);
+    } catch {}
+    setResendLoading(false);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -62,7 +75,19 @@ export default function Login() {
               onBlur={e => { e.target.style.borderColor = 'rgba(108,99,255,0.2)'; e.target.style.boxShadow = 'none'; e.target.style.background = 'rgba(10,10,15,0.6)'; }}
               required
             />
-            {error && <div className="text-sm font-bold text-[#FF4560] drop-shadow-[0_0_8px_rgba(255,69,96,0.5)]">{error}</div>}
+            {error && (
+              <div className="flex flex-col gap-2">
+                <div className="text-sm font-bold text-[#FF4560] drop-shadow-[0_0_8px_rgba(255,69,96,0.5)]">{error}</div>
+                {isUnconfirmed && !resendSent && (
+                  <button type="button" onClick={handleResend} disabled={resendLoading}
+                    className="text-xs font-bold underline text-left disabled:opacity-50"
+                    style={{ color: '#00E5B4', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                    {resendLoading ? 'Sending…' : 'Resend confirmation email →'}
+                  </button>
+                )}
+                {resendSent && <div className="text-xs font-bold" style={{ color: '#00E5B4' }}>Confirmation email sent — check your inbox</div>}
+              </div>
+            )}
             
             <button
               type="submit" disabled={loading}

@@ -102,9 +102,15 @@ export function AuthProvider({ children }) {
     if (error) throw error;
   }
 
-  async function signUp(email, password) {
-    const { error } = await supabase.auth.signUp({ email, password });
+  async function signUp(email, password, displayName = '') {
+    const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
+    if (displayName.trim() && data.user) {
+      try {
+        await supabase.from('profiles').upsert({ id: data.user.id, display_name: displayName.trim() });
+        setDisplayName(displayName.trim());
+      } catch {}
+    }
   }
 
   async function signOut() {

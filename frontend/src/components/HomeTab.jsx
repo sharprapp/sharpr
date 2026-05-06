@@ -73,9 +73,9 @@ export default function HomeTab({ onSwitchTab }) {
     let i = 0;
     setTypedName('');
     const timer = setInterval(() => {
-      setTypedName(fullText.slice(0, i));
       i++;
-      if (i > fullText.length) clearInterval(timer);
+      setTypedName(fullText.slice(0, i));
+      if (i >= fullText.length) clearInterval(timer);
     }, 50);
     return () => clearInterval(timer);
   }, [displayName]);

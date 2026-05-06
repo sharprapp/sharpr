@@ -7,6 +7,7 @@ import posthog from 'posthog-js';
 export default function Register() {
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -18,7 +19,7 @@ export default function Register() {
     if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
     setError(''); setLoading(true);
     try {
-      await signUp(email, password);
+      await signUp(email, password, displayName);
       posthog.capture('account_created', { tier: 'free' });
       navigate('/dashboard');
     } catch (err) {
@@ -49,6 +50,14 @@ export default function Register() {
           <div className="text-sm mb-8 font-medium" style={{ color: '#6B6B8A' }}>Free to start. Upgrade when you're ready.</div>
           
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <input
+              type="text" placeholder="Display name (optional)" value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              style={inp}
+              onFocus={e => { e.target.style.borderColor = '#6C63FF'; e.target.style.boxShadow = '0 0 15px rgba(108,99,255,0.2)'; e.target.style.background = 'rgba(17,17,32,0.9)'; }}
+              onBlur={e => { e.target.style.borderColor = 'rgba(108,99,255,0.2)'; e.target.style.boxShadow = 'none'; e.target.style.background = 'rgba(10,10,15,0.6)'; }}
+              maxLength={50}
+            />
             <input
               type="email" placeholder="Email" value={email}
               onChange={e => setEmail(e.target.value)}

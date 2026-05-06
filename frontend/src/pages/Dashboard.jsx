@@ -2439,6 +2439,10 @@ function AIResearchTab({ prefill, onPrefillConsumed }) {
                   strong: ({ children }) => <strong className="text-white font-black">{children}</strong>,
                   p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
                   ul: ({ children }) => <ul className="space-y-2 mb-4 list-disc pl-5">{children}</ul>,
+                  ol: ({ children }) => <ol className="space-y-2 mb-4 list-decimal pl-5">{children}</ol>,
+                  li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                  h2: ({ children }) => <h2 className="text-white font-black text-base mb-2 mt-4">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-white font-bold text-sm mb-2 mt-3">{children}</h3>,
                   code: ({ children }) => <code className="px-1.5 py-0.5 rounded bg-white/5 text-[#00E5B4] text-xs">{children}</code>
                 }}>{m.content}</ReactMarkdown>
               </div>

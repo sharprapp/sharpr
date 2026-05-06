@@ -31,7 +31,12 @@ export default function SharpSignal({ userPlan }) {
     (s.type === 'polymarket' || Math.abs(s.edge || 0) >= 5) &&
     !JUNK_SIGNAL_RE.test(s.event || '') && !JUNK_SIGNAL_RE.test(s.title || '')
   );
-  const filtered = qualitySignals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? s.confidence === 'HIGH' : true);
+  // Downgrade HIGH CONFIDENCE for sports signals with negative edge — they're opportunities but misleading as "high confidence"
+  function effectiveConfidence(s) {
+    if (s.confidence === 'HIGH' && s.type === 'sports' && s.edge != null && s.edge < 0) return 'MEDIUM';
+    return s.confidence;
+  }
+  const filtered = qualitySignals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? effectiveConfidence(s) === 'HIGH' : true);
   const fmtOdds = n => n == null ? '--' : n > 0 ? '+' + n : '' + n;
   const timeAgo = d => { if (!d) return ''; const s = Math.floor((Date.now() - d.getTime()) / 1000); return s < 60 ? s + 's ago' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; };
   const confStyle = c => c === 'HIGH' ? { bg: 'rgba(34,197,94,0.15)', color: '#0A0A0F', border: 'rgba(34,197,94,0.3)' } : c === 'MEDIUM' ? { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' } : { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', border: 'rgba(148,163,184,0.2)' };
@@ -107,7 +112,8 @@ export default function SharpSignal({ userPlan }) {
       {isPro && !loading && !error && filtered.length === 0 && <div style={{ ...gc, padding: 48, textAlign: 'center' }}><div style={{ fontSize: 40, marginBottom: 14 }}>📡</div><div style={{ fontSize: 18, fontWeight: 800, color: '#f0f4ff', marginBottom: 10 }}>Signals are being monitored</div><div style={{ fontSize: 13, color: '#6a7a9a', maxWidth: 440, margin: '0 auto', lineHeight: 1.7 }}>Quality signals appear here when Polymarket and sportsbook odds diverge by 8%+ on markets with $75K+ volume. Check back throughout the day as odds update.</div></div>}
 
       {isPro && !loading && filtered.map(sig => {
-        const cs = confStyle(sig.confidence);
+        const conf = effectiveConfidence(sig);
+        const cs = confStyle(conf);
         return (
           <div key={sig.id} style={{ ...gc, padding: 20, marginBottom: 12, transition: 'all 0.2s' }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.3)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
@@ -115,7 +121,7 @@ export default function SharpSignal({ userPlan }) {
             {/* Badges */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff' }}>{sig.sport === 'MULTI' ? 'PREDICTION MARKET' : sig.sport}</span>
-              <span style={{ background: cs.bg, border: `1px solid ${cs.border}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: cs.color }}>{sig.confidence === 'HIGH' ? 'HIGH CONFIDENCE' : sig.confidence === 'MEDIUM' ? 'MEDIUM CONFIDENCE' : sig.confidence}</span>
+              <span style={{ background: cs.bg, border: `1px solid ${cs.border}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: cs.color }}>{conf === 'HIGH' ? 'HIGH CONFIDENCE' : conf === 'MEDIUM' ? 'MEDIUM CONFIDENCE' : conf}</span>
               {sig.edge != null && <span style={{ background: Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)', border: `1px solid ${Math.abs(sig.edge) > 10 ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}`, borderRadius: 6, padding: '2px 8px', fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', color: Math.abs(sig.edge) > 10 ? '#0A0A0F' : '#fbbf24' }}>{sig.edge > 0 ? '+' : ''}{sig.edge}% EDGE</span>}
             </div>
             <div style={{ fontSize: 15, fontWeight: 800, letterSpacing: '-0.03em', color: '#f0f4ff', marginBottom: 4 }}>{sig.event || sig.polyMarket}</div>

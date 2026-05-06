@@ -43,6 +43,7 @@ export default function Settings() {
   const [searchParams]          = useSearchParams();
   const [subStatus, setSubStatus] = useState(null);
   const [loading, setLoading]   = useState(false);
+  const [portalError, setPortalError] = useState('');
   const upgraded = searchParams.get('upgraded') === 'true';
   const canceled = searchParams.get('canceled') === 'true';
   const [nameSaving, setNameSaving] = useState(false);
@@ -71,8 +72,14 @@ export default function Settings() {
 
   async function handlePortal() {
     setLoading(true);
-    try { const { data } = await api.post('/api/stripe/portal'); window.location.href = data.url; }
-    catch { setLoading(false); }
+    setPortalError('');
+    try {
+      const { data } = await api.post('/api/stripe/portal');
+      window.location.href = data.url;
+    } catch(err) {
+      setPortalError(err.response?.data?.error || 'Could not open billing portal — please email support@sharprapp.com');
+      setLoading(false);
+    }
   }
 
   function savePrefs() {
@@ -105,7 +112,7 @@ export default function Settings() {
 
         {/* Banners */}
         {upgraded && (
-          <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#0A0A0F', fontWeight: 500 }}>
+          <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 12, padding: '12px 16px', fontSize: 14, color: '#00E5B4', fontWeight: 500 }}>
             You're now on Pro. Welcome!
           </div>
         )}
@@ -140,7 +147,7 @@ export default function Settings() {
                 </button>
               </div>
               {nameError && <div style={{ fontSize: 12, color: '#FF4560', marginTop: 6 }}>{nameError}</div>}
-              {nameSaved && <div style={{ fontSize: 12, color: '#0A0A0F', marginTop: 6 }}>Display name saved</div>}
+              {nameSaved && <div style={{ fontSize: 12, color: '#00E5B4', marginTop: 6 }}>Display name saved</div>}
             </div>
             <div>
               <label style={LABEL}>Email</label>
@@ -149,7 +156,7 @@ export default function Settings() {
             <div>
               <label style={LABEL}>Password</label>
               {resetSent ? (
-                <div style={{ fontSize: 13, color: '#0A0A0F' }}>Password reset email sent — check your inbox</div>
+                <div style={{ fontSize: 13, color: '#00E5B4' }}>Password reset email sent — check your inbox</div>
               ) : (
                 <button onClick={async () => {
                   await supabase.auth.resetPasswordForEmail(user?.email, { redirectTo: window.location.origin + '/settings' });
@@ -260,9 +267,10 @@ export default function Settings() {
                 </div>
               )}
               <button onClick={handlePortal} disabled={loading}
-                className="glass-btn" style={{ width: '100%', padding: '12px', fontSize: 14, borderRadius: '12px' }}>
+                style={{ width: '100%', padding: '12px', fontSize: 14, borderRadius: '12px', background: '#1A1A24', border: '1px solid rgba(108,99,255,0.3)', color: '#F0F0FF', cursor: 'pointer', fontWeight: 700 }}>
                 {loading ? 'Loading…' : 'Manage billing / cancel'}
               </button>
+              {portalError && <div style={{ fontSize: 12, color: '#FF4560', marginTop: 8 }}>{portalError}</div>}
             </div>
           )}
 
@@ -288,7 +296,7 @@ export default function Settings() {
                   <tr key={f} style={{ borderBottom: '1px solid rgba(30,42,74,0.6)' }}>
                     <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{f}</td>
                     <td style={{ padding: '10px 14px', textAlign: 'center', color: '#6B6B8A' }}>{fr}</td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em' }}>{pr}</td>
+                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#F0F0FF', fontWeight: 800, letterSpacing: '-0.02em' }}>{pr}</td>
                   </tr>
                 ))}
               </tbody>
@@ -352,7 +360,7 @@ export default function Settings() {
 
         {/* Save button */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
-          {saved && <span style={{ fontSize: 13, color: '#0A0A0F', alignSelf: 'center' }}>Saved!</span>}
+          {saved && <span style={{ fontSize: 13, color: '#00E5B4', alignSelf: 'center' }}>Saved!</span>}
           <button onClick={savePrefs} className="glass-btn-blue" style={{ padding: '10px 28px', fontSize: 14, borderRadius: '12px' }}>
             Save preferences
           </button>
