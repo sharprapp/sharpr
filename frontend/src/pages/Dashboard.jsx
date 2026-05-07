@@ -1050,9 +1050,11 @@ function PolymarketTab({ tier }) {
   const visible = isPro ? filtered.slice(0, visibleCount) : filtered.slice(0, Math.min(visibleCount, maxFree));
 
   const PM_SUBTABS = [
-    { id: 'markets',   label: '📊 Markets' },
-    { id: 'portfolio', label: '💼 Portfolio' },
-    { id: 'alerts',    label: '🔔 Alerts' },
+    { id: 'markets',     label: '📊 Markets' },
+    { id: 'undervalued', label: '📈 Undervalued' },
+    { id: 'overvalued',  label: '📉 Overvalued' },
+    { id: 'portfolio',   label: '💼 Portfolio' },
+    { id: 'alerts',      label: '🔔 Alerts' },
   ];
 
   return (
@@ -1070,6 +1072,8 @@ function PolymarketTab({ tier }) {
 
       {pmTab === 'portfolio' && <PortfolioPanel />}
       {pmTab === 'alerts'    && <AlertsPanel />}
+      {pmTab === 'undervalued' && <UndervaluedMarketsPanel markets={markets} loading={loading} onSelect={setSelectedMarket} />}
+      {pmTab === 'overvalued'  && <OvervaluedMarketsPanel  markets={markets} loading={loading} onSelect={setSelectedMarket} />}
 
       {pmTab === 'markets' && (
         <div className="flex gap-5">
@@ -1184,6 +1188,143 @@ function PolymarketTab({ tier }) {
         </div>
       )}
       {selectedMarket && <MarketDetailModal market={selectedMarket} onClose={() => setSelectedMarket(null)} userPlan={tier} />}
+    </div>
+  );
+}
+
+function UndervaluedMarketsPanel({ markets, loading, onSelect }) {
+  // Undervalued: YES price ≤ 35%, volume > $100K, closes in > 7 days
+  // High volume at low probability suggests real uncertainty and potential mispricing
+  const candidates = useMemo(() =>
+    markets
+      .filter(m => {
+        const prob = m.yes ?? m.lastTrade ?? 0;
+        const vol = m.volume ?? 0;
+        const days = m.daysToClose ?? m.endDate ? Math.ceil((new Date(m.endDate) - Date.now()) / 86400000) : 30;
+        return prob >= 5 && prob <= 38 && vol >= 80000 && days >= 5;
+      })
+      .sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))
+      .slice(0, 50),
+    [markets]
+  );
+
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 16 };
+
+  if (loading) return <div style={{ color: '#6B6B8A', padding: 40, textAlign: 'center' }}>Loading markets…</div>;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div style={{ ...card, padding: '16px 20px', background: 'rgba(0,229,180,0.05)', borderColor: 'rgba(0,229,180,0.2)' }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#00E5B4', marginBottom: 4 }}>📈 Undervalued Candidates</div>
+        <div style={{ fontSize: 12, color: '#6B6B8A', lineHeight: 1.6 }}>
+          Markets priced at ≤38% YES with $80K+ volume and 5+ days to close. High liquidity at low probability signals genuine uncertainty — these may be underpricing YES outcomes. Always verify the event context before trading.
+        </div>
+        <div style={{ fontSize: 11, color: '#4E4E63', marginTop: 8 }}>{candidates.length} markets matching · sorted by volume</div>
+      </div>
+      {candidates.length === 0 ? (
+        <div style={{ ...card, padding: 40, textAlign: 'center', color: '#6B6B8A' }}>No undervalued candidates found with current data.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {candidates.map((m, i) => {
+            const prob = m.yes ?? m.lastTrade ?? 0;
+            const vol = m.volume ?? 0;
+            const volStr = vol >= 1e6 ? '$' + (vol/1e6).toFixed(1) + 'M' : '$' + (vol/1000).toFixed(0) + 'K';
+            return (
+              <div key={i} onClick={() => onSelect(m)} style={{ ...card, padding: 16, cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,180,0.4)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <div style={{ fontSize: 12, color: '#F0F0FF', fontWeight: 700, marginBottom: 8, lineHeight: 1.4 }}>{m.title}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <span style={{ fontSize: 28, fontWeight: 900, color: '#00E5B4', lineHeight: 1 }}>{prob}%</span>
+                    <span style={{ fontSize: 10, color: '#4E4E63', marginLeft: 4 }}>YES</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#867fff' }}>{volStr}</div>
+                    <div style={{ fontSize: 10, color: '#4E4E63' }}>volume</div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 8, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: prob + '%', background: '#00E5B4', borderRadius: 2 }} />
+                </div>
+                <div style={{ fontSize: 10, color: '#4E4E63', marginTop: 6 }}>
+                  {m.cat || 'Prediction Market'} · {m.category || ''}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OvervaluedMarketsPanel({ markets, loading, onSelect }) {
+  // Overvalued: YES price ≥ 70%, volume > $100K, closes > 14 days away
+  // High probability + far close date means lots of time for reversion — may be overpriced
+  const candidates = useMemo(() =>
+    markets
+      .filter(m => {
+        const prob = m.yes ?? m.lastTrade ?? 0;
+        const vol = m.volume ?? 0;
+        const days = m.daysToClose ?? (m.endDate ? Math.ceil((new Date(m.endDate) - Date.now()) / 86400000) : 0);
+        return prob >= 65 && prob <= 96 && vol >= 80000 && days >= 14;
+      })
+      .sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))
+      .slice(0, 50),
+    [markets]
+  );
+
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 16 };
+
+  if (loading) return <div style={{ color: '#6B6B8A', padding: 40, textAlign: 'center' }}>Loading markets…</div>;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div style={{ ...card, padding: '16px 20px', background: 'rgba(255,69,96,0.05)', borderColor: 'rgba(255,69,96,0.2)' }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#FF4560', marginBottom: 4 }}>📉 Potentially Overvalued</div>
+        <div style={{ fontSize: 12, color: '#6B6B8A', lineHeight: 1.6 }}>
+          Markets priced ≥65% YES with $80K+ volume and 14+ days to close. High confidence with a long runway = lots of time for unexpected events to move the needle against the consensus. Consider buying NO at a discount.
+        </div>
+        <div style={{ fontSize: 11, color: '#4E4E63', marginTop: 8 }}>{candidates.length} markets matching · sorted by volume</div>
+      </div>
+      {candidates.length === 0 ? (
+        <div style={{ ...card, padding: 40, textAlign: 'center', color: '#6B6B8A' }}>No overvalued candidates found with current data.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {candidates.map((m, i) => {
+            const prob = m.yes ?? m.lastTrade ?? 0;
+            const noProb = 100 - prob;
+            const vol = m.volume ?? 0;
+            const volStr = vol >= 1e6 ? '$' + (vol/1e6).toFixed(1) + 'M' : '$' + (vol/1000).toFixed(0) + 'K';
+            return (
+              <div key={i} onClick={() => onSelect(m)} style={{ ...card, padding: 16, cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,69,96,0.4)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}>
+                <div style={{ fontSize: 12, color: '#F0F0FF', fontWeight: 700, marginBottom: 8, lineHeight: 1.4 }}>{m.title}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <span style={{ fontSize: 28, fontWeight: 900, color: '#FF4560', lineHeight: 1 }}>{prob}%</span>
+                    <span style={{ fontSize: 10, color: '#4E4E63', marginLeft: 4 }}>YES · </span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: '#00E5B4' }}>{noProb}%</span>
+                    <span style={{ fontSize: 10, color: '#4E4E63', marginLeft: 4 }}>NO</span>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#867fff' }}>{volStr}</div>
+                    <div style={{ fontSize: 10, color: '#4E4E63' }}>volume</div>
+                  </div>
+                </div>
+                <div style={{ marginTop: 8, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: prob + '%', background: '#FF4560', borderRadius: 2 }} />
+                </div>
+                <div style={{ fontSize: 10, color: '#4E4E63', marginTop: 6 }}>
+                  Buy NO at {noProb}¢ · {m.cat || 'Prediction Market'}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -1378,6 +1519,7 @@ function DayTradingTab({ activeSubTab, tier }) {
   const [form, setForm]       = useState({ ticker:'', direction:'LONG', entry:'', qty:'', pnl:'', setup:'Breakout', status:'open', notes:'', pre_market_notes:'', post_market_notes:'', confidence:'Medium', duration:'Day Trade' });
   const [loading, setLoading] = useState(false);
   const [view, setView]       = useState('calendar');
+  const [imgPreview, setImgPreview] = useState(null);
 
   const [monthGoal,  setMonthGoal]  = useState(() => parseFloat(localStorage.getItem('dt_month_goal')  || '1000'));
   const [dailyLimit, setDailyLimit] = useState(() => parseFloat(localStorage.getItem('dt_daily_limit') || '200'));
@@ -1386,7 +1528,13 @@ function DayTradingTab({ activeSubTab, tier }) {
   useEffect(() => { api.get('/api/trades').then(r => setTrades(r.data)).catch(() => {}); }, []);
 
   function sendPrompt(text) {
-    window.dispatchEvent(new CustomEvent('ai-prefill', { detail: { topic: text, type: 'trading' } }));
+    const summary = trades.slice(0, 25).map(t =>
+      `${t.ticker} ${t.direction} @${t.entry} — ${t.setup} — ${t.status === 'open' ? 'OPEN' : (t.pnl >= 0 ? '+' : '') + '$' + (t.pnl || 0).toFixed(2)} — ${t.confidence} conf — ${t.duration}`
+    ).join('\n');
+    const fullPrompt = summary.length > 0
+      ? `${text}\n\nMy journal (${trades.length} trades):\n${summary}`
+      : text;
+    window.dispatchEvent(new CustomEvent('ai-prefill', { detail: { topic: fullPrompt, type: 'trading' } }));
   }
 
   const now = new Date();
@@ -1562,11 +1710,20 @@ function DayTradingTab({ activeSubTab, tier }) {
                                 {t.status === 'open' ? 'OPEN' : (t.pnl >= 0 ? '+' : '') + '$' + Math.abs(t.pnl).toFixed(2)}
                               </div>
                             </div>
-                            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <label className="cursor-pointer text-[#6B6B8A] hover:text-[#6C63FF]">
-                                📸 <input type="file" className="hidden" onChange={e => { const f = e.target.files?.[0]; if(f) uploadScreenshot(t.id, f); }} />
-                              </label>
-                              <button onClick={() => deleteTrade(t.id)} className="text-[#6B6B8A] hover:text-[#FF4560]">✕</button>
+                            <div className="flex items-center gap-2">
+                              {t.screenshot_url && (
+                                <button onClick={() => setImgPreview(t.screenshot_url)}
+                                  className="w-8 h-8 rounded overflow-hidden border border-[rgba(108,99,255,0.3)] flex-shrink-0 hover:border-[#6C63FF] transition-colors"
+                                  title="View screenshot">
+                                  <img src={t.screenshot_url} alt="screenshot" className="w-full h-full object-cover" />
+                                </button>
+                              )}
+                              <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <label className="cursor-pointer text-[#6B6B8A] hover:text-[#6C63FF]" title="Add screenshot">
+                                  📸 <input type="file" className="hidden" accept="image/*" onChange={e => { const f = e.target.files?.[0]; if(f) uploadScreenshot(t.id, f); }} />
+                                </label>
+                                <button onClick={() => deleteTrade(t.id)} className="text-[#6B6B8A] hover:text-[#FF4560]">✕</button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1577,7 +1734,7 @@ function DayTradingTab({ activeSubTab, tier }) {
               )}
             </div>
 
-            <button onClick={() => sendPrompt('Analyze my day trading journal. Tell me which setups are most profitable, where I leave money on the table, and give me 3 specific improvements.')}
+            <button onClick={() => sendPrompt('Analyze my day trading journal. Tell me which setups are most profitable, where I leave money on the table, and give me 3 specific improvements. Look at patterns in my wins vs losses by setup, direction, confidence level, and duration.')}
               className="text-xs font-black uppercase tracking-widest self-start px-6 py-3 rounded-xl border border-[rgba(108,99,255,0.3)] text-[#6B6B8A] hover:text-[#F0F0FF] hover:border-[#6C63FF] transition-all"
               style={{ background: 'rgba(108,99,255,0.05)' }}>
               Ask AI to review my trading 🧠
@@ -1586,6 +1743,16 @@ function DayTradingTab({ activeSubTab, tier }) {
         )
 }
       </>)}
+
+      {/* Image preview modal */}
+      {imgPreview && (
+        <div onClick={() => setImgPreview(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.9)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, cursor: 'zoom-out' }}>
+          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
+            <img src={imgPreview} alt="Trade screenshot" style={{ maxWidth: '100%', maxHeight: '90vh', borderRadius: 12, boxShadow: '0 0 60px rgba(0,0,0,0.8)' }} />
+            <button onClick={() => setImgPreview(null)} style={{ position: 'absolute', top: -12, right: -12, width: 32, height: 32, borderRadius: '50%', background: '#1A1A24', border: '1px solid rgba(255,255,255,0.1)', color: '#F0F0FF', fontSize: 18, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1601,7 +1768,7 @@ function TradeForm({ form, setForm, loading, onAdd }) {
     <div className="rounded-2xl p-5" style={{background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)'}}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div className="text-xs font-semibold uppercase tracking-wider" style={{color: '#6B6B8A'}}>Quick log</div>
-        {saved && <span style={{ fontSize: 12, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em' }}>Trade logged ✓</span>}
+        {saved && <span style={{ fontSize: 12, color: '#00E5B4', fontWeight: 800, letterSpacing: '-0.02em' }}>Trade logged ✓</span>}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
         {[['ticker','Ticker','text'],['entry','Entry $','number'],['qty','Qty','number'],['pnl','P&L $','number']].map(([k,pl,t]) => (
@@ -1706,12 +1873,35 @@ function AIStrategyAnalyzer({ tier }) {
   const isPro = tier === 'pro' || tier === 'elite';
   const [setup, setSetup] = useState('');
   const [strategy, setStrategy] = useState('Breakout');
+  const [ticker, setTicker] = useState('');
+  const [entryPrice, setEntryPrice] = useState('');
+  const [stopPrice, setStopPrice] = useState('');
+  const [targetPrice, setTargetPrice] = useState('');
+  const [whyTrade, setWhyTrade] = useState('');
+  const [concern, setConcern] = useState('');
   const { text: result, loading, error, stream: startStream } = useAIStream();
 
+  const rrRatio = entryPrice && stopPrice && targetPrice
+    ? (Math.abs(parseFloat(targetPrice) - parseFloat(entryPrice)) / Math.abs(parseFloat(entryPrice) - parseFloat(stopPrice))).toFixed(2)
+    : null;
+
   function analyze() {
-    if (!setup.trim()) return;
+    const hasBasic = ticker.trim() || setup.trim() || whyTrade.trim();
+    if (!hasBasic) return;
+    const context = [
+      ticker && `Ticker: ${ticker.toUpperCase()}`,
+      `Strategy: ${strategy}`,
+      setup && `Setup: ${setup}`,
+      entryPrice && `Entry: $${entryPrice}`,
+      stopPrice && `Stop: $${stopPrice}`,
+      targetPrice && `Target: $${targetPrice}`,
+      rrRatio && `R:R ratio: ${rrRatio}:1`,
+      whyTrade && `Why I'm taking this: ${whyTrade}`,
+      concern && `My concern: ${concern}`,
+    ].filter(Boolean).join('\n');
+
     startStream(
-      `You are a professional trading strategy analyst. Analyze this trade setup:\n\nStrategy type: ${strategy}\nSetup description: ${setup}\n\nProvide analysis in this EXACT format:\n\nVERDICT: STRONG SETUP | NEEDS WORK | AVOID\n\n• Strengths: [what's good about this setup]\n• Weaknesses: [risks and issues]\n• Risk Management: [position sizing, stop placement, R:R assessment]\n• Improvement: [one specific actionable improvement]\n\nBe direct. Max 120 words. This is educational analysis, not financial advice.`,
+      `You are a professional day trading coach. A trader has shared this setup:\n\n${context}\n\nRespond in this EXACT format:\n\nVERDICT: STRONG SETUP | NEEDS WORK | AVOID\n\n**Entry & Timing:** [is the entry logical? what to watch for]\n**Risk Management:** [stop placement quality, R:R assessment, position sizing tip]\n**Edge:** [what makes this setup have edge, or why it lacks it]\n**One Improvement:** [the single most important thing to change or add]\n\nBe direct and specific. Max 140 words. Educational analysis only, not financial advice.`,
       'trading', false
     );
   }
@@ -1735,7 +1925,7 @@ function AIStrategyAnalyzer({ tier }) {
     );
   }
 
-  const verdictColor = result?.includes('STRONG SETUP') ? '#0A0A0F' : result?.includes('AVOID') ? '#FF4560' : result?.includes('NEEDS WORK') ? '#f59e0b' : '#6B6B8A';
+  const verdictColor = result?.includes('STRONG SETUP') ? '#22c55e' : result?.includes('AVOID') ? '#FF4560' : result?.includes('NEEDS WORK') ? '#f59e0b' : '#6B6B8A';
   const verdictMatch = result?.match(/VERDICT:\s*(STRONG SETUP|NEEDS WORK|AVOID)/);
 
   return (
@@ -1747,16 +1937,11 @@ function AIStrategyAnalyzer({ tier }) {
       </div>
 
       <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)' }}>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-3">
-          <div className="sm:col-span-3">
-            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Describe your setup</label>
-            <textarea
-              placeholder="e.g. SPY long at 520 on VWAP reclaim. Previous support at 518, resistance at 523. Volume declining into the pullback. Plan to risk $0.80 for $2.40 target..."
-              value={setup} onChange={e => setSetup(e.target.value)}
-              rows={3}
-              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
-              style={{ ...inpStyle, resize: 'vertical' }} onFocus={inpFocus} onBlur={inpBlur}
-            />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Ticker</label>
+            <input placeholder="SPY" value={ticker} onChange={e => setTicker(e.target.value)}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm uppercase ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
           </div>
           <div>
             <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Strategy</label>
@@ -1766,16 +1951,57 @@ function AIStrategyAnalyzer({ tier }) {
               <option>Trend Follow</option>
               <option>Mean Reversion</option>
               <option>Scalp</option>
+              <option>VWAP Reclaim</option>
+              <option>Gap Fill</option>
+              <option>Support/Resistance</option>
               <option>Custom</option>
             </select>
           </div>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Entry $</label>
+            <input type="number" step="0.01" placeholder="520.00" value={entryPrice} onChange={e => setEntryPrice(e.target.value)}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>
+              Stop $ {rrRatio && <span style={{ color: parseFloat(rrRatio) >= 2 ? '#00E5B4' : '#f59e0b' }}> · R:R {rrRatio}:1</span>}
+            </label>
+            <input type="number" step="0.01" placeholder="518.00" value={stopPrice} onChange={e => setStopPrice(e.target.value)}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Target $ (optional)</label>
+            <input type="number" step="0.01" placeholder="524.00" value={targetPrice} onChange={e => setTargetPrice(e.target.value)}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Setup description (optional)</label>
+            <input placeholder="e.g. VWAP reclaim after gap fill, volume spike" value={setup} onChange={e => setSetup(e.target.value)}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`} style={inpStyle} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
         </div>
-        <button onClick={analyze} disabled={loading || !setup.trim()}
-          className="rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50"
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>Why are you taking this trade?</label>
+            <textarea placeholder="e.g. Clean reclaim of VWAP after failed breakdown, high relative volume, sector leading..."
+              value={whyTrade} onChange={e => setWhyTrade(e.target.value)} rows={2}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
+              style={{ ...inpStyle, resize: 'none' }} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
+          <div>
+            <label className="text-xs font-medium block mb-1.5" style={{ color: '#6B6B8A' }}>What's your biggest concern?</label>
+            <textarea placeholder="e.g. Broad market weakness, stop might be too tight, earnings tomorrow..."
+              value={concern} onChange={e => setConcern(e.target.value)} rows={2}
+              className={`w-full rounded-xl px-3.5 py-2.5 text-sm ${inp}`}
+              style={{ ...inpStyle, resize: 'none' }} onFocus={inpFocus} onBlur={inpBlur} />
+          </div>
+        </div>
+        <button onClick={analyze} disabled={loading || (!ticker.trim() && !setup.trim() && !whyTrade.trim())}
+          className="rounded-xl px-5 py-2.5 text-sm font-black transition-colors disabled:opacity-50"
           style={{ background: '#6C63FF', color: '#fff' }}
-          onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#1d4ed8'; }}
+          onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.background = '#5a52d5'; }}
           onMouseLeave={e => e.currentTarget.style.background = '#6C63FF'}>
-          {loading ? 'Analyzing…' : 'Analyze Setup'}
+          {loading ? 'Analyzing…' : 'Analyze My Setup'}
         </button>
       </div>
 
@@ -1810,7 +2036,7 @@ function AIStrategyAnalyzer({ tier }) {
 function SportsBettingTab({ tier, activeSubTab }) {
   const subTab = activeSubTab || 'journal';
   const [bets, setBets]       = useState([]);
-  const [form, setForm]       = useState({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' });
+  const [form, setForm]       = useState({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings', legs:['',''] });
   const [betSaved, setBetSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [feedFilter, setFeedFilter] = useState(null);
@@ -1871,7 +2097,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
       const { data } = await api.post('/api/bets', {...form, stake: parseFloat(form.stake)});
       setBets([data, ...bets]);
       posthog.capture('bet_logged', { sport: form.sport, type: form.type });
-      setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' });
+      setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings', legs:['',''] });
       setBetSaved(true); setTimeout(() => setBetSaved(false), 2000);
     } catch(e) { alert(e.response?.data?.error || 'Failed'); }
     setLoading(false);
@@ -1965,7 +2191,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
                   </div>
                   <div className="flex gap-3">
                     <button onClick={() => { addBet(); setParsedPreview(null); }} className="flex-1 py-3 rounded-xl bg-[#6C63FF] text-white font-black text-xs tracking-widest hover:bg-[#5b52e6] transition-colors">CONFIRM & LOG</button>
-                    <button onClick={() => { setParsedPreview(null); setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings' }); }} className="px-6 py-3 rounded-xl border border-[rgba(108,99,255,0.2)] text-[#6B6B8A] font-black text-xs tracking-widest">CANCEL</button>
+                    <button onClick={() => { setParsedPreview(null); setForm({ sport:'NBA', type:'Moneyline', match:'', odds:'', stake:'', result:'pending', notes:'', sportsbook:'DraftKings', legs:['',''] }); }} className="px-6 py-3 rounded-xl border border-[rgba(108,99,255,0.2)] text-[#6B6B8A] font-black text-xs tracking-widest">CANCEL</button>
                   </div>
                 </div>
               ) : (
@@ -2049,6 +2275,38 @@ function SportsBettingTab({ tier, activeSubTab }) {
                     {['DraftKings','FanDuel','BetMGM','Caesars','ESPN Bet','Other'].map(b => <option key={b}>{b}</option>)}
                   </select>
                 </div>
+              </div>
+
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 6 }}>Bet type</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                  {['Moneyline', 'Spread', 'Total', 'Prop', 'Parlay', 'Futures'].map(t => (
+                    <button key={t} onClick={() => setForm(p => ({...p, type: t}))}
+                      style={{ padding: '5px 12px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: '1px solid',
+                        background: form.type === t ? 'rgba(108,99,255,0.2)' : 'transparent',
+                        borderColor: form.type === t ? '#6C63FF' : '#1E1E2E',
+                        color: form.type === t ? '#867fff' : '#6B6B8A' }}>
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                {form.type === 'Parlay' && (
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 6 }}>Parlay legs</div>
+                    {form.legs.map((leg, i) => (
+                      <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: '#4E4E63', minWidth: 16 }}>#{i+1}</span>
+                        <input value={leg} onChange={e => { const legs = [...form.legs]; legs[i] = e.target.value; setForm(p => ({...p, legs})); }}
+                          placeholder={`Leg ${i+1} e.g. Lakers ML`}
+                          className={inp} style={{ ...inpStyle, flex: 1, padding: '7px 10px', fontSize: 12, borderRadius: 8 }}
+                          onFocus={inpFocus} onBlur={inpBlur} />
+                        {form.legs.length > 2 && <button onClick={() => setForm(p => ({...p, legs: p.legs.filter((_,j) => j!==i)}))} style={{ color: '#6B6B8A', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>}
+                      </div>
+                    ))}
+                    <button onClick={() => setForm(p => ({...p, legs: [...p.legs, '']}))}
+                      style={{ fontSize: 11, color: '#6C63FF', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}>+ Add leg</button>
+                  </div>
+                )}
               </div>
 
               <button onClick={addBet} disabled={loading || !form.match || !form.odds || !form.stake}
@@ -2926,9 +3184,9 @@ function PreMarketPanel() {
             <button key={b} onClick={() => setBias(b)}
               style={{
                 padding: '8px 20px', borderRadius: 10, fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                background: bias === b ? (b === 'LONG' ? '#0A0A0F20' : b === 'SHORT' ? '#FF456020' : '#6C63FF20') : 'transparent',
-                borderColor: bias === b ? (b === 'LONG' ? '#0A0A0F' : b === 'SHORT' ? '#FF4560' : '#6C63FF') : '#1E1E2E',
-                color: bias === b ? (b === 'LONG' ? '#0A0A0F' : b === 'SHORT' ? '#FF4560' : '#60a5fa') : '#6B6B8A',
+                background: bias === b ? (b === 'LONG' ? 'rgba(0,229,180,0.2)' : b === 'SHORT' ? '#FF456020' : '#6C63FF20') : 'transparent',
+                borderColor: bias === b ? (b === 'LONG' ? '#00E5B4' : b === 'SHORT' ? '#FF4560' : '#6C63FF') : '#1E1E2E',
+                color: bias === b ? (b === 'LONG' ? '#00E5B4' : b === 'SHORT' ? '#FF4560' : '#60a5fa') : '#6B6B8A',
               }}>
               {b === 'LONG' ? '📈' : b === 'SHORT' ? '📉' : '➡️'} {b}
             </button>
@@ -2959,7 +3217,7 @@ function PreMarketPanel() {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, alignItems: 'center' }}>
-        {saved && <span style={{ fontSize: 12, color: '#0A0A0F' }}>Saved!</span>}
+        {saved && <span style={{ fontSize: 12, color: '#00E5B4' }}>Saved!</span>}
         <button onClick={save} className="glass-btn-blue" style={{ padding: '9px 22px', fontSize: 13, borderRadius: 10 }}>
           Save prep notes
         </button>
@@ -2972,12 +3230,21 @@ function PreMarketPanel() {
    RISK CALCULATOR (Day Trading sub-tab)
 ───────────────────────────────────────── */
 function RiskCalcPanel() {
-  const [acct,   setAcct]   = useState(25000);
-  const [risk,   setRisk]   = useState(1);
-  const [entry,  setEntry]  = useState('');
-  const [stop,   setStop]   = useState('');
-  const [target, setTarget] = useState('');
-  const [dir,    setDir]    = useState('LONG');
+  const [acct,   setAcct]   = useState(() => parseFloat(localStorage.getItem('rc_acct') || '25000'));
+  const [risk,   setRisk]   = useState(() => parseFloat(localStorage.getItem('rc_risk') || '1'));
+  const [entry,  setEntry]  = useState(() => localStorage.getItem('rc_entry') || '');
+  const [stop,   setStop]   = useState(() => localStorage.getItem('rc_stop') || '');
+  const [target, setTarget] = useState(() => localStorage.getItem('rc_target') || '');
+  const [dir,    setDir]    = useState(() => localStorage.getItem('rc_dir') || 'LONG');
+
+  useEffect(() => {
+    localStorage.setItem('rc_acct', acct);
+    localStorage.setItem('rc_risk', risk);
+    localStorage.setItem('rc_entry', entry);
+    localStorage.setItem('rc_stop', stop);
+    localStorage.setItem('rc_target', target);
+    localStorage.setItem('rc_dir', dir);
+  }, [acct, risk, entry, stop, target, dir]);
 
   const riskDollars = acct * risk / 100;
   const entryN  = parseFloat(entry)  || 0;
@@ -3143,9 +3410,9 @@ function ReportsPanel({ trades }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
         {[
           ['Total closed', closed.length, '#F0F0FF'],
-          ['LONG win rate', longWR+'%', longWR >= 50 ? '#0A0A0F' : '#FF4560'],
-          ['SHORT win rate', shortWR+'%', shortWR >= 50 ? '#0A0A0F' : '#FF4560'],
-          ['Total P&L', '$'+closed.reduce((s,t) => s+(t.pnl||0), 0).toFixed(0), closed.reduce((s,t) => s+(t.pnl||0), 0) >= 0 ? '#0A0A0F' : '#FF4560'],
+          ['LONG win rate', longWR+'%', longWR >= 50 ? '#00E5B4' : '#FF4560'],
+          ['SHORT win rate', shortWR+'%', shortWR >= 50 ? '#00E5B4' : '#FF4560'],
+          ['Total P&L', '$'+closed.reduce((s,t) => s+(t.pnl||0), 0).toFixed(0), closed.reduce((s,t) => s+(t.pnl||0), 0) >= 0 ? '#00E5B4' : '#FF4560'],
         ].map(([l,v,c]) => (
           <div key={l} style={card}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 8 }}>{l}</div>
@@ -3173,7 +3440,7 @@ function ReportsPanel({ trades }) {
       {/* Best/worst trades */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {[
-          { label: '🏆 Best trades', items: [...closed].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#0A0A0F' },
+          { label: '🏆 Best trades', items: [...closed].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#00E5B4' },
           { label: '💔 Worst trades', items: [...closed].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#FF4560' },
         ].map(({ label, items, color }) => (
           <div key={label} style={card}>
@@ -3256,18 +3523,18 @@ function ArbitragePanel() {
 
       {impliedSum && (
         <div style={{ ...card, border: `1px solid ${hasArb ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.3)'}`, background: hasArb ? 'rgba(34,197,94,0.05)' : '#111118' }}>
-          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: hasArb ? '#0A0A0F' : '#FF4560', marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: hasArb ? '#22c55e' : '#FF4560', marginBottom: 12 }}>
             {hasArb ? '✅ Arbitrage opportunity found!' : '❌ No arbitrage — books have edge'}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
             {[
-              ['Implied sum', (impliedSum * 100).toFixed(2)+'%', impliedSum < 1 ? '#0A0A0F' : '#FF4560'],
+              ['Implied sum', (impliedSum * 100).toFixed(2)+'%', impliedSum < 1 ? '#22c55e' : '#FF4560'],
               ['Book edge', ((impliedSum - 1) * 100).toFixed(2)+'%', '#6B6B8A'],
               ...(hasArb ? [
                 [`Bet on ${book1 || 'Book 1'}`, '$'+stake1, '#F0F0FF'],
                 [`Bet on ${book2 || 'Book 2'}`, '$'+stake2, '#F0F0FF'],
-                ['Guaranteed profit', '$'+profit.toFixed(2), '#0A0A0F'],
-                ['Profit %', profitPct+'%', '#0A0A0F'],
+                ['Guaranteed profit', '$'+profit.toFixed(2), '#00E5B4'],
+                ['Profit %', profitPct+'%', '#00E5B4'],
               ] : []),
             ].map(([l, v, c]) => (
               <div key={l} style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderRadius: 10, padding: '12px 14px' }}>
@@ -3347,7 +3614,7 @@ function ParlayPanel() {
           <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#6C63FF', marginBottom: 8 }}>
             {filledLegs.length > 0 ? `${filledLegs.length}-Leg Parlay` : 'Payout if Win'}
           </div>
-          <div style={{ fontSize: 56, fontWeight: 900, color: '#0A0A0F', letterSpacing: '-0.02em', lineHeight: 1 }}>
+          <div style={{ fontSize: 56, fontWeight: 900, color: '#F0F0FF', letterSpacing: '-0.02em', lineHeight: 1 }}>
             ${payout.toFixed(2)}
           </div>
           <div style={{ fontSize: 14, color: '#94a3b8', marginTop: 10 }}>
@@ -3521,8 +3788,8 @@ function BettingAnalyticsPanel({ bets }) {
               <tr key={d.book} style={{ borderTop: '1px solid #1E1E2E' }}>
                 <td style={{ padding: '8px 0', color: '#F0F0FF', fontWeight: 500 }}>{d.book}</td>
                 <td style={{ padding: '8px 0', color: '#6B6B8A' }}>{d.n}</td>
-                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
-                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(0)}</td>
+                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
+                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(0)}</td>
               </tr>
             ))}</tbody>
           </table>
@@ -3532,7 +3799,7 @@ function BettingAnalyticsPanel({ bets }) {
       {/* Best/worst bets */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
         {[
-          { label: '🏆 Best bets', items: [...settled].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#0A0A0F' },
+          { label: '🏆 Best bets', items: [...settled].sort((a,b) => (b.pnl||0)-(a.pnl||0)).slice(0,3), color: '#00E5B4' },
           { label: '💔 Worst bets', items: [...settled].sort((a,b) => (a.pnl||0)-(b.pnl||0)).slice(0,3), color: '#FF4560' },
         ].map(({ label, items, color }) => (
           <div key={label} style={card}>
@@ -3561,8 +3828,8 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
   const wrPct     = wrTarget > 0 ? Math.min(100, monthWR/wrTarget*100) : 0;
 
   const barColor = (pct, inv=false) => inv
-    ? (pct < 50 ? '#0A0A0F' : pct < 80 ? '#f59e0b' : '#FF4560')
-    : (pct >= 100 ? '#0A0A0F' : pct >= 50 ? '#f59e0b' : '#6B6B8A');
+    ? (pct < 50 ? '#00E5B4' : pct < 80 ? '#f59e0b' : '#FF4560')
+    : (pct >= 100 ? '#00E5B4' : pct >= 50 ? '#f59e0b' : '#6B6B8A');
 
   const card = { background: '#1A1A24', border: '1px solid rgba(108,99,255,0.2)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' };
   const track = { background: 'rgba(108,99,255,0.2)' };
