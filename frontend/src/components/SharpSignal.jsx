@@ -74,7 +74,7 @@ export default function SharpSignal({ userPlan }) {
 
       {/* How it works */}
       <div style={{ ...gc, padding: 16, marginBottom: 20, background: 'rgba(108,99,255,0.04)', borderColor: 'rgba(108,99,255,0.15)' }}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', color: '#867fff', marginBottom: 8, letterSpacing: '1px', textTransform: 'uppercase' }}>How it works</div>
+        <div style={{ fontSize: 11, fontWeight: 800, color: '#867fff', marginBottom: 8, letterSpacing: '1px', textTransform: 'uppercase' }}>How it works</div>
         <div style={{ fontSize: 12, color: '#4E4E63', lineHeight: 1.7 }}>
           Sharp Signals scans Polymarket prediction markets for high-volume opportunities. When a market has significant money behind it and closes within 90 days, it appears here as a signal worth tracking.
         </div>

@@ -441,7 +441,7 @@ function NavGroups({ tab, setTab }) {
         ];
         const renderSection = (sec) => (
           <div key={sec.label}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', letterSpacing: '0.08em', color: '#2a3a5a', textTransform: 'uppercase', padding: '8px 12px 4px' }}>{sec.label}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', color: '#2a3a5a', textTransform: 'uppercase', padding: '8px 12px 4px' }}>{sec.label}</div>
             {sec.items.map(s => (
               <button key={s.key} onClick={() => pickSport(s.key)}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}
@@ -845,7 +845,7 @@ function PortfolioPanel() {
             <thead>
               <tr style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', borderBottom: '1px solid #1E1E2E' }}>
                 {['Market','Side','Shares','Avg ¢','Cur ¢','P&L',''].map(h => (
-                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B6B8A' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 14px', textAlign: 'left', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B6B8A' }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -1966,7 +1966,7 @@ function AIStrategyAnalyzer({ tier }) {
         <div style={{ fontSize: 40, marginBottom: 12 }}>🧠</div>
         <div className="flex items-center justify-center gap-2 mb-2">
           <span style={{ fontSize: 18, fontWeight: 800, color: '#F0F0FF' }}>AI Strategy Analyzer</span>
-          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 4, background: 'rgba(108,99,255,0.2)', color: '#867fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
+          <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'rgba(108,99,255,0.2)', color: '#867fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
         </div>
         <p style={{ fontSize: 13, color: '#4E4E63', marginBottom: 16, maxWidth: 360, marginLeft: 'auto', marginRight: 'auto' }}>
           Get AI-powered analysis of your trade setups — identify strengths, weaknesses, and risk management improvements.
@@ -1987,7 +1987,7 @@ function AIStrategyAnalyzer({ tier }) {
       <div className="flex items-center gap-3">
         <span style={{ fontSize: 20 }}>🧠</span>
         <span style={{ fontSize: 16, fontWeight: 800, color: '#F0F0FF' }}>AI Strategy Analyzer</span>
-        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-0.03em', padding: '2px 6px', borderRadius: 4, background: 'rgba(108,99,255,0.2)', color: '#867fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
+        <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 4, background: 'rgba(108,99,255,0.2)', color: '#867fff', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Beta</span>
       </div>
 
       <div className="rounded-2xl p-5" style={{ background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)' }}>
@@ -3266,7 +3266,7 @@ function PreMarketPanel() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* High-impact events today */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           🗓️ High-Impact Events Today
         </div>
         {econLoad ? <div className="skeleton" style={{ height: 40 }} /> :
@@ -3284,7 +3284,7 @@ function PreMarketPanel() {
 
       {/* Key Levels */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           📊 Key Levels
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
@@ -3302,7 +3302,7 @@ function PreMarketPanel() {
 
       {/* Bias + thesis */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           🧠 Today's Bias
         </div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
@@ -3326,7 +3326,7 @@ function PreMarketPanel() {
 
       {/* Market session status */}
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 12 }}>
           🌍 Market Sessions
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
@@ -3386,7 +3386,7 @@ function RiskCalcPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 600 }}>
       <div style={card}>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 14 }}>
           ⚙️ Inputs
         </div>
 
@@ -3440,7 +3440,7 @@ function RiskCalcPanel() {
           ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#00E5B4' : '#f59e0b']] : []),
         ].map(([l, v, c]) => (
           <div key={l} style={out}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 6 }}>{l}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 6 }}>{l}</div>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color: c }}>{v}</div>
           </div>
         ))}
@@ -3541,7 +3541,7 @@ function ReportsPanel({ trades }) {
           ['Total P&L', '$'+closed.reduce((s,t) => s+(t.pnl||0), 0).toFixed(0), closed.reduce((s,t) => s+(t.pnl||0), 0) >= 0 ? '#00E5B4' : '#FF4560'],
         ].map(([l,v,c]) => (
           <div key={l} style={card}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 8 }}>{l}</div>
+            <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 8 }}>{l}</div>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.03em', color: c }}>{v}</div>
           </div>
         ))}
@@ -3840,7 +3840,7 @@ function ParlayPanel() {
       {/* Payout display */}
       {hasOdds ? (
         <div style={{ ...card, textAlign: 'center', background: 'linear-gradient(135deg, rgba(108,99,255,0.08) 0%, rgba(34,197,94,0.05) 100%)', border: '2px solid rgba(108,99,255,0.3)', padding: 32 }}>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.12em', color: '#6C63FF', marginBottom: 8 }}>
+          <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#6C63FF', marginBottom: 8 }}>
             {filledLegs.length > 0 ? `${filledLegs.length}-Leg Parlay` : 'Payout if Win'}
           </div>
           <div style={{ fontSize: 56, fontWeight: 900, color: '#F0F0FF', letterSpacing: '-0.02em', lineHeight: 1 }}>

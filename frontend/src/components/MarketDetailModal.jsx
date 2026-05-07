@@ -200,7 +200,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
             {/* 7-day chart - full width */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#2a3a5a', marginBottom: 8 }}>7-Day Probability</div>
+              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#2a3a5a', marginBottom: 8 }}>7-Day Probability</div>
               <div style={{ height: 140 }}>
                 <Line data={chartData} options={chartOpts} />
               </div>
@@ -298,7 +298,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
 
             {/* 7-day chart */}
             <div>
-              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#2a3a5a', marginBottom: 8 }}>7-Day Probability</div>
+              <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#2a3a5a', marginBottom: 8 }}>7-Day Probability</div>
               <div style={{ height: 140 }}>
                 <Line data={chartData} options={chartOpts} />
               </div>
