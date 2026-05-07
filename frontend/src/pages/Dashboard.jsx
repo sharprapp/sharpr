@@ -3773,7 +3773,6 @@ function ArbitragePanel() {
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }
