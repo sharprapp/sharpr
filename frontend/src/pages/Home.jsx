@@ -62,7 +62,7 @@ const SPORTS = ['NBA', 'NFL', 'MLB', 'NHL', 'Soccer', 'UFC'];
 /* ── quick action cards ── */
 const ACTIONS = [
   { label: 'AI Research',   icon: '🤖', color: '#6C63FF', tab: 'AI Research' },
-  { label: 'Log a trade',   icon: '📈', color: '#0A0A0F', tab: 'Day Trading' },
+  { label: 'Log a trade',   icon: '📈', color: '#00E5B4', tab: 'Day Trading' },
   { label: 'Log a bet',     icon: '🏈', color: '#f59e0b', tab: 'Sports Betting' },
   { label: 'View markets',  icon: '🎯', color: '#a855f7', tab: 'Polymarket' },
 ];
@@ -242,8 +242,8 @@ export default function Home() {
             </div>
 
             {/* Trading Setup */}
-            <div style={{ ...card, borderLeft: '3px solid #0A0A0F', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#0A0A0F' }}>Trading Setup</span>
+            <div style={{ ...card, borderLeft: '3px solid #00E5B4', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#00E5B4' }}>Trading Setup</span>
               {(() => {
                 const saved = JSON.parse(localStorage.getItem('premarket_levels') || '{}');
                 if (saved.bias && saved.date === new Date().toDateString()) {

@@ -162,7 +162,7 @@ export default function MarketDetailModal({ market: m, onClose, userPlan }) {
                 <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em', color: '#FF4560', opacity: 0.7 }}>{m.no ?? 100 - pct}%</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 4 }}>
-                <span style={{ fontSize: 11, color: '#0A0A0F', fontWeight: 800, letterSpacing: '-0.02em' }}>YES</span>
+                <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 800, letterSpacing: '-0.02em' }}>YES</span>
                 <span style={{ fontSize: 11, color: '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>NO</span>
               </div>
               {/* Progress bar */}

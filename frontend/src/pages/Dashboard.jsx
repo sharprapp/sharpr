@@ -56,7 +56,6 @@ const NAV_GROUPS_LEFT = [
   ]},
   { label: 'Predict', items: [
     { key: 'Polymarket', label: 'Polymarket', emoji: '🎯', desc: '8,300+ live markets' },
-    { key: 'EV Calc', label: 'EV Calc', emoji: '🧮', desc: 'Expected value calculator' },
   ]},
 ];
 const NAV_GROUPS_RIGHT = [
@@ -791,7 +790,7 @@ function PortfolioPanel() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
         {[
           ['Open positions', positions.length, '#F0F0FF'],
-          ['Unrealized P&L', (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2), totalPnl >= 0 ? '#0A0A0F' : '#FF4560'],
+          ['Unrealized P&L', (totalPnl >= 0 ? '+' : '') + '$' + Math.abs(totalPnl).toFixed(2), totalPnl >= 0 ? '#00E5B4' : '#FF4560'],
           ['Avg cost basis', positions.length ? '$' + (positions.reduce((s,p) => s + p.shares * p.avgPrice, 0) / positions.length).toFixed(2) : '—', '#F0F0FF'],
         ].map(([l, v, c]) => (
           <div key={l} style={card}>
@@ -857,7 +856,7 @@ function PortfolioPanel() {
                   <tr key={p.id} style={{ borderBottom: i < positions.length - 1 ? '1px solid rgba(30,42,74,0.5)' : 'none', background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)' }}>
                     <td style={{ padding: '10px 14px', color: '#F0F0FF', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.title}</td>
                     <td style={{ padding: '10px 14px' }}>
-                      <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', background: p.side === 'YES' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: p.side === 'YES' ? '#0A0A0F' : '#FF4560' }}>{p.side}</span>
+                      <span style={{ padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 800, letterSpacing: '-0.03em', background: p.side === 'YES' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: p.side === 'YES' ? '#22c55e' : '#FF4560' }}>{p.side}</span>
                     </td>
                     <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{p.shares}</td>
                     <td style={{ padding: '10px 14px', color: '#6B6B8A' }}>{p.avgPrice}</td>
@@ -866,7 +865,7 @@ function PortfolioPanel() {
                         onBlur={e => updateCurrent(p.id, e.target.value)}
                         style={{ background: 'transparent', border: 'none', borderBottom: '1px solid #1E1E2E', color: '#F0F0FF', width: 46, fontSize: 13, outline: 'none' }} />
                     </td>
-                    <td style={{ padding: '10px 14px', fontWeight: 800, letterSpacing: '-0.03em', color: pnl >= 0 ? '#0A0A0F' : '#FF4560' }}>
+                    <td style={{ padding: '10px 14px', fontWeight: 800, letterSpacing: '-0.03em', color: pnl >= 0 ? '#00E5B4' : '#FF4560' }}>
                       {pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}
                     </td>
                     <td style={{ padding: '10px 14px' }}>
@@ -965,7 +964,7 @@ function AlertsPanel() {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 800, letterSpacing: '-0.02em', background: a.triggered ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)', color: a.triggered ? '#0A0A0F' : '#60a5fa' }}>
+                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 800, letterSpacing: '-0.02em', background: a.triggered ? 'rgba(34,197,94,0.15)' : 'rgba(37,99,235,0.15)', color: a.triggered ? '#22c55e' : '#60a5fa' }}>
                   {a.triggered ? '✓ Triggered' : '⏳ Watching'}
                 </span>
                 <button onClick={() => save(alertsList.filter(x => x.id !== a.id))}
@@ -998,19 +997,19 @@ function PolymarketTab({ tier }) {
   const [fetching, setFetching] = useState(false);
   const [error, setError]       = useState('');
   const [totalLoaded, setTotalLoaded] = useState(() => getPMCache()?.length || 0);
-  const [visibleCount, setVisibleCount] = useState(20); // show 20 initially
+  const [visibleCount, setVisibleCount] = useState(50); // show 50 initially
   const sentinelRef = useRef(null);
   const [selectedMarket, setSelectedMarket] = useState(null);
 
   // Removed IntersectionObserver — using "Load more" button instead
 
   // Reset visible count when filter or search changes
-  useEffect(() => { setVisibleCount(20); }, [filt, q]);
+  useEffect(() => { setVisibleCount(50); }, [filt, q]);
 
   useEffect(() => { fetchMarkets(false); }, []);
 
   async function fetchMarkets(forceRefresh = true) {
-    if (forceRefresh) { setLoading(true); setError(''); setMarkets([]); setTotalLoaded(0); setVisibleCount(20); }
+    if (forceRefresh) { setLoading(true); setError(''); setMarkets([]); setTotalLoaded(0); setVisibleCount(50); }
     try {
       // Fetch all markets at once (5-min server cache)
       const { data } = await api.get('/api/markets/polymarket/all');
@@ -1178,7 +1177,7 @@ function PolymarketTab({ tier }) {
             {/* Load more button */}
             {isPro && visible.length < filtered.length && !loading && (
               <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                <button onClick={() => setVisibleCount(n => n + 20)}
+                <button onClick={() => setVisibleCount(n => n + 50)}
                   style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', padding: '10px 28px', borderRadius: 10, background: 'rgba(108,99,255,0.1)', border: '1px solid rgba(108,99,255,0.2)', color: '#867fff', cursor: 'pointer' }}>
                   Load more ({filtered.length - visible.length} remaining)
                 </button>
@@ -1332,7 +1331,7 @@ function OvervaluedMarketsPanel({ markets, loading, onSelect }) {
 const CAT_COLORS = {
   Politics: { background: 'rgba(167,139,250,0.15)', color: '#c084fc' },
   Crypto: { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
-  Sports: { background: 'rgba(34,197,94,0.15)', color: '#0A0A0F' },
+  Sports: { background: 'rgba(34,197,94,0.15)', color: '#22c55e' },
   Finance: { background: 'rgba(108,99,255,0.15)', color: '#867fff' },
   Science: { background: 'rgba(20,184,166,0.15)', color: '#2dd4bf' },
   Entertainment: { background: 'rgba(244,63,94,0.15)', color: '#fb7185' },
@@ -1411,7 +1410,7 @@ const MarketCard = memo(function MarketCard({ market: m, onClick }) {
   
   // Neon Green for UP, Vivid Crimson/Magenta for DOWN
   const isUp = pLast > pFirst || (pLast === pFirst && pct >= 50);
-  const trendColor = isUp ? '#0A0A0F' : '#ff3366';
+  const trendColor = isUp ? '#00E5B4' : '#ff3366';
   
   const pulseAnim = pLast === pFirst ? 'marketPulseNeutral' : isUp ? 'marketPulseUp' : 'marketPulseDown';
 
@@ -1759,7 +1758,7 @@ function DayTradingTab({ activeSubTab, tier }) {
 
 function TradeForm({ form, setForm, loading, onAdd }) {
   const f = (k, v) => setForm(p => ({...p, [k]: v}));
-  const [showMore, setShowMore] = useState(false);
+  const [showMore, setShowMore] = useState(true);
   const [saved, setSaved] = useState(false);
   const canSubmit = form.ticker && form.entry && form.qty;
   const handleSubmit = () => { onAdd(); setSaved(true); setTimeout(() => setSaved(false), 2000); };
@@ -1811,7 +1810,7 @@ function TradeForm({ form, setForm, loading, onAdd }) {
                     style={{ flex: 1, padding: '7px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', transition: 'all 0.15s ease',
                       background: form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.2)' : c === 'High' ? 'rgba(34,197,94,0.2)' : c === 'Medium' ? 'rgba(108,99,255,0.2)' : '#1E1E2E') : '#1A1A24',
                       border: `1px solid ${form.confidence === c ? (c === 'Max' ? 'rgba(239,68,68,0.4)' : c === 'High' ? 'rgba(34,197,94,0.4)' : c === 'Medium' ? 'rgba(108,99,255,0.4)' : 'rgba(255,255,255,0.15)') : 'rgba(108,99,255,0.2)'}`,
-                      color: form.confidence === c ? (c === 'Max' ? '#FF4560' : c === 'High' ? '#0A0A0F' : c === 'Medium' ? '#867fff' : '#94a3b8') : '#4E4E63',
+                      color: form.confidence === c ? (c === 'Max' ? '#FF4560' : c === 'High' ? '#22c55e' : c === 'Medium' ? '#867fff' : '#94a3b8') : '#4E4E63',
                     }}>{c}</button>
                 ))}
               </div>
@@ -1830,7 +1829,7 @@ function TradeForm({ form, setForm, loading, onAdd }) {
             <div>
               <label className="text-xs font-medium block mb-1.5" style={{color: '#6B6B8A'}}>Status</label>
               <div className={`w-full rounded-xl px-3.5 py-2.5 text-sm`} style={{...inpStyle, display: 'flex', alignItems: 'center', gap: 6}}>
-                <span style={{color: form.pnl && parseFloat(form.pnl) > 0 ? '#0A0A0F' : form.pnl && parseFloat(form.pnl) < 0 ? '#FF4560' : '#6B6B8A', fontWeight: 800, letterSpacing: '-0.02em'}}>
+                <span style={{color: form.pnl && parseFloat(form.pnl) > 0 ? '#00E5B4' : form.pnl && parseFloat(form.pnl) < 0 ? '#FF4560' : '#6B6B8A', fontWeight: 800, letterSpacing: '-0.02em'}}>
                   {form.pnl && parseFloat(form.pnl) > 0 ? 'Win' : form.pnl && parseFloat(form.pnl) < 0 ? 'Loss' : 'Open'}
                 </span>
                 <span style={{fontSize: 10, color: '#4E4E63'}}>Auto from P&L</span>
@@ -2024,6 +2023,69 @@ function AIStrategyAnalyzer({ tier }) {
               AI-generated analysis for educational purposes only. Not financial advice. Always do your own research and manage risk appropriately.
             </p>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   BET GAME PICKER — feeds from Odds API
+───────────────────────────────────────── */
+function BetGamePicker({ sport, onSelect }) {
+  const [games, setGames] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const sportMap = { NBA:'nba', NFL:'nfl', MLB:'mlb', NHL:'nhl', Soccer:'soccer_epl', UFC:'ufc', Tennis:'tennis_atp', Golf:'golf_pga' };
+  const apiSport = sportMap[sport] || 'nba';
+
+  useEffect(() => {
+    setGames([]); setOpen(false);
+    setLoading(true);
+    api.get(`/api/odds/games?sport=${apiSport}`)
+      .then(r => setGames(r.data.games || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [sport]);
+
+  const todayGames = useMemo(() => {
+    const now = new Date();
+    return games.filter(g => {
+      const d = new Date(g.commenceTime);
+      return d.toDateString() === now.toDateString() || d > now;
+    }).slice(0, 12);
+  }, [games]);
+
+  if (loading) return <div style={{ fontSize: 11, color: '#6B6B8A', marginBottom: 8 }}>Loading today's games…</div>;
+  if (todayGames.length === 0) return null;
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ fontSize: 11, color: '#867fff', background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontWeight: 800, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 6 }}>
+        🏟️ Pick from today's {sport} games ({todayGames.length})
+        <span style={{ fontSize: 9, transform: open ? 'rotate(180deg)' : 'rotate(0)', display: 'inline-block' }}>▼</span>
+      </button>
+      {open && (
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 280, overflowY: 'auto', background: '#0D0D1A', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 12, padding: 8 }}>
+          {todayGames.map((g, i) => {
+            const fmtOdds = n => n == null ? '' : n > 0 ? '+'+n : ''+n;
+            const time = new Date(g.commenceTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            return (
+              <button key={i} onClick={() => { onSelect(g); setOpen(false); }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 8, background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background 0.1s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(108,99,255,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#F0F0FF' }}>{g.awayTeam} @ {g.homeTeam}</div>
+                  <div style={{ fontSize: 10, color: '#6B6B8A', marginTop: 2 }}>{time}</div>
+                </div>
+                <div style={{ fontSize: 11, color: '#867fff', fontWeight: 800 }}>
+                  {fmtOdds(g.awayML)} / {fmtOdds(g.homeML)}
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
@@ -2234,7 +2296,7 @@ function SportsBettingTab({ tier, activeSubTab }) {
 
           {entryMode === 'manual' && (
             <div className="rounded-2xl p-6 bg-black/20 border border-[rgba(108,99,255,0.2)]">
-              <div className="flex gap-2 flex-wrap mb-6">
+              <div className="flex gap-2 flex-wrap mb-4">
                 {[['🏀','NBA'],['🏈','NFL'],['⚾','MLB'],['🏒','NHL'],['⚽','Soccer'],['🥊','UFC'],['🎾','Tennis'],['⛳','Golf']].map(([icon, s]) => (
                   <button key={s} onClick={() => setForm(f => ({...f, sport: s}))}
                     className={`px-3 py-2 rounded-xl text-xs font-black tracking-tight border transition-all ${form.sport === s ? 'bg-[#6C63FF]/10 border-[#6C63FF] text-[#F0F0FF]' : 'bg-transparent border-white/5 text-[#4E4E63]'}`}>
@@ -2242,8 +2304,17 @@ function SportsBettingTab({ tier, activeSubTab }) {
                   </button>
                 ))}
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+              {/* Game picker */}
+              <BetGamePicker sport={form.sport} onSelect={game => {
+                setForm(f => ({
+                  ...f,
+                  match: `${game.awayTeam} @ ${game.homeTeam}`,
+                  odds: game.awayML != null ? String(game.awayML) : f.odds,
+                }));
+              }} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-4">
                 <div>
                   <label className="text-[10px] font-bold text-[#6B6B8A] uppercase mb-1.5 block">Matchup</label>
                   <input placeholder="e.g. Lakers ML" value={form.match} onChange={e => setForm({...form, match: e.target.value})}
@@ -2831,7 +2902,7 @@ function NewsTab() {
   }
 
   function borderColor(sentiment) {
-    return sentiment === 'positive' ? '#0A0A0F' : sentiment === 'negative' ? '#FF4560' : '#6C63FF';
+    return sentiment === 'positive' ? '#22c55e' : sentiment === 'negative' ? '#FF4560' : '#6C63FF';
   }
 
   // Calendar filters
@@ -3058,7 +3129,7 @@ function NewsTab() {
               <div className="flex flex-col">
                 {mktItems.slice(0, 20).map((item, i) => {
                   const dir      = /gain|surge|rise|rally|up\b|higher|bull|positive/i.test(item.title) ? '↑' : /fall|drop|decline|down\b|lower|bear|negative/i.test(item.title) ? '↓' : '→';
-                  const dirColor = dir === '↑' ? '#0A0A0F' : dir === '↓' ? '#FF4560' : '#6B6B8A';
+                  const dirColor = dir === '↑' ? '#00E5B4' : dir === '↓' ? '#FF4560' : '#6B6B8A';
                   return (
                     <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
                       className="px-5 py-3.5 flex items-start gap-3 transition-all"
@@ -3294,9 +3365,9 @@ function RiskCalcPanel() {
               {['LONG','SHORT'].map(d => (
                 <button key={d} onClick={() => setDir(d)}
                   style={{ flex: 1, padding: '9px', borderRadius: 10, fontSize: 13, fontWeight: 800, letterSpacing: '-0.02em', cursor: 'pointer', border: '1px solid',
-                    background: dir === d ? (d === 'LONG' ? '#0A0A0F20' : '#FF456020') : 'transparent',
-                    borderColor: dir === d ? (d === 'LONG' ? '#0A0A0F' : '#FF4560') : '#1E1E2E',
-                    color: dir === d ? (d === 'LONG' ? '#0A0A0F' : '#FF4560') : '#6B6B8A' }}>
+                    background: dir === d ? (d === 'LONG' ? 'rgba(0,229,180,0.15)' : '#FF456020') : 'transparent',
+                    borderColor: dir === d ? (d === 'LONG' ? '#00E5B4' : '#FF4560') : '#1E1E2E',
+                    color: dir === d ? (d === 'LONG' ? '#00E5B4' : '#FF4560') : '#6B6B8A' }}>
                   {d}
                 </button>
               ))}
@@ -3311,7 +3382,7 @@ function RiskCalcPanel() {
           ['Dollar risk',      `$${riskDollars.toFixed(0)}`, '#f59e0b'],
           ['Stop distance',    stopDist > 0 ? `$${stopDist.toFixed(2)}` : '—', '#6B6B8A'],
           ['Max shares',       shares > 0 ? shares.toLocaleString() : '—', '#F0F0FF'],
-          ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#0A0A0F' : '#f59e0b']] : []),
+          ...(rr ? [['Risk : Reward', `1 : ${rr}`, parseFloat(rr) >= 2 ? '#00E5B4' : '#f59e0b']] : []),
         ].map(([l, v, c]) => (
           <div key={l} style={out}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '-0.02em', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#6B6B8A', marginBottom: 6 }}>{l}</div>
@@ -3372,7 +3443,7 @@ function ReportsPanel({ trades }) {
     datasets: [{
       data: weekPnl.length ? weekPnl : [0],
       backgroundColor: weekPnl.map(v => v >= 0 ? 'rgba(34,197,94,0.5)' : 'rgba(239,68,68,0.5)'),
-      borderColor:     weekPnl.map(v => v >= 0 ? '#0A0A0F' : '#FF4560'),
+      borderColor:     weekPnl.map(v => v >= 0 ? '#22c55e' : '#FF4560'),
       borderWidth: 1, borderRadius: 4,
     }],
   };
@@ -3770,8 +3841,8 @@ function BettingAnalyticsPanel({ bets }) {
               <tr key={d.type} style={{ borderTop: '1px solid #1E1E2E' }}>
                 <td style={{ padding: '8px 0', color: '#F0F0FF', fontWeight: 500 }}>{d.type}</td>
                 <td style={{ padding: '8px 0', color: '#6B6B8A' }}>{d.n}</td>
-                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
-                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#0A0A0F' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(2)}</td>
+                <td style={{ padding: '8px 0', color: d.wr >= 50 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.wr}%</td>
+                <td style={{ padding: '8px 0', color: d.pnl >= 0 ? '#00E5B4' : '#FF4560', fontWeight: 800, letterSpacing: '-0.02em' }}>{d.pnl >= 0 ? '+' : ''}${d.pnl.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -3874,7 +3945,7 @@ function MonthlyTracker({ monthPnl, monthGoal, todayPnl, dailyLimit, monthWR, wr
           {monthWR}%
         </div>
         <div className="h-1.5 rounded-full overflow-hidden mb-2.5" style={track}>
-          <div className="h-full rounded-full transition-all duration-500" style={{width: wrPct+'%', background: monthWR>=wrTarget?'#0A0A0F':'#f59e0b'}} />
+          <div className="h-full rounded-full transition-all duration-500" style={{width: wrPct+'%', background: monthWR>=wrTarget?'#00E5B4':'#f59e0b'}} />
         </div>
         <div className="flex items-center gap-1.5 text-xs" style={{color: '#6B6B8A'}}>
           <span>Target</span>

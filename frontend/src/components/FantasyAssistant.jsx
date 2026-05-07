@@ -211,7 +211,7 @@ function PlayerCard({ player, onClear, verdict, projPts, compact }) {
         <div style={{
           position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)',
           background: verdict === 'start' ? '#00E5B4' : '#FF4560',
-          color: '#000', fontSize: 10, fontWeight: 900, letterSpacing: '0.08em',
+          color: '#0A0A0F', fontSize: 10, fontWeight: 900, letterSpacing: '0.08em',
           padding: '3px 14px', borderRadius: 20, textTransform: 'uppercase', whiteSpace: 'nowrap',
         }}>
           {verdict === 'start' ? '▲ START' : '▼ SIT'}

@@ -39,7 +39,7 @@ export default function SharpSignal({ userPlan }) {
   const filtered = qualitySignals.filter(s => filter === 'sports' ? s.type === 'sports' : filter === 'polymarket' ? s.type === 'polymarket' : filter === 'high' ? effectiveConfidence(s) === 'HIGH' : true);
   const fmtOdds = n => n == null ? '--' : n > 0 ? '+' + n : '' + n;
   const timeAgo = d => { if (!d) return ''; const s = Math.floor((Date.now() - d.getTime()) / 1000); return s < 60 ? s + 's ago' : s < 3600 ? Math.floor(s / 60) + 'm ago' : Math.floor(s / 3600) + 'h ago'; };
-  const confStyle = c => c === 'HIGH' ? { bg: 'rgba(34,197,94,0.15)', color: '#0A0A0F', border: 'rgba(34,197,94,0.3)' } : c === 'MEDIUM' ? { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' } : { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', border: 'rgba(148,163,184,0.2)' };
+  const confStyle = c => c === 'HIGH' ? { bg: 'rgba(34,197,94,0.15)', color: '#22c55e', border: 'rgba(34,197,94,0.3)' } : c === 'MEDIUM' ? { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' } : { bg: 'rgba(148,163,184,0.1)', color: '#94a3b8', border: 'rgba(148,163,184,0.2)' };
   const gc = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16 };
 
   return (
@@ -63,7 +63,7 @@ export default function SharpSignal({ userPlan }) {
       {/* Stats */}
       {stats && (
         <div style={{ display: 'flex', gap: 10, margin: '16px 0' }}>
-          {[{ l: 'Total', v: stats.total, c: '#867fff' }, { l: 'Sports', v: stats.sports, c: '#0A0A0F' }, { l: 'Poly', v: stats.poly, c: '#a78bfa' }, { l: 'High Conf', v: signals.filter(s => s.confidence === 'HIGH').length, c: '#fbbf24' }].map(x => (
+          {[{ l: 'Total', v: stats.total, c: '#867fff' }, { l: 'Sports', v: stats.sports, c: '#60a5fa' }, { l: 'Poly', v: stats.poly, c: '#a78bfa' }, { l: 'High Conf', v: signals.filter(s => s.confidence === 'HIGH').length, c: '#fbbf24' }].map(x => (
             <div key={x.l} style={{ ...gc, padding: '12px 16px', flex: 1 }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: x.c }}>{x.v}</div>
               <div style={{ fontSize: 10, color: '#2a3a5a', marginTop: 2 }}>{x.l}</div>
