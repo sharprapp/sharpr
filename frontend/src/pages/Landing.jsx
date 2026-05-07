@@ -98,11 +98,11 @@ function HeroWordReveal({ text }) {
    MOCK DATA COMPONENTS
    ========================================================= */
 const INITIAL_TERMINAL_DATA = [
-  { id: 1, market: "US Fed Rate Cut 2024", prob: 64.2, change: "+2.4", vol: "14.2M" },
-  { id: 2, market: "Lakers to make Playoffs", prob: 41.8, change: "-1.2", vol: "8.1M" },
-  { id: 3, market: "Bitcoin > $100k (Dec)", prob: 73.5, change: "+5.1", vol: "28.5M" },
-  { id: 4, market: "OpenAI GPT-5 Release", prob: 88.0, change: "+0.3", vol: "5.4M" },
-  { id: 5, market: "Chiefs win Super Bowl", prob: 21.4, change: "-0.8", vol: "11.2M" },
+  { id: 1, market: "Trump approval > 50% by Q3", prob: 38.4, change: "-1.8", vol: "22.1M" },
+  { id: 2, market: "Federal Reserve rate cut (June)", prob: 61.2, change: "+3.7", vol: "18.5M" },
+  { id: 3, market: "Bitcoin > $120k (2025)", prob: 55.8, change: "+4.2", vol: "31.4M" },
+  { id: 4, market: "NBA Finals: OKC Thunder", prob: 29.1, change: "+2.1", vol: "9.8M" },
+  { id: 5, market: "US enters recession (2025)", prob: 42.7, change: "-0.6", vol: "14.3M" },
 ];
 
 function MockTerminal() {
@@ -160,14 +160,14 @@ function MockTerminal() {
 }
 
 const INITIAL_STRIP_DATA = [
-  { match: "BTC > $100k", prob: 73.5 },
-  { match: "Lakers ML", prob: 45.2 },
-  { match: "Fed Rate Cut", prob: 64.2 },
-  { match: "GPT-5 Release", prob: 88.0 },
-  { match: "Chiefs Super Bowl", prob: 21.4 },
-  { match: "ETH ETF Approved", prob: 92.1 },
-  { match: "US Election '24", prob: 51.5 },
-  { match: "Yankees AL Pennant", prob: 34.0 }
+  { match: "BTC > $120k", prob: 55.8 },
+  { match: "OKC NBA Finals", prob: 29.1 },
+  { match: "Fed Rate Cut June", prob: 61.2 },
+  { match: "Trump Approval >50%", prob: 38.4 },
+  { match: "US Recession 2025", prob: 42.7 },
+  { match: "Solana > $300", prob: 48.3 },
+  { match: "AI stock bubble pop", prob: 31.5 },
+  { match: "SpaceX IPO 2025", prob: 22.9 }
 ];
 
 function LiveTickerStrip() {
@@ -198,16 +198,27 @@ function LiveTickerStrip() {
 }
 
 const SIGNALS_DATA = [
-  { market: "Clippers vs Suns (Over 224.5)", pm: "62.4%", sb: "-110 (52.4%)", edge: "+10.0%" },
-  { market: "Trump Election Win", pm: "51.2%", sb: "+125 (44.4%)", edge: "+6.8%" },
-  { market: "Ohtani MVP", pm: "82.5%", sb: "-250 (71.4%)", edge: "+11.1%" },
+  { market: "OKC Thunder to win NBA Finals", pm: "29.1%", sb: "+240 (29.4%)", edge: "+9.7%" },
+  { market: "Federal Reserve June Rate Cut", pm: "61.2%", sb: "-110 (52.4%)", edge: "+8.8%" },
+  { market: "US Recession 2025", pm: "42.7%", sb: "-130 (56.5%)", edge: "+13.8%" },
 ];
 
 /* =========================================================
    MAIN LANDING PAGE
    ========================================================= */
 export default function Landing() {
-  
+  const [liveSignalCount, setLiveSignalCount] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/sharpsignals')
+      .then(r => r.json())
+      .then(data => {
+        const signals = data.signals || data;
+        if (Array.isArray(signals)) setLiveSignalCount(signals.length);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     // Inject global CSS securely.
     if (document.getElementById("sharpr-landing-css")) return;
@@ -259,31 +270,56 @@ export default function Landing() {
       <section className="relative z-10 pt-48 pb-16 px-6 text-center">
         <div className="max-w-5xl mx-auto">
           <FadeUp delay={100}>
-            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full text-xs font-black tracking-widest uppercase mb-8" style={{ background: "rgba(108,99,255,0.15)", border: "1px solid rgba(108,99,255,0.4)", color: "#F0F0FF", boxShadow: "0 0 20px rgba(108,99,255,0.2)" }}>
-              <span className="w-2 h-2 rounded-full bg-[#00E5B4]" style={{ boxShadow: "0 0 10px #00E5B4" }}></span>
-              Institutional Tools. Retail Scale.
+            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full text-xs font-black tracking-widest uppercase mb-8" style={{ background: "rgba(0,229,180,0.1)", border: "1px solid rgba(0,229,180,0.3)", color: "#00E5B4", boxShadow: "0 0 20px rgba(0,229,180,0.15)" }}>
+              <span className="w-2 h-2 rounded-full bg-[#00E5B4]" style={{ boxShadow: "0 0 10px #00E5B4", animation: "neonPulse 2s infinite" }}></span>
+              {liveSignalCount !== null ? `${liveSignalCount} live signals active` : 'Live signals scanning now'}
             </div>
           </FadeUp>
-          
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black mb-8 leading-[1.1] tracking-[-0.04em] drop-shadow-[0_0_30px_rgba(108,99,255,0.3)]">
-            The platform for{' '}<span style={{ color: '#6C63FF', textShadow: '0 0 32px rgba(108,99,255,0.4)' }}>sharp players</span>
+
+          <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-6 leading-[1.05] tracking-[-0.04em] drop-shadow-[0_0_30px_rgba(108,99,255,0.3)]">
+            Stop leaving{' '}
+            <span style={{ color: '#6C63FF', textShadow: '0 0 40px rgba(108,99,255,0.5)' }}>edge</span>
+            <br />on the table.
           </h1>
-          
-          <FadeUp delay={600}>
-            <p className="text-xl sm:text-2xl font-bold text-[#6B6B8A] max-w-3xl mx-auto mb-12">
-              The all-in-one platform for serious traders, bettors, and predictors — your edge lives here
+
+          <FadeUp delay={500}>
+            <p className="text-lg sm:text-xl font-bold text-[#6B6B8A] max-w-2xl mx-auto mb-10">
+              The terminal for sharp traders, bettors, and prediction market players. One platform. Every edge.
             </p>
           </FadeUp>
 
-          <FadeUp delay={800}>
-            <div className="flex items-center justify-center gap-6 flex-wrap">
-              <Link to="/register" className="glass-btn-primary px-10 py-5 rounded-xl text-lg font-black uppercase tracking-wide">Start Free</Link>
-              <a href="#signals" className="glass-btn-secondary px-10 py-5 rounded-xl text-lg font-black uppercase tracking-wide">See How It Works</a>
+          <FadeUp delay={700}>
+            <div className="flex items-center justify-center gap-4 flex-wrap mb-10">
+              <Link to="/register" className="glass-btn-primary px-10 py-5 rounded-xl text-base font-black uppercase tracking-wide">Start Free — No Card Needed</Link>
+              <a href="#signals" className="glass-btn-secondary px-8 py-5 rounded-xl text-base font-black uppercase tracking-wide">See the Signals</a>
+            </div>
+          </FadeUp>
+
+          {/* Feature pills */}
+          <FadeUp delay={900}>
+            <div className="flex items-center justify-center gap-3 flex-wrap mb-6">
+              {[
+                { icon: '⚡', label: 'Sharp Signals' },
+                { icon: '📊', label: 'Trade Journal' },
+                { icon: '🏈', label: 'Live Odds' },
+                { icon: '🤖', label: 'AI Market Intel' },
+                { icon: '🏆', label: 'Fantasy Tools' },
+                { icon: '🎯', label: 'Arb Scanner' },
+              ].map(({ icon, label }) => (
+                <span key={label} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  fontSize: 11, fontWeight: 800, padding: '5px 14px', borderRadius: 100,
+                  background: 'rgba(108,99,255,0.08)', border: '1px solid rgba(108,99,255,0.2)',
+                  color: '#6B6B8A', letterSpacing: '0.04em',
+                }}>
+                  {icon} {label}
+                </span>
+              ))}
             </div>
           </FadeUp>
 
           {/* MOCK TERMINAL */}
-          <FadeUp delay={1000}>
+          <FadeUp delay={1100}>
             <MockTerminal />
           </FadeUp>
         </div>
@@ -305,10 +341,13 @@ export default function Landing() {
                 Our engine aggregates 1,500+ global markets against 7 major sportsbooks in real-time, instantly surfacing massive mathematical mispricings. If there is an edge, we find it.
               </p>
               <div className="text-6xl font-black text-[#00E5B4] mb-2 drop-shadow-[0_0_20px_rgba(0,229,180,0.6)]">
-                <AnimatedNumber end={247} />
+                {liveSignalCount !== null
+                  ? <AnimatedNumber end={liveSignalCount} />
+                  : <AnimatedNumber end={247} />
+                }
               </div>
               <div className="text-sm font-black text-[#6B6B8A] uppercase tracking-widest">
-                Edges Found This Week
+                {liveSignalCount !== null ? 'Live Signals Right Now' : 'Edges Found This Week'}
               </div>
             </FadeUp>
           </div>

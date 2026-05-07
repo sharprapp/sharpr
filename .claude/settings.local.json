@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx --prefix frontend vite build --mode production)",
+      "Bash(node -e \"require\\('fs'\\).readFileSync\\('frontend/src/pages/Dashboard.jsx', 'utf8'\\); console.log\\('File readable, size:', require\\('fs'\\).statSync\\('frontend/src/pages/Dashboard.jsx'\\).size\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(npm run *)",
+      "Bash(node_modules/.bin/vite build *)",
+      "Read(//Users/agostinovitiello/Desktop/sharpr/**)",
+      "Bash(/Users/agostinovitiello/Desktop/sharpr/frontend/node_modules/.bin/vite build *)"
     ]
   }
 }

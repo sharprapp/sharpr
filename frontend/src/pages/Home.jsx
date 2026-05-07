@@ -87,12 +87,17 @@ export default function Home() {
   const [betsLoading, setBetsLoading]     = useState(true);
   const [marketsLoading, setMarketsLoading] = useState(true);
   const [gamesLoading, setGamesLoading]   = useState(false);
+  const [signalCount, setSignalCount]     = useState(null);
 
   /* fetch on mount */
   useEffect(() => {
     api.get('/api/trades').then(r => setTrades(r.data || [])).catch(() => {}).finally(() => setTradesLoading(false));
     api.get('/api/bets').then(r => setBets(r.data || [])).catch(() => {}).finally(() => setBetsLoading(false));
     api.get('/api/markets/polymarket?offset=0').then(r => setMarkets((r.data.markets || []).slice(0, 6))).catch(() => {}).finally(() => setMarketsLoading(false));
+    api.get('/api/sharpsignals').then(r => {
+      const sigs = r.data?.signals || r.data || [];
+      if (Array.isArray(sigs)) setSignalCount(sigs.length);
+    }).catch(() => {});
     api.get('/api/news/economic').then(r => {
       const upcoming = (r.data.events || []).filter(e => {
         try { return new Date(e.date) >= new Date(new Date().setHours(0,0,0,0)); } catch { return true; }
@@ -191,8 +196,8 @@ export default function Home() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           {[
             { label: "Today's P&L", value: fmtPnl(todayPnl), color: pnlColor(todayPnl), loading: tradesLoading },
-            { label: 'Bets today',  value: tradesLoading ? '—' : todayBets.length, color: '#F0F0FF', loading: betsLoading },
-            { label: 'AI queries',  value: tier === 'pro' ? 'Unlimited' : '0 / 5', color: tier === 'pro' ? '#0A0A0F' : '#6B6B8A', loading: false },
+            { label: 'Bets today',  value: betsLoading ? '—' : todayBets.length, color: '#F0F0FF', loading: betsLoading },
+            { label: 'Live signals', value: signalCount !== null ? signalCount : '—', color: signalCount > 0 ? '#00E5B4' : '#6B6B8A', loading: signalCount === null },
             { label: "Month P&L",   value: fmtPnl(monthPnl), color: pnlColor(monthPnl), loading: tradesLoading },
           ].map(({ label, value, color, loading }) => (
             <div key={label} style={{ ...card, background: 'linear-gradient(180deg, rgba(108,99,255,0.05) 0%, transparent 100%)' }}>

@@ -1052,6 +1052,7 @@ function PolymarketTab({ tier }) {
     { id: 'markets',     label: '📊 Markets' },
     { id: 'undervalued', label: '📈 Undervalued' },
     { id: 'overvalued',  label: '📉 Overvalued' },
+    { id: 'traders',     label: '🏆 Top Traders' },
     { id: 'portfolio',   label: '💼 Portfolio' },
     { id: 'alerts',      label: '🔔 Alerts' },
   ];
@@ -1073,6 +1074,7 @@ function PolymarketTab({ tier }) {
       {pmTab === 'alerts'    && <AlertsPanel />}
       {pmTab === 'undervalued' && <UndervaluedMarketsPanel markets={markets} loading={loading} onSelect={setSelectedMarket} />}
       {pmTab === 'overvalued'  && <OvervaluedMarketsPanel  markets={markets} loading={loading} onSelect={setSelectedMarket} />}
+      {pmTab === 'traders'     && <TopTradersPanel markets={markets} loading={loading} onSelect={setSelectedMarket} />}
 
       {pmTab === 'markets' && (
         <div className="flex gap-5">
@@ -1324,6 +1326,59 @@ function OvervaluedMarketsPanel({ markets, loading, onSelect }) {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function TopTradersPanel({ markets, loading, onSelect }) {
+  // Use top 10 markets by volume as proxy for "what sharp traders are in"
+  // Show top positions per market derived from YES/NO price and volume
+  const topMarkets = useMemo(() =>
+    [...markets].sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0)).slice(0, 10),
+    [markets]
+  );
+
+  const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108,99,255,0.2)', borderRadius: 16 };
+
+  if (loading) return <div style={{ color: '#6B6B8A', padding: 40, textAlign: 'center' }}>Loading markets…</div>;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div style={{ ...card, padding: '16px 20px', background: 'rgba(108,99,255,0.05)', borderColor: 'rgba(108,99,255,0.2)' }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#867fff', marginBottom: 4 }}>🏆 Top Trader Positions</div>
+        <div style={{ fontSize: 12, color: '#6B6B8A', lineHeight: 1.6 }}>
+          The markets with the most liquidity — where the most capital is deployed. High-volume markets with extreme probabilities signal strong directional conviction from large players.
+        </div>
+        <div style={{ fontSize: 11, color: '#4E4E63', marginTop: 6 }}>{topMarkets.length} highest-volume active markets</div>
+      </div>
+      <div className="flex flex-col gap-3">
+        {topMarkets.map((m, i) => {
+          const prob = m.yes ?? 50;
+          const vol = m.volume ?? 0;
+          const volStr = vol >= 1e6 ? '$' + (vol/1e6).toFixed(1) + 'M' : '$' + (vol/1000).toFixed(0) + 'K';
+          const sentiment = prob >= 65 ? 'heavy YES' : prob <= 35 ? 'heavy NO' : 'contested';
+          const sentColor = prob >= 65 ? '#00E5B4' : prob <= 35 ? '#FF4560' : '#867fff';
+          return (
+            <div key={i} onClick={() => onSelect(m)}
+              style={{ ...card, padding: 16, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 16 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.4)'; e.currentTarget.style.transform = 'translateX(4px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(108,99,255,0.2)'; e.currentTarget.style.transform = 'translateX(0)'; }}>
+              <div style={{ minWidth: 32, height: 32, borderRadius: '50%', background: 'rgba(108,99,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#867fff' }}>{i+1}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#F0F0FF', lineHeight: 1.4, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.title}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 10, color: '#4E4E63' }}>{volStr} volume</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: sentColor, padding: '1px 6px', borderRadius: 4, background: sentColor + '15' }}>{sentiment}</span>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: prob >= 65 ? '#00E5B4' : prob <= 35 ? '#FF4560' : '#867fff', lineHeight: 1 }}>{prob}%</div>
+                <div style={{ fontSize: 9, color: '#4E4E63', marginTop: 2 }}>YES</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -3542,6 +3597,67 @@ function ArbitragePanel() {
   const [odds1, setOdds1] = useState('');
   const [odds2, setOdds2] = useState('');
   const [stake, setStake] = useState(1000);
+  const [scanning, setScanning] = useState(false);
+  const [liveArbs, setLiveArbs] = useState([]);
+  const [scanError, setScanError] = useState('');
+  const [lastScanned, setLastScanned] = useState(null);
+
+  async function scanLiveArbs() {
+    setScanning(true); setScanError(''); setLiveArbs([]);
+    const sports = ['nba','nfl','mlb','nhl'];
+    const found = [];
+    try {
+      for (const sp of sports) {
+        const { data } = await api.get(`/api/odds/games?sport=${sp}`);
+        for (const game of (data.games || [])) {
+          const books = game.allBookmakers || [];
+          // For each h2h market pair across books, check for arb
+          const h2hByBook = {};
+          for (const b of books) {
+            const m = b.markets?.find(x => x.key === 'h2h');
+            if (!m) continue;
+            const home = m.outcomes?.find(o => o.name === game.homeTeam);
+            const away = m.outcomes?.find(o => o.name === game.awayTeam);
+            if (home && away) h2hByBook[b.title] = { home: home.price, away: away.price };
+          }
+          const bookNames = Object.keys(h2hByBook);
+          for (let i = 0; i < bookNames.length; i++) {
+            for (let j = i + 1; j < bookNames.length; j++) {
+              const b1 = bookNames[i], b2 = bookNames[j];
+              const o1 = h2hByBook[b1], o2 = h2hByBook[b2];
+              const toDecimal = n => n > 0 ? n/100+1 : 100/Math.abs(n)+1;
+              // Best odds for each side across the two books
+              const bestHome = Math.max(o1.home, o2.home);
+              const bestAway = Math.max(o1.away, o2.away);
+              const bestHomeBook = o1.home >= o2.home ? b1 : b2;
+              const bestAwayBook = o1.away >= o2.away ? b1 : b2;
+              if (bestHomeBook === bestAwayBook) continue; // same book, not arb
+              const dHome = toDecimal(bestHome), dAway = toDecimal(bestAway);
+              const impl = 1/dHome + 1/dAway;
+              if (impl < 1) {
+                const base = 100;
+                const profitPct = ((1/impl - 1)*100).toFixed(2);
+                const s1 = (base/(dHome*impl)).toFixed(2);
+                const s2 = (base/(dAway*impl)).toFixed(2);
+                found.push({
+                  game: `${game.awayTeam} @ ${game.homeTeam}`,
+                  sport: sp.toUpperCase(),
+                  profitPct,
+                  stake1: s1, book1: bestHomeBook, side1: game.homeTeam, odds1: bestHome,
+                  stake2: s2, book2: bestAwayBook, side2: game.awayTeam, odds2: bestAway,
+                });
+              }
+            }
+          }
+        }
+      }
+      setLiveArbs(found);
+      setLastScanned(new Date());
+    } catch (e) {
+      setScanError('Scan failed — odds API may be at quota limit');
+    }
+    setScanning(false);
+  }
 
   function toDecimal(odds) {
     const n = parseFloat(odds);
@@ -3563,9 +3679,50 @@ function ArbitragePanel() {
   const card = { background: 'rgba(17,17,32,0.8)', backdropFilter: 'blur(20px)', border: '1px solid rgba(108, 99, 255, 0.3)', borderRadius: 16, padding: 20 };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 680 }}>
+
+      {/* ── Live arb scanner ── */}
+      <div style={{ ...card, borderColor: 'rgba(0,229,180,0.2)', background: 'rgba(0,229,180,0.03)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, color: '#00E5B4', marginBottom: 2 }}>⚡ Live Arb Scanner</div>
+            <div style={{ fontSize: 11, color: '#6B6B8A' }}>Scans NBA, NFL, MLB, NHL h2h markets across all books for real-time arb opportunities</div>
+          </div>
+          <button onClick={scanLiveArbs} disabled={scanning}
+            style={{ background: scanning ? '#1A1A24' : '#00E5B4', color: scanning ? '#6B6B8A' : '#0A0A0F', border: 'none', borderRadius: 10, padding: '8px 18px', fontSize: 12, fontWeight: 800, cursor: scanning ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }}>
+            {scanning ? '⏳ Scanning…' : '🔍 Scan Now'}
+          </button>
+        </div>
+        {lastScanned && <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 8 }}>Last scan: {lastScanned.toLocaleTimeString()}</div>}
+        {scanError && <div style={{ fontSize: 12, color: '#FF4560', marginBottom: 8 }}>{scanError}</div>}
+        {liveArbs.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {liveArbs.map((arb, i) => (
+              <div key={i} style={{ background: 'rgba(0,229,180,0.06)', border: '1px solid rgba(0,229,180,0.2)', borderRadius: 12, padding: '12px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#F0F0FF' }}>{arb.game}</div>
+                  <div style={{ fontSize: 14, fontWeight: 900, color: '#00E5B4' }}>+{arb.profitPct}% profit</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {[{ book: arb.book1, side: arb.side1, odds: arb.odds1, stake: arb.stake1 }, { book: arb.book2, side: arb.side2, odds: arb.odds2, stake: arb.stake2 }].map((leg, j) => (
+                    <div key={j} style={{ background: 'rgba(17,17,32,0.6)', borderRadius: 8, padding: '8px 10px' }}>
+                      <div style={{ fontSize: 10, color: '#4E4E63', marginBottom: 3 }}>{leg.book}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#F0F0FF' }}>{leg.side}</div>
+                      <div style={{ fontSize: 11, color: '#867fff' }}>{leg.odds > 0 ? '+' : ''}{leg.odds} · Bet ${leg.stake}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: 10, color: '#4E4E63', marginTop: 6 }}>Per $100 total stake · {arb.sport}</div>
+              </div>
+            ))}
+          </div>
+        ) : lastScanned && liveArbs.length === 0 ? (
+          <div style={{ fontSize: 12, color: '#6B6B8A', textAlign: 'center', padding: '12px 0' }}>No arb opportunities found in current lines. Markets are fairly priced or scan was incomplete.</div>
+        ) : null}
+      </div>
+
       <div style={card}>
-        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 4 }}>⚖️ Arbitrage Finder</div>
+        <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: '-0.03em', color: '#F0F0FF', marginBottom: 4 }}>⚖️ Manual Arb Checker</div>
         <div style={{ fontSize: 12, color: '#6B6B8A', marginBottom: 16 }}>Enter odds from two different books for the same event to check for an arb opportunity.</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
           <div>
@@ -3616,6 +3773,7 @@ function ArbitragePanel() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

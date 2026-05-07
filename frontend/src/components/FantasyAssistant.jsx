@@ -69,8 +69,10 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
   const [q, setQ] = useState('');
   const [allPlayers, setAllPlayers] = useState(_allPlayers);
   const [focused, setFocused] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const dq = useDebounce(q, 150);
   const ref = useRef(null);
+  const listRef = useRef(null);
 
   // Load full player list on mount (singleton fetch)
   useEffect(() => {
@@ -84,12 +86,43 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
     return () => document.removeEventListener('mousedown', h);
   }, []);
 
+  // Reset active index when query changes
+  useEffect(() => { setActiveIndex(-1); }, [dq]);
+
   const lo = dq.toLowerCase();
   const filtered = dq.length >= 1
     ? allPlayers.filter(p => p.name.toLowerCase().includes(lo)).slice(0, 20)
     : allPlayers; // full A-Z list when no query
 
   const showDropdown = focused && allPlayers.length > 0;
+
+  function handleKeyDown(e) {
+    if (!showDropdown) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = Math.min(activeIndex + 1, filtered.length - 1);
+      setActiveIndex(next);
+      // scroll active item into view
+      if (listRef.current) {
+        const item = listRef.current.children[next + 1]; // +1 for header
+        if (item) item.scrollIntoView({ block: 'nearest' });
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex(Math.max(activeIndex - 1, 0));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIndex >= 0 && filtered[activeIndex]) {
+        onSelect(filtered[activeIndex]);
+        setQ('');
+        setFocused(false);
+        setActiveIndex(-1);
+      }
+    } else if (e.key === 'Escape') {
+      setFocused(false);
+      setActiveIndex(-1);
+    }
+  }
 
   if (selected) return <PlayerCard player={selected} onClear={onClear} />;
 
@@ -101,6 +134,7 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
         onChange={e => setQ(e.target.value)}
         onFocus={e => { setFocused(true); e.target.style.borderColor = '#6C63FF'; }}
         onBlur={e => { e.target.style.borderColor = 'rgba(108,99,255,0.25)'; }}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         style={{
           width: '100%', boxSizing: 'border-box',
@@ -110,7 +144,7 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
         }}
       />
       {showDropdown && (
-        <div style={{
+        <div ref={listRef} style={{
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
           background: '#0D0D1A', border: '1px solid rgba(108,99,255,0.2)',
           borderRadius: 12, zIndex: 100,
@@ -120,12 +154,11 @@ function PlayerSearch({ label, placeholder = 'Search NFL player…', selected, o
           <div style={{ padding: '7px 14px 4px', fontSize: 10, fontWeight: 700, color: '#6B6B8A', letterSpacing: '0.06em', textTransform: 'uppercase', position: 'sticky', top: 0, background: '#0D0D1A', zIndex: 1 }}>
             {dq.length >= 1 ? `${filtered.length} results` : `All Players A–Z · ${allPlayers.length} total`}
           </div>
-          {filtered.map(p => (
+          {filtered.map((p, i) => (
             <button key={p.id}
-              onClick={() => { onSelect(p); setQ(''); setFocused(false); }}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '9px 14px', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(108,99,255,0.1)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+              onClick={() => { onSelect(p); setQ(''); setFocused(false); setActiveIndex(-1); }}
+              onMouseEnter={() => setActiveIndex(i)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '9px 14px', background: i === activeIndex ? 'rgba(108,99,255,0.15)' : 'transparent', border: 'none', cursor: 'pointer', transition: 'background 0.1s' }}
             >
               <PlayerAvatar player={p} size={36} />
               <div style={{ textAlign: 'left', flex: 1 }}>
