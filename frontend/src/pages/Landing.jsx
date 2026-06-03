@@ -276,10 +276,8 @@ export default function Landing() {
             </div>
           </FadeUp>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-8xl font-black mb-6 leading-[1.05] tracking-[-0.04em] drop-shadow-[0_0_30px_rgba(108,99,255,0.3)]">
-            Stop leaving{' '}
-            <span style={{ color: '#6C63FF', textShadow: '0 0 40px rgba(108,99,255,0.5)' }}>edge</span>
-            <br />on the table.
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black mb-8 leading-[1.1] tracking-[-0.04em] drop-shadow-[0_0_30px_rgba(108,99,255,0.3)]">
+            The platform for{' '}<span style={{ color: '#6C63FF', textShadow: '0 0 32px rgba(108,99,255,0.4)' }}>sharp players</span>
           </h1>
 
           <FadeUp delay={500}>
